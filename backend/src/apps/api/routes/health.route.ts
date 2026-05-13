@@ -1,7 +1,12 @@
 import { Router } from "express";
+import type { HealthController } from "@api/controllers/HealthController";
 
-export const healthRouter = Router();
+export function createHealthRouter(controller: HealthController): Router {
+  const router = Router();
 
-healthRouter.get("/", (_req, res) => {
-  res.status(200).json({ status: "ok" });
-});
+  router.get("/", (req, res) => {
+    controller.getHealth(req, res);
+  });
+
+  return router;
+}

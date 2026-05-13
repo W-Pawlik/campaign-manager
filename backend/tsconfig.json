@@ -11,11 +11,12 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
       "@api/*": ["src/apps/api/*"],
+      "@console/*": ["src/apps/console-app/*"],
       "@core/*": ["src/core/*"],
       "@modules/*": ["src/modules/*"],
       "@tests/*": ["tests/*"]

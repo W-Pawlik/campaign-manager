@@ -21,12 +21,18 @@ modules/campaigns/application/handlers/__tests__/CreateCampaignHandler.test.ts
 modules/auth/domain/value-objects/__tests__/Email.test.ts
 ```
 
-Larger tests should live in:
+Use `__tests__` folders colocated with the tested area (including API integration tests):
 
 ```txt
-backend/tests/
-  integration/
-  e2e/
+src/core/infrastructure/errors/__tests__/ErrorMapper.test.ts
+src/apps/api/__tests__/error-handler.integration.test.ts
+src/modules/<module>/.../__tests__/*.test.ts
+```
+
+For cross-cutting test setup files, use:
+
+```txt
+src/__tests__/
 ```
 
 ## Domain tests
@@ -109,6 +115,12 @@ asset-upload-flow.e2e.test.ts
 ```
 
 E2E tests should be fewer and focused.
+
+If e2e tests are introduced later, keep them under a dedicated `__tests__` area, for example:
+
+```txt
+src/__tests__/e2e/
+```
 
 ## What to test when adding a command
 

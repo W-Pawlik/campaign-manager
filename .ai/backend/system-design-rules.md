@@ -26,6 +26,7 @@ The backend uses:
 ```txt
 backend/
   src/
+    __tests__/
     apps/
       api/
       console-app/
@@ -35,7 +36,6 @@ backend/
     modules/
 
   prisma/
-  tests/
 ```
 
 ## `apps`
