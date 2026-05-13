@@ -1,0 +1,35 @@
+{
+  "name": "campaign-manager",
+  "version": "1.0.0",
+  "description": "Init commit",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "prepare": "husky",
+    "lint-staged": "lint-staged",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck",
+    "lint": "npm --prefix backend run lint && npm --prefix frontend run lint",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "ci": "npm run lint && npm run typecheck && npm test && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  },
+  "private": true,
+  "lint-staged": {
+    "backend/**/*.{ts,tsx,js,mjs,cjs}": [
+      "npm --prefix backend exec eslint --fix",
+      "npm --prefix backend exec prettier --write"
+    ],
+    "backend/**/*.{json,md,yml,yaml}": "npm --prefix backend exec prettier --write",
+    "frontend/**/*.{ts,tsx,js,mjs,cjs}": [
+      "npm --prefix frontend exec eslint --fix",
+      "npm --prefix frontend exec prettier --write"
+    ],
+    "frontend/**/*.{json,md,css,html,yml,yaml}": "npm --prefix frontend exec prettier --write"
+  }
+}

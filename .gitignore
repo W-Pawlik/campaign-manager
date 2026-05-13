@@ -1,4 +1,3 @@
-```gitignore
 # =========================================
 # Dependencies
 # =========================================
@@ -177,15 +176,10 @@ Desktop.ini
 *~
 
 # =========================================
-# Package manager files
+# Keep lockfiles in repo for reproducible installs
 # =========================================
 
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
-
-# Remove this section if you want to commit lockfiles.
-# For production apps, committing exactly one lockfile is usually recommended.
+# (intentionally not ignored)
 
 # =========================================
 # Misc
@@ -195,4 +189,3 @@ pnpm-lock.yaml
 *.bak
 *.backup
 *.tmp
-```
