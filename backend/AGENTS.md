@@ -62,6 +62,10 @@ backend/
 - Do not rely on `inRequestScope` as an HTTP request scope.
 - Use `RequestContext` only for logging and correlation.
 - Pass business data explicitly through command/query objects.
+- Prefer TS path aliases for non-local imports:
+  - `@api/*` -> `src/apps/api/*`
+  - `@core/*` -> `src/core/*`
+  - `@modules/*` -> `src/modules/*`
 
 ## Typical commands
 

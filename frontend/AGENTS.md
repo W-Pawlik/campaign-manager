@@ -19,6 +19,8 @@ The frontend uses:
 - Prefer small reusable components.
 - Keep validation and form logic explicit.
 - Follow existing project conventions once frontend structure is established.
+- Prefer TS path aliases for non-local imports:
+  - `@/*` -> `src/*`
 
 ## Before major frontend work
 

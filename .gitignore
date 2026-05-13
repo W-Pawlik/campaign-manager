@@ -1,0 +1,198 @@
+```gitignore
+# =========================================
+# Dependencies
+# =========================================
+
+node_modules/
+**/node_modules/
+
+.pnpm-store/
+.yarn/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# =========================================
+# Build outputs
+# =========================================
+
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+coverage/
+**/coverage/
+
+frontend/dist/
+backend/dist/
+
+# =========================================
+# TypeScript
+# =========================================
+
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# =========================================
+# Environment files
+# =========================================
+
+.env
+.env.*
+!.env.example
+!.env.test.example
+
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# =========================================
+# Logs
+# =========================================
+
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =========================================
+# Runtime files
+# =========================================
+
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# =========================================
+# Test artifacts
+# =========================================
+
+.nyc_output/
+test-results/
+playwright-report/
+blob-report/
+junit.xml
+
+# =========================================
+# Prisma
+# =========================================
+
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# Keep Prisma schema and migrations
+!backend/prisma/schema.prisma
+!backend/prisma/migrations/
+
+# =========================================
+# Docker / local volumes
+# =========================================
+
+.docker/
+docker-data/
+postgres-data/
+redis-data/
+minio-data/
+localstack-data/
+
+# =========================================
+# Uploads / generated local files
+# =========================================
+
+uploads/
+tmp/
+temp/
+.cache/
+.cache-loader/
+
+backend/uploads/
+backend/tmp/
+backend/temp/
+
+frontend/.cache/
+
+# =========================================
+# AWS / cloud / local credentials
+# =========================================
+
+.aws/
+*.pem
+*.key
+*.crt
+*.cert
+*.p12
+*.pfx
+
+# =========================================
+# Terraform / infra
+# =========================================
+
+infra/.terraform/
+infra/.terraform.lock.hcl
+infra/terraform.tfstate
+infra/terraform.tfstate.*
+infra/*.tfvars
+infra/*.tfvars.json
+crash.log
+crash.*.log
+
+# =========================================
+# OS files
+# =========================================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+
+# =========================================
+# Editor / IDE
+# =========================================
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+.idea/
+*.swp
+*.swo
+*~
+
+# =========================================
+# Package manager files
+# =========================================
+
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Remove this section if you want to commit lockfiles.
+# For production apps, committing exactly one lockfile is usually recommended.
+
+# =========================================
+# Misc
+# =========================================
+
+*.local
+*.bak
+*.backup
+*.tmp
+```

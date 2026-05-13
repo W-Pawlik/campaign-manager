@@ -211,6 +211,18 @@ Config files should not:
 - create S3 clients
 - perform side effects
 
+## Import aliases
+
+Use TypeScript path aliases instead of long relative imports.
+
+Backend aliases:
+
+- `@api/*` -> `src/apps/api/*`
+- `@core/*` -> `src/core/*`
+- `@modules/*` -> `src/modules/*`
+
+Use aliases for cross-folder imports. Keep `./` imports for local files in the same feature folder when it is clearer.
+
 ## High-level request flow
 
 ```txt
