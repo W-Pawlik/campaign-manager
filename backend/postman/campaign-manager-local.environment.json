@@ -1,0 +1,14 @@
+{
+  "id": "8df23b98-c8ab-48fc-b0eb-5f174c4a33a1",
+  "name": "Campaign Manager Local",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2026-05-14T00:00:00.000Z",
+  "_postman_exported_using": "codex"
+}

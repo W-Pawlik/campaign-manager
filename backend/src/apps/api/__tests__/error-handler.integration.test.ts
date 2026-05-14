@@ -5,11 +5,12 @@ import { createApiApp } from "@api/app";
 import { loadApiContainerModule } from "@api/di/api.container-module";
 import { ForbiddenError } from "@core/application/errors/AppError";
 import { buildContainer } from "@core/di/container";
+import { loadAuthContainerModule } from "@modules/auth/auth.container-module";
 
 describe("API error handler integration", () => {
   it("returns mapped known error response", async () => {
     const app = createApiApp({
-      container: buildContainer(loadApiContainerModule),
+      container: buildContainer(loadAuthContainerModule, loadApiContainerModule),
       registerAdditionalRoutes: (router: Router) => {
         router.get("/__test/known-error", () => {
           throw new ForbiddenError("Access denied");
@@ -29,7 +30,7 @@ describe("API error handler integration", () => {
 
   it("returns safe unknown error response with requestId", async () => {
     const app = createApiApp({
-      container: buildContainer(loadApiContainerModule),
+      container: buildContainer(loadAuthContainerModule, loadApiContainerModule),
       registerAdditionalRoutes: (router: Router) => {
         router.get("/__test/unknown-error", () => {
           throw new Error("Sensitive internals");

@@ -7,6 +7,7 @@ import { apiConfig } from "@api/config/api.config";
 import { API_TYPES } from "@api/di/api.types";
 import { createApiRouter } from "@api/routes";
 import type { HealthController } from "@api/controllers/HealthController";
+import type { AuthController } from "@api/controllers/AuthController";
 
 export interface CreateApiAppOptions {
   container: Container;
@@ -20,7 +21,9 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   );
   const requestLoggerMiddleware = options.container.get<RequestHandler>(API_TYPES.RequestLoggerMiddleware);
   const errorHandlerMiddleware = options.container.get<ErrorRequestHandler>(API_TYPES.ErrorHandlerMiddleware);
+  const authMiddleware = options.container.get<RequestHandler>(API_TYPES.AuthMiddleware);
   const healthController = options.container.get<HealthController>(API_TYPES.HealthController);
+  const authController = options.container.get<AuthController>(API_TYPES.AuthController);
 
   const corsOrigin =
     apiConfig.corsOrigin === "*"
@@ -41,6 +44,8 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   app.use(
     createApiRouter({
       healthController,
+      authController,
+      authMiddleware,
       ...routesOptions,
     }),
   );
