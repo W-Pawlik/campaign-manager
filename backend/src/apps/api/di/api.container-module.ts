@@ -5,13 +5,21 @@ import { createErrorHandlerMiddleware } from "@api/middlewares/error-handler.mid
 import { createRequestContextMiddleware } from "@api/middlewares/request-context.middleware";
 import { createRequestLoggerMiddleware } from "@api/middlewares/request-logger.middleware";
 import { API_TYPES } from "@api/di/api.types";
+import type { DatabaseHealthChecker } from "@core/application/database/DatabaseHealthChecker";
 import type { RequestContextStore } from "@core/application/context/RequestContextStore";
 import type { Logger } from "@core/application/logging/Logger";
 import { CORE_TYPES } from "@core/di/core.types";
 import type { ErrorMapper } from "@core/infrastructure/errors/ErrorMapper";
 
 export function loadApiContainerModule(container: Container): void {
-  container.bind<HealthController>(API_TYPES.HealthController).to(HealthController).inTransientScope();
+  container
+    .bind<HealthController>(API_TYPES.HealthController)
+    .toDynamicValue((context) => {
+      const databaseHealthChecker = context.get<DatabaseHealthChecker>(CORE_TYPES.DatabaseHealthChecker);
+
+      return new HealthController(databaseHealthChecker);
+    })
+    .inTransientScope();
 
   container
     .bind<RequestHandler>(API_TYPES.RequestContextMiddleware)

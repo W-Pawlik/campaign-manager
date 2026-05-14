@@ -7,6 +7,9 @@ export function createHealthRouter(controller: HealthController): Router {
   router.get("/", (req, res) => {
     controller.getHealth(req, res);
   });
+  router.get("/db", async (req, res) => {
+    await controller.getDatabaseHealth(req, res);
+  });
 
   return router;
 }

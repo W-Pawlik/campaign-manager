@@ -1,9 +1,20 @@
 import type { Container } from "inversify";
+import type { PrismaClient } from "@prisma/client";
+import type { DatabaseHealthChecker } from "@core/application/database/DatabaseHealthChecker";
 import type { RequestContextStore } from "@core/application/context/RequestContextStore";
+import type { TransactionManager } from "@core/application/database/TransactionManager";
 import type { Logger } from "@core/application/logging/Logger";
+import { CommandBus } from "@core/application/cqrs/CommandBus";
+import type { HandlerResolver } from "@core/application/cqrs/HandlerResolver";
+import { QueryBus } from "@core/application/cqrs/QueryBus";
+import { ShutdownManager } from "@core/application/shutdown/ShutdownManager";
 import { coreConfig } from "@core/config/core.config";
 import { CORE_TYPES } from "@core/di/core.types";
 import { AsyncLocalStorageRequestContextStore } from "@core/infrastructure/context/AsyncLocalStorageRequestContextStore";
+import { createPrismaClient } from "@core/infrastructure/database/prisma.client";
+import { PrismaDatabaseHealthChecker } from "@core/infrastructure/database/PrismaDatabaseHealthChecker";
+import { PrismaTransactionManager } from "@core/infrastructure/database/PrismaTransactionManager";
+import { InversifyHandlerResolver } from "@core/infrastructure/di/InversifyHandlerResolver";
 import { ErrorMapper } from "@core/infrastructure/errors/ErrorMapper";
 import { PinoLogger } from "@core/infrastructure/logger/PinoLogger";
 
@@ -23,4 +34,56 @@ export function loadCoreContainerModule(container: Container): void {
     .inSingletonScope();
 
   container.bind<ErrorMapper>(CORE_TYPES.ErrorMapper).to(ErrorMapper).inSingletonScope();
+  container
+    .bind<PrismaClient>(CORE_TYPES.PrismaClient)
+    .toDynamicValue(() => createPrismaClient())
+    .inSingletonScope();
+  container
+    .bind<TransactionManager>(CORE_TYPES.TransactionManager)
+    .toDynamicValue((context) => {
+      const prismaClient = context.get<PrismaClient>(CORE_TYPES.PrismaClient);
+
+      return new PrismaTransactionManager(prismaClient);
+    })
+    .inSingletonScope();
+  container
+    .bind<DatabaseHealthChecker>(CORE_TYPES.DatabaseHealthChecker)
+    .toDynamicValue((context) => {
+      const prismaClient = context.get<PrismaClient>(CORE_TYPES.PrismaClient);
+
+      return new PrismaDatabaseHealthChecker(prismaClient);
+    })
+    .inSingletonScope();
+
+  container
+    .bind<HandlerResolver>(CORE_TYPES.HandlerResolver)
+    .toDynamicValue(() => new InversifyHandlerResolver(container))
+    .inSingletonScope();
+
+  container
+    .bind<CommandBus>(CORE_TYPES.CommandBus)
+    .toDynamicValue((context) => {
+      const handlerResolver = context.get<HandlerResolver>(CORE_TYPES.HandlerResolver);
+
+      return new CommandBus(handlerResolver);
+    })
+    .inSingletonScope();
+
+  container
+    .bind<QueryBus>(CORE_TYPES.QueryBus)
+    .toDynamicValue((context) => {
+      const handlerResolver = context.get<HandlerResolver>(CORE_TYPES.HandlerResolver);
+
+      return new QueryBus(handlerResolver);
+    })
+    .inSingletonScope();
+
+  container
+    .bind<ShutdownManager>(CORE_TYPES.ShutdownManager)
+    .toDynamicValue((context) => {
+      const logger = context.get<Logger>(CORE_TYPES.Logger);
+
+      return new ShutdownManager(logger);
+    })
+    .inSingletonScope();
 }

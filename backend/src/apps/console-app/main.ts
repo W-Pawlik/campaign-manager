@@ -1,20 +1,29 @@
 import "reflect-metadata";
+import type { PrismaClient } from "@prisma/client";
 import { runHealthCommand } from "@console/commands/health.command";
 import { consoleAppConfig } from "@console/config/console-app.config";
 import { ValidationError } from "@core/application/errors/AppError";
 import type { Logger } from "@core/application/logging/Logger";
+import type { ShutdownManager } from "@core/application/shutdown/ShutdownManager";
 import { buildContainer } from "@core/di/container";
 import { CORE_TYPES } from "@core/di/core.types";
 import type { ErrorMapper } from "@core/infrastructure/errors/ErrorMapper";
+import { PrismaShutdownHook } from "@core/infrastructure/shutdown/PrismaShutdownHook";
 
 async function run(): Promise<void> {
   const container = buildContainer();
   const logger = container.get<Logger>(CORE_TYPES.Logger);
   const errorMapper = container.get<ErrorMapper>(CORE_TYPES.ErrorMapper);
+  const shutdownManager = container.get<ShutdownManager>(CORE_TYPES.ShutdownManager);
+  const prismaClient = container.get<PrismaClient>(CORE_TYPES.PrismaClient);
+  shutdownManager.registerHook(new PrismaShutdownHook(prismaClient));
+  shutdownManager.installProcessHandlers();
 
   const command = process.argv[2] ?? "health";
 
   try {
+    await prismaClient.$connect();
+
     switch (command) {
       case "health":
         await runHealthCommand(logger);
@@ -23,7 +32,8 @@ async function run(): Promise<void> {
         throw new ValidationError(`Unsupported console command: ${command}`);
     }
 
-    process.exit(0);
+    const exitCode = await shutdownManager.shutdown("manual");
+    process.exit(exitCode);
   } catch (error) {
     const mappedError = errorMapper.map(error);
 
@@ -34,7 +44,8 @@ async function run(): Promise<void> {
       mappedError,
     });
 
-    process.exit(1);
+    const exitCode = await shutdownManager.shutdown("manual", error);
+    process.exit(exitCode);
   }
 }
 
