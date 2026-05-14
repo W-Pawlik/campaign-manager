@@ -15,7 +15,7 @@
     "test:watch": "vitest --passWithNoTests",
     "console": "tsx src/apps/console-app/main.ts health",
     "console:health": "tsx src/apps/console-app/main.ts health",
-    "db:up": "docker compose up -d postgres",
+    "db:up": "docker compose up -d postgres redis",
     "db:down": "docker compose down",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
@@ -34,6 +34,7 @@
     "helmet": "^8.1.0",
     "inversify": "^8.1.0",
     "pino": "^10.3.1",
+    "redis": "^5.12.1",
     "reflect-metadata": "^0.2.2",
     "uuid": "^14.0.0",
     "zod": "^4.4.3"

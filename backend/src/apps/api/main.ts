@@ -9,19 +9,24 @@ import type { Logger } from "@core/application/logging/Logger";
 import type { PrismaClient } from "@prisma/client";
 import { HttpServerShutdownHook } from "@core/infrastructure/shutdown/HttpServerShutdownHook";
 import { PrismaShutdownHook } from "@core/infrastructure/shutdown/PrismaShutdownHook";
+import type { RedisClient } from "@core/infrastructure/redis/redis.client";
+import { RedisShutdownHook } from "@core/infrastructure/shutdown/RedisShutdownHook";
 
 async function bootstrap(): Promise<void> {
   const container = buildContainer(loadApiContainerModule);
   const logger = container.get<Logger>(CORE_TYPES.Logger);
   const shutdownManager = container.get<ShutdownManager>(CORE_TYPES.ShutdownManager);
   const prismaClient = container.get<PrismaClient>(CORE_TYPES.PrismaClient);
+  const redisClient = container.get<RedisClient>(CORE_TYPES.RedisClient);
   const app = createApiApp({ container });
 
   try {
     await prismaClient.$connect();
     logger.info("Database connected");
+    await redisClient.connect();
+    logger.info("Redis connected");
   } catch (error) {
-    logger.error("Failed to connect to database", { error });
+    logger.error("Failed to connect infrastructure dependencies", { error });
     process.exit(1);
   }
 
@@ -32,6 +37,7 @@ async function bootstrap(): Promise<void> {
   });
 
   shutdownManager.registerHook(new HttpServerShutdownHook(server));
+  shutdownManager.registerHook(new RedisShutdownHook(redisClient));
   shutdownManager.registerHook(new PrismaShutdownHook(prismaClient));
   shutdownManager.installProcessHandlers();
 }

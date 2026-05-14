@@ -1,5 +1,7 @@
 import type { Container } from "inversify";
 import type { PrismaClient } from "@prisma/client";
+import type { RedisClient } from "@core/infrastructure/redis/redis.client";
+import type { Cache } from "@core/application/cache/Cache";
 import type { DatabaseHealthChecker } from "@core/application/database/DatabaseHealthChecker";
 import type { RequestContextStore } from "@core/application/context/RequestContextStore";
 import type { TransactionManager } from "@core/application/database/TransactionManager";
@@ -17,6 +19,8 @@ import { PrismaTransactionManager } from "@core/infrastructure/database/PrismaTr
 import { InversifyHandlerResolver } from "@core/infrastructure/di/InversifyHandlerResolver";
 import { ErrorMapper } from "@core/infrastructure/errors/ErrorMapper";
 import { PinoLogger } from "@core/infrastructure/logger/PinoLogger";
+import { RedisCache } from "@core/infrastructure/redis/RedisCache";
+import { createRedisClient } from "@core/infrastructure/redis/redis.client";
 
 export function loadCoreContainerModule(container: Container): void {
   container
@@ -37,6 +41,18 @@ export function loadCoreContainerModule(container: Container): void {
   container
     .bind<PrismaClient>(CORE_TYPES.PrismaClient)
     .toDynamicValue(() => createPrismaClient())
+    .inSingletonScope();
+  container
+    .bind<RedisClient>(CORE_TYPES.RedisClient)
+    .toDynamicValue(() => createRedisClient())
+    .inSingletonScope();
+  container
+    .bind<Cache>(CORE_TYPES.Cache)
+    .toDynamicValue((context) => {
+      const redisClient = context.get<RedisClient>(CORE_TYPES.RedisClient);
+
+      return new RedisCache(redisClient);
+    })
     .inSingletonScope();
   container
     .bind<TransactionManager>(CORE_TYPES.TransactionManager)

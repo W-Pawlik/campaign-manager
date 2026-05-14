@@ -3,6 +3,8 @@ export const CORE_TYPES = {
   RequestContextStore: Symbol.for("core.RequestContextStore"),
   ErrorMapper: Symbol.for("core.ErrorMapper"),
   PrismaClient: Symbol.for("core.PrismaClient"),
+  RedisClient: Symbol.for("core.RedisClient"),
+  Cache: Symbol.for("core.Cache"),
   DatabaseHealthChecker: Symbol.for("core.DatabaseHealthChecker"),
   TransactionManager: Symbol.for("core.TransactionManager"),
   HandlerResolver: Symbol.for("core.HandlerResolver"),

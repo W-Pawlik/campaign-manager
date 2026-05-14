@@ -8,7 +8,9 @@ import type { ShutdownManager } from "@core/application/shutdown/ShutdownManager
 import { buildContainer } from "@core/di/container";
 import { CORE_TYPES } from "@core/di/core.types";
 import type { ErrorMapper } from "@core/infrastructure/errors/ErrorMapper";
+import type { RedisClient } from "@core/infrastructure/redis/redis.client";
 import { PrismaShutdownHook } from "@core/infrastructure/shutdown/PrismaShutdownHook";
+import { RedisShutdownHook } from "@core/infrastructure/shutdown/RedisShutdownHook";
 
 async function run(): Promise<void> {
   const container = buildContainer();
@@ -16,6 +18,8 @@ async function run(): Promise<void> {
   const errorMapper = container.get<ErrorMapper>(CORE_TYPES.ErrorMapper);
   const shutdownManager = container.get<ShutdownManager>(CORE_TYPES.ShutdownManager);
   const prismaClient = container.get<PrismaClient>(CORE_TYPES.PrismaClient);
+  const redisClient = container.get<RedisClient>(CORE_TYPES.RedisClient);
+  shutdownManager.registerHook(new RedisShutdownHook(redisClient));
   shutdownManager.registerHook(new PrismaShutdownHook(prismaClient));
   shutdownManager.installProcessHandlers();
 
@@ -23,6 +27,7 @@ async function run(): Promise<void> {
 
   try {
     await prismaClient.$connect();
+    await redisClient.connect();
 
     switch (command) {
       case "health":
