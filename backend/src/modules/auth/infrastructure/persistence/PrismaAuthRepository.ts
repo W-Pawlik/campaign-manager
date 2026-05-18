@@ -42,10 +42,21 @@ export class PrismaAuthRepository implements AuthRepository {
   }
 
   public async create(userCredentials: UserCredentials): Promise<void> {
+    const emailLocalPart = userCredentials.email.value.split("@")[0] ?? "user";
+    const normalizedLocalPart = emailLocalPart.trim().length > 0 ? emailLocalPart.trim() : "user";
+    const defaultDisplayName =
+      (normalizedLocalPart.length >= 2 ? normalizedLocalPart : `${normalizedLocalPart}_user`).slice(
+        0,
+        80,
+      );
+    const defaultUsername = `user_${userCredentials.id.slice(0, 8)}`;
+
     await this.prismaClient.user.create({
       data: {
         id: userCredentials.id,
         email: userCredentials.email.value,
+        username: defaultUsername,
+        displayName: defaultDisplayName,
         passwordHash: userCredentials.passwordHash.value,
         createdAt: userCredentials.createdAt,
       },
