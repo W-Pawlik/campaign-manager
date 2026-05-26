@@ -8,7 +8,7 @@ import { ChangeCurrentUserPasswordHandler } from "@modules/users/application/han
 import { DeleteCurrentUserAccountHandler } from "@modules/users/application/handlers/DeleteCurrentUserAccountHandler";
 import { GetCurrentUserProfileHandler } from "@modules/users/application/handlers/GetCurrentUserProfileHandler";
 import { UpdateCurrentUserProfileHandler } from "@modules/users/application/handlers/UpdateCurrentUserProfileHandler";
-import { NoopUserCampaignOwnershipChecker } from "@modules/users/infrastructure/persistence/NoopUserCampaignOwnershipChecker";
+import { PrismaUserCampaignOwnershipChecker } from "@modules/users/infrastructure/persistence/PrismaUserCampaignOwnershipChecker";
 import { PrismaUserProfileRepository } from "@modules/users/infrastructure/persistence/PrismaUserProfileRepository";
 import { PrismaUserRepository } from "@modules/users/infrastructure/persistence/PrismaUserRepository";
 import { UserMapper } from "@modules/users/infrastructure/persistence/UserMapper";
@@ -46,7 +46,11 @@ export function loadUsersContainerModule(container: Container): void {
 
   container
     .bind<UserCampaignOwnershipChecker>(USERS_TYPES.UserCampaignOwnershipChecker)
-    .toDynamicValue(() => new NoopUserCampaignOwnershipChecker())
+    .toDynamicValue((context) => {
+      const prismaClient = context.get<PrismaClient>(CORE_TYPES.PrismaClient);
+
+      return new PrismaUserCampaignOwnershipChecker(prismaClient);
+    })
     .inSingletonScope();
 
   container

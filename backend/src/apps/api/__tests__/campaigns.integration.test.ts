@@ -1,0 +1,256 @@
+import type { Container } from "inversify";
+import request from "supertest";
+import { describe, expect, it } from "vitest";
+import { createApiApp } from "@api/app";
+import { loadApiContainerModule } from "@api/di/api.container-module";
+import { buildContainer, type ContainerModuleLoader } from "@core/di/container";
+import { loadAuthContainerModule } from "@modules/auth/auth.container-module";
+import { AUTH_TYPES } from "@modules/auth/auth.types";
+import type { AuthRepository } from "@modules/auth/application/ports/AuthRepository";
+import type { UserSessionRepository } from "@modules/auth/application/ports/UserSessionRepository";
+import { RefreshToken } from "@modules/auth/domain/entities/RefreshToken";
+import type { UserCredentials } from "@modules/auth/domain/entities/UserCredentials";
+import type { Email } from "@modules/auth/domain/value-objects/Email";
+import { loadCampaignsContainerModule } from "@modules/campaigns/campaigns.container-module";
+import { CAMPAIGNS_TYPES } from "@modules/campaigns/campaigns.types";
+import type { CampaignDetailsDTO } from "@modules/campaigns/application/dto/CampaignDetailsDTO";
+import type { CampaignListItemDTO } from "@modules/campaigns/application/dto/CampaignListItemDTO";
+import type { CampaignReadRepository } from "@modules/campaigns/application/ports/CampaignReadRepository";
+import type { CampaignRepository } from "@modules/campaigns/application/ports/CampaignRepository";
+import type { Campaign } from "@modules/campaigns/domain/entities/Campaign";
+import { CampaignRole } from "@modules/campaigns/domain/value-objects/CampaignRole";
+
+class InMemoryAuthRepository implements AuthRepository {
+  private readonly usersById = new Map<string, UserCredentials>();
+  private readonly userIdsByEmail = new Map<string, string>();
+
+  public async findByEmail(email: Email): Promise<UserCredentials | null> {
+    const userId = this.userIdsByEmail.get(email.value);
+
+    if (!userId) {
+      return null;
+    }
+
+    return this.usersById.get(userId) ?? null;
+  }
+
+  public async findById(userId: string): Promise<UserCredentials | null> {
+    return this.usersById.get(userId) ?? null;
+  }
+
+  public async create(userCredentials: UserCredentials): Promise<void> {
+    this.usersById.set(userCredentials.id, userCredentials);
+    this.userIdsByEmail.set(userCredentials.email.value, userCredentials.id);
+  }
+}
+
+class InMemoryUserSessionRepository implements UserSessionRepository {
+  private readonly sessions = new Map<string, RefreshToken>();
+
+  public async create(session: RefreshToken): Promise<void> {
+    this.sessions.set(session.id, session);
+  }
+
+  public async findById(sessionId: string): Promise<RefreshToken | null> {
+    return this.sessions.get(sessionId) ?? null;
+  }
+
+  public async revokeById(sessionId: string, revokedAt: Date): Promise<void> {
+    const session = this.sessions.get(sessionId);
+
+    if (!session) {
+      return;
+    }
+
+    this.sessions.set(
+      sessionId,
+      RefreshToken.create({
+        id: session.id,
+        userId: session.userId,
+        tokenHash: session.tokenHash,
+        expiresAt: session.expiresAt,
+        createdAt: session.createdAt,
+        revokedAt,
+      }),
+    );
+  }
+}
+
+interface CampaignMembership {
+  campaignId: string;
+  userId: string;
+  role: CampaignRole;
+}
+
+class InMemoryCampaignStore {
+  public readonly campaigns = new Map<string, Campaign>();
+  public readonly memberships: CampaignMembership[] = [];
+}
+
+class InMemoryCampaignRepository implements CampaignRepository {
+  public constructor(private readonly store: InMemoryCampaignStore) {}
+
+  public async findById(campaignId: string): Promise<Campaign | null> {
+    return this.store.campaigns.get(campaignId) ?? null;
+  }
+
+  public async findBySlug(slug: string): Promise<Campaign | null> {
+    for (const campaign of this.store.campaigns.values()) {
+      if (campaign.slug === slug) {
+        return campaign;
+      }
+    }
+
+    return null;
+  }
+
+  public async findUserRole(campaignId: string, userId: string): Promise<CampaignRole | null> {
+    const membership = this.store.memberships.find(
+      (entry) => entry.campaignId === campaignId && entry.userId === userId,
+    );
+
+    return membership?.role ?? null;
+  }
+
+  public async create(campaign: Campaign, ownerUserId: string): Promise<void> {
+    this.store.campaigns.set(campaign.id, campaign);
+    this.store.memberships.push({
+      campaignId: campaign.id,
+      userId: ownerUserId,
+      role: CampaignRole.owner(),
+    });
+  }
+
+  public async save(campaign: Campaign): Promise<void> {
+    this.store.campaigns.set(campaign.id, campaign);
+  }
+}
+
+class InMemoryCampaignReadRepository implements CampaignReadRepository {
+  public constructor(private readonly store: InMemoryCampaignStore) {}
+
+  public async listForUser(userId: string): Promise<CampaignListItemDTO[]> {
+    const campaigns: CampaignListItemDTO[] = [];
+
+    for (const entry of this.store.memberships) {
+      if (entry.userId !== userId) {
+        continue;
+      }
+
+      const campaign = this.store.campaigns.get(entry.campaignId);
+
+      if (!campaign || campaign.deletedAt !== null) {
+        continue;
+      }
+
+      campaigns.push({
+        id: campaign.id,
+        name: campaign.name.value,
+        slug: campaign.slug,
+        status: campaign.status.value,
+        visibility: campaign.visibility.value,
+        role: entry.role.value,
+        createdAt: campaign.createdAt.toISOString(),
+        updatedAt: campaign.updatedAt.toISOString(),
+      });
+    }
+
+    return campaigns;
+  }
+
+  public async getDetailsForUser(campaignId: string, userId: string): Promise<CampaignDetailsDTO | null> {
+    const membership = this.store.memberships.find(
+      (entry) => entry.campaignId === campaignId && entry.userId === userId,
+    );
+
+    if (!membership) {
+      return null;
+    }
+
+    const campaign = this.store.campaigns.get(campaignId);
+
+    if (!campaign || campaign.deletedAt !== null) {
+      return null;
+    }
+
+    return {
+      id: campaign.id,
+      name: campaign.name.value,
+      slug: campaign.slug,
+      status: campaign.status.value,
+      visibility: campaign.visibility.value,
+      role: membership.role.value,
+      createdAt: campaign.createdAt.toISOString(),
+      updatedAt: campaign.updatedAt.toISOString(),
+      deletedAt: null,
+    };
+  }
+}
+
+function createAuthTestingModule(): ContainerModuleLoader {
+  const authRepository = new InMemoryAuthRepository();
+  const userSessionRepository = new InMemoryUserSessionRepository();
+
+  return (container: Container) => {
+    container.rebind<AuthRepository>(AUTH_TYPES.AuthRepository).toConstantValue(authRepository);
+    container
+      .rebind<UserSessionRepository>(AUTH_TYPES.UserSessionRepository)
+      .toConstantValue(userSessionRepository);
+  };
+}
+
+function createCampaignsTestingModule(): ContainerModuleLoader {
+  const store = new InMemoryCampaignStore();
+  const campaignRepository = new InMemoryCampaignRepository(store);
+  const campaignReadRepository = new InMemoryCampaignReadRepository(store);
+
+  return (container: Container) => {
+    container
+      .rebind<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository)
+      .toConstantValue(campaignRepository);
+    container
+      .rebind<CampaignReadRepository>(CAMPAIGNS_TYPES.CampaignReadRepository)
+      .toConstantValue(campaignReadRepository);
+  };
+}
+
+describe("Campaigns API flow", () => {
+  it("creates campaign and lists it for authenticated user", async () => {
+    const container = buildContainer(
+      loadAuthContainerModule,
+      loadCampaignsContainerModule,
+      createAuthTestingModule(),
+      createCampaignsTestingModule(),
+      loadApiContainerModule,
+    );
+    const app = createApiApp({ container });
+
+    const registerResponse = await request(app).post("/api/v1/auth/register").send({
+      email: "campaigns@example.com",
+      password: "password123",
+    });
+
+    expect(registerResponse.status).toBe(201);
+
+    const createCampaignResponse = await request(app)
+      .post("/api/v1/campaigns")
+      .set("authorization", `Bearer ${registerResponse.body.accessToken}`)
+      .send({
+        name: "Heroes of Waterdeep",
+        visibility: "PRIVATE",
+      });
+
+    expect(createCampaignResponse.status).toBe(201);
+    expect(createCampaignResponse.body.name).toBe("Heroes of Waterdeep");
+    expect(createCampaignResponse.body.role).toBe("OWNER");
+
+    const listCampaignsResponse = await request(app)
+      .get("/api/v1/campaigns")
+      .set("authorization", `Bearer ${registerResponse.body.accessToken}`);
+
+    expect(listCampaignsResponse.status).toBe(200);
+    expect(listCampaignsResponse.body).toHaveLength(1);
+    expect(listCampaignsResponse.body[0].id).toBe(createCampaignResponse.body.id);
+    expect(listCampaignsResponse.body[0].slug).toBe("heroes-of-waterdeep");
+  });
+});

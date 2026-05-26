@@ -12,10 +12,16 @@ import { PrismaShutdownHook } from "@core/infrastructure/shutdown/PrismaShutdown
 import type { RedisClient } from "@core/infrastructure/redis/redis.client";
 import { RedisShutdownHook } from "@core/infrastructure/shutdown/RedisShutdownHook";
 import { loadAuthContainerModule } from "@modules/auth/auth.container-module";
+import { loadCampaignsContainerModule } from "@modules/campaigns/campaigns.container-module";
 import { loadUsersContainerModule } from "@modules/users/users.container-module";
 
 async function bootstrap(): Promise<void> {
-  const container = buildContainer(loadAuthContainerModule, loadUsersContainerModule, loadApiContainerModule);
+  const container = buildContainer(
+    loadAuthContainerModule,
+    loadUsersContainerModule,
+    loadCampaignsContainerModule,
+    loadApiContainerModule,
+  );
   const logger = container.get<Logger>(CORE_TYPES.Logger);
   const shutdownManager = container.get<ShutdownManager>(CORE_TYPES.ShutdownManager);
   const prismaClient = container.get<PrismaClient>(CORE_TYPES.PrismaClient);

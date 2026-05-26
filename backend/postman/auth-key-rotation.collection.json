@@ -1,27 +1,93 @@
 {
   "info": {
-    "name": "Campaign Manager Auth + Key Rotation",
+    "name": "Campaign Manager API Full Coverage",
     "_postman_id": "f8cdde9f-5f3f-41ab-a4f6-42183a493f2d",
-    "description": "Auth flow collection for backend: register, login, me, refresh, logout and refresh-after-logout negative test.",
+    "description": "Full API flow collection for backend: health, auth, users profile update/password/delete, token refresh rotation, and logout negative checks.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.status).to.eql('ok');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Database Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.status).to.eql('ok');",
+              "pm.expect(body.database).to.eql('up');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health/db",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health",
+            "db"
+          ]
+        }
+      },
+      "response": []
+    },
     {
       "name": "Register User",
       "event": [
         {
           "listen": "prerequest",
           "script": {
+            "type": "text/javascript",
             "exec": [
-              "const uniqueEmail = `user.${Date.now()}@example.com`;",
-              "pm.collectionVariables.set('email', uniqueEmail);"
-            ],
-            "type": "text/javascript"
+              "const now = Date.now();",
+              "const uniqueEmail = `user.${now}@example.com`;",
+              "const username = `user_${now}`;",
+              "pm.collectionVariables.set('email', uniqueEmail);",
+              "pm.collectionVariables.set('updatedUsername', username);"
+            ]
           }
         },
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
               "const body = pm.response.json();",
@@ -29,8 +95,7 @@
               "pm.expect(body.refreshToken).to.be.a('string');",
               "pm.collectionVariables.set('accessToken', body.accessToken);",
               "pm.collectionVariables.set('refreshToken', body.refreshToken);"
-            ],
-            "type": "text/javascript"
+            ]
           }
         }
       ],
@@ -62,17 +127,17 @@
       "response": []
     },
     {
-      "name": "Get Current User (/me)",
+      "name": "Get Current User Auth (/auth/me)",
       "event": [
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
               "const body = pm.response.json();",
               "pm.expect(body.email).to.eql(pm.collectionVariables.get('email'));"
-            ],
-            "type": "text/javascript"
+            ]
           }
         }
       ],
@@ -100,11 +165,423 @@
       "response": []
     },
     {
+      "name": "Get Current User Profile (/users/me)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.email).to.eql(pm.collectionVariables.get('email'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Current User Profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.username).to.eql(pm.collectionVariables.get('updatedUsername'));",
+              "pm.expect(body.displayName).to.eql(pm.collectionVariables.get('updatedDisplayName'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{updatedUsername}}\",\n  \"displayName\": \"{{updatedDisplayName}}\",\n  \"bio\": \"{{updatedBio}}\",\n  \"locale\": \"{{updatedLocale}}\",\n  \"timezone\": \"{{updatedTimezone}}\",\n  \"profile\": {\n    \"preferredSystem\": \"{{updatedPreferredSystem}}\",\n    \"defaultTimezone\": \"{{updatedTimezone}}\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Change Current User Password",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });",
+              "pm.collectionVariables.set('password', pm.collectionVariables.get('newPassword'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"{{password}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me/password",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me",
+            "password"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.id).to.be.a('string');",
+              "pm.expect(body.name).to.eql(pm.collectionVariables.get('campaignName'));",
+              "pm.collectionVariables.set('campaignId', body.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{campaignName}}\",\n  \"visibility\": \"PRIVATE\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List User Campaigns",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(Array.isArray(body)).to.eql(true);",
+              "pm.expect(body.some((item) => item.id === pm.collectionVariables.get('campaignId'))).to.eql(true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Campaign Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.id).to.eql(pm.collectionVariables.get('campaignId'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.name).to.eql(pm.collectionVariables.get('updatedCampaignName'));",
+              "pm.expect(body.visibility).to.eql('PUBLIC');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{updatedCampaignName}}\",\n  \"visibility\": \"PUBLIC\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Archive Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/archive",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "archive"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Restore Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/restore",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "restore"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Login User",
       "event": [
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
               "const body = pm.response.json();",
@@ -112,8 +589,7 @@
               "pm.expect(body.refreshToken).to.be.a('string');",
               "pm.collectionVariables.set('accessToken', body.accessToken);",
               "pm.collectionVariables.set('refreshToken', body.refreshToken);"
-            ],
-            "type": "text/javascript"
+            ]
           }
         }
       ],
@@ -150,6 +626,7 @@
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
               "const body = pm.response.json();",
@@ -158,8 +635,7 @@
               "pm.collectionVariables.set('revokedRefreshTokenCandidate', pm.collectionVariables.get('refreshToken'));",
               "pm.collectionVariables.set('accessToken', body.accessToken);",
               "pm.collectionVariables.set('refreshToken', body.refreshToken);"
-            ],
-            "type": "text/javascript"
+            ]
           }
         }
       ],
@@ -196,10 +672,10 @@
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test('status is 403', function () { pm.response.to.have.status(403); });"
-            ],
-            "type": "text/javascript"
+            ]
           }
         }
       ],
@@ -236,11 +712,11 @@
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test('status is 204', function () { pm.response.to.have.status(204); });",
               "pm.collectionVariables.set('loggedOutRefreshToken', pm.collectionVariables.get('refreshToken'));"
-            ],
-            "type": "text/javascript"
+            ]
           }
         }
       ],
@@ -277,10 +753,10 @@
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
               "pm.test('status is 403', function () { pm.response.to.have.status(403); });"
-            ],
-            "type": "text/javascript"
+            ]
           }
         }
       ],
@@ -310,6 +786,85 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Login Before Delete Account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('accessToken', body.accessToken);",
+              "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Current User Account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/users/me",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "users",
+            "me"
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "event": [],
@@ -321,6 +876,10 @@
     {
       "key": "password",
       "value": "password123"
+    },
+    {
+      "key": "newPassword",
+      "value": "password456"
     },
     {
       "key": "accessToken",
@@ -337,6 +896,42 @@
     {
       "key": "loggedOutRefreshToken",
       "value": ""
+    },
+    {
+      "key": "updatedUsername",
+      "value": ""
+    },
+    {
+      "key": "updatedDisplayName",
+      "value": "User Updated"
+    },
+    {
+      "key": "updatedBio",
+      "value": "Updated from Postman collection run"
+    },
+    {
+      "key": "updatedLocale",
+      "value": "pl-PL"
+    },
+    {
+      "key": "updatedTimezone",
+      "value": "Europe/Warsaw"
+    },
+    {
+      "key": "updatedPreferredSystem",
+      "value": "DND5E"
+    },
+    {
+      "key": "campaignId",
+      "value": ""
+    },
+    {
+      "key": "campaignName",
+      "value": "Heroes of Waterdeep"
+    },
+    {
+      "key": "updatedCampaignName",
+      "value": "Shadows Over Waterdeep"
     }
   ]
 }

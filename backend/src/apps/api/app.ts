@@ -9,6 +9,7 @@ import { createApiRouter } from "@api/routes";
 import type { HealthController } from "@api/controllers/HealthController";
 import type { AuthController } from "@api/controllers/AuthController";
 import type { UsersController } from "@api/controllers/users.controller";
+import type { CampaignsController } from "@api/controllers/CampaignsController";
 
 export interface CreateApiAppOptions {
   container: Container;
@@ -26,6 +27,7 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   const healthController = options.container.get<HealthController>(API_TYPES.HealthController);
   const authController = options.container.get<AuthController>(API_TYPES.AuthController);
   const usersController = options.container.get<UsersController>(API_TYPES.UsersController);
+  const campaignsController = options.container.get<CampaignsController>(API_TYPES.CampaignsController);
 
   const corsOrigin =
     apiConfig.corsOrigin === "*"
@@ -48,6 +50,7 @@ export function createApiApp(options: CreateApiAppOptions): Express {
       healthController,
       authController,
       usersController,
+      campaignsController,
       authMiddleware,
       ...routesOptions,
     }),
