@@ -1,4 +1,4 @@
-import { ForbiddenError, NotFoundError } from "@core/application/errors/AppError";
+import { UnauthorizedError } from "@core/application/errors/AppError";
 import type { CommandHandler } from "@core/application/cqrs/CommandHandler";
 import type { AuthTokensDTO } from "@modules/auth/application/dto/AuthTokensDTO";
 import type { RefreshTokenCommand } from "@modules/auth/application/commands/RefreshTokenCommand";
@@ -24,15 +24,15 @@ export class RefreshTokenHandler
     const currentSession = await this.userSessionRepository.findById(payload.sessionId);
 
     if (currentSession === null) {
-      throw new ForbiddenError("Refresh token is invalid");
+      throw new UnauthorizedError("Refresh token is invalid");
     }
 
     if (currentSession.userId !== payload.userId) {
-      throw new ForbiddenError("Refresh token is invalid");
+      throw new UnauthorizedError("Refresh token is invalid");
     }
 
     if (!currentSession.canBeUsed(new Date())) {
-      throw new ForbiddenError("Refresh token is expired or revoked");
+      throw new UnauthorizedError("Refresh token is expired or revoked");
     }
 
     const doesTokenMatch = await this.passwordHasher.verify(
@@ -41,7 +41,7 @@ export class RefreshTokenHandler
     );
 
     if (!doesTokenMatch) {
-      throw new ForbiddenError("Refresh token is invalid");
+      throw new UnauthorizedError("Refresh token is invalid");
     }
 
     await this.userSessionRepository.revokeById(currentSession.id, new Date());
@@ -49,7 +49,7 @@ export class RefreshTokenHandler
     const userCredentials = await this.authRepository.findById(payload.userId);
 
     if (userCredentials === null) {
-      throw new NotFoundError("User not found");
+      throw new UnauthorizedError("Refresh token is invalid");
     }
 
     return await this.authTokensIssuer.issueForUser(userCredentials);

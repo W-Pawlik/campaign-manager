@@ -1,7 +1,7 @@
 import jwt, { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import { coreConfig } from "@core/config/core.config";
 import type { JwtSigningKeyConfig, RotatingJwtSigningKeysConfig } from "@core/config/core.config";
-import { ForbiddenError } from "@core/application/errors/AppError";
+import { UnauthorizedError } from "@core/application/errors/AppError";
 import type {
   AccessTokenPayload,
   IssuedRefreshToken,
@@ -38,7 +38,7 @@ export class JwtTokenService implements TokenService {
     const payload = this.verifyJwt(token, coreConfig.auth.accessTokenKeys);
 
     if (payload.type !== "access" || payload.email === undefined) {
-      throw new ForbiddenError("Access token is invalid");
+      throw new UnauthorizedError("Access token is invalid");
     }
 
     return {
@@ -74,7 +74,7 @@ export class JwtTokenService implements TokenService {
     const payload = this.verifyJwt(token, coreConfig.auth.refreshTokenKeys);
 
     if (payload.type !== "refresh" || payload.sid === undefined) {
-      throw new ForbiddenError("Refresh token is invalid");
+      throw new UnauthorizedError("Refresh token is invalid");
     }
 
     return {
@@ -91,7 +91,7 @@ export class JwtTokenService implements TokenService {
         const payload = jwt.verify(token, key.secret, { algorithms: ["HS256"] });
 
         if (typeof payload !== "object" || payload === null) {
-          throw new ForbiddenError("Token is invalid");
+          throw new UnauthorizedError("Token is invalid");
         }
 
         const sub = payload.sub;
@@ -100,19 +100,19 @@ export class JwtTokenService implements TokenService {
         const sid = payload.sid;
 
         if (typeof sub !== "string") {
-          throw new ForbiddenError("Token is invalid");
+          throw new UnauthorizedError("Token is invalid");
         }
 
         if (type !== "access" && type !== "refresh") {
-          throw new ForbiddenError("Token is invalid");
+          throw new UnauthorizedError("Token is invalid");
         }
 
         if (email !== undefined && typeof email !== "string") {
-          throw new ForbiddenError("Token is invalid");
+          throw new UnauthorizedError("Token is invalid");
         }
 
         if (sid !== undefined && typeof sid !== "string") {
-          throw new ForbiddenError("Token is invalid");
+          throw new UnauthorizedError("Token is invalid");
         }
 
         return {
@@ -123,7 +123,7 @@ export class JwtTokenService implements TokenService {
         };
       } catch (error) {
         if (error instanceof TokenExpiredError) {
-          throw new ForbiddenError("Token is expired", error);
+          throw new UnauthorizedError("Token is expired", error);
         }
 
         if (error instanceof JsonWebTokenError) {
@@ -134,7 +134,7 @@ export class JwtTokenService implements TokenService {
       }
     }
 
-    throw new ForbiddenError("Token is invalid");
+    throw new UnauthorizedError("Token is invalid");
   }
 
   private resolveVerificationKeys(
@@ -144,7 +144,7 @@ export class JwtTokenService implements TokenService {
     const decodedToken = jwt.decode(token, { complete: true });
 
     if (!decodedToken || typeof decodedToken !== "object") {
-      throw new ForbiddenError("Token is invalid");
+      throw new UnauthorizedError("Token is invalid");
     }
 
     const kid = decodedToken.header?.kid;
@@ -156,7 +156,7 @@ export class JwtTokenService implements TokenService {
     const key = this.findKeyByKid(keys, kid);
 
     if (!key) {
-      throw new ForbiddenError("Token is invalid");
+      throw new UnauthorizedError("Token is invalid");
     }
 
     return [key];

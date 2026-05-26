@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import type { CommandBus } from "@core/application/cqrs/CommandBus";
 import type { QueryBus } from "@core/application/cqrs/QueryBus";
-import { ForbiddenError, ValidationError } from "@core/application/errors/AppError";
+import { UnauthorizedError, ValidationError } from "@core/application/errors/AppError";
 import { ArchiveCampaignCommand } from "@modules/campaigns/application/commands/ArchiveCampaignCommand";
 import { CreateCampaignCommand } from "@modules/campaigns/application/commands/CreateCampaignCommand";
 import { DeleteCampaignCommand } from "@modules/campaigns/application/commands/DeleteCampaignCommand";
@@ -105,7 +105,7 @@ export class CampaignsController {
     const userId = res.locals.authUserId as string | undefined;
 
     if (!userId) {
-      throw new ForbiddenError("Authentication required");
+      throw new UnauthorizedError("Authentication required");
     }
 
     return userId;

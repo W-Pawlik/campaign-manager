@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ForbiddenError } from "@core/application/errors/AppError";
+import { ForbiddenError, UnauthorizedError } from "@core/application/errors/AppError";
 import { ErrorMapper } from "@core/infrastructure/errors/ErrorMapper";
 
 describe("ErrorMapper", () => {
@@ -14,6 +14,20 @@ describe("ErrorMapper", () => {
       status: 403,
       detail: "Missing permission",
       requestId: "req-1",
+    });
+  });
+
+  it("maps unauthorized errors to 401 response", () => {
+    const mapper = new ErrorMapper();
+    const result = mapper.map(new UnauthorizedError("Missing or invalid token"), "req-auth");
+
+    expect(result.status).toBe(401);
+    expect(result.body).toEqual({
+      type: "unauthorized",
+      title: "Unauthorized",
+      status: 401,
+      detail: "Missing or invalid token",
+      requestId: "req-auth",
     });
   });
 

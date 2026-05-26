@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { describe, expect, it } from "vitest";
-import { ForbiddenError } from "@core/application/errors/AppError";
+import { UnauthorizedError } from "@core/application/errors/AppError";
 import { coreConfig } from "@core/config/core.config";
 import { JwtTokenService } from "@modules/auth/infrastructure/security/JwtTokenService";
 
@@ -66,6 +66,6 @@ describe("JwtTokenService key rotation", () => {
       },
     );
 
-    expect(() => tokenService.verifyAccessToken(token)).toThrow(ForbiddenError);
+    expect(() => tokenService.verifyAccessToken(token)).toThrow(UnauthorizedError);
   });
 });

@@ -1,5 +1,6 @@
 export type AppErrorType =
   | "validation"
+  | "unauthorized"
   | "not_found"
   | "forbidden"
   | "conflict"
@@ -39,6 +40,18 @@ export class ValidationError extends AppError {
       type: "validation",
       title: "Validation Error",
       status: 400,
+      detail,
+      cause,
+    });
+  }
+}
+
+export class UnauthorizedError extends AppError {
+  public constructor(detail: string, cause?: unknown) {
+    super({
+      type: "unauthorized",
+      title: "Unauthorized",
+      status: 401,
       detail,
       cause,
     });

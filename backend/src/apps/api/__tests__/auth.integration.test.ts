@@ -80,6 +80,36 @@ function createAuthTestingModule(): ContainerModuleLoader {
   };
 }
 
+function extractRefreshTokenFromSetCookie(
+  setCookieHeaders: string | string[] | undefined,
+): string {
+  const headersArray =
+    setCookieHeaders === undefined
+      ? []
+      : Array.isArray(setCookieHeaders)
+        ? setCookieHeaders
+        : [setCookieHeaders];
+
+  if (headersArray.length === 0) {
+    throw new Error("Expected Set-Cookie header with refresh token");
+  }
+
+  const refreshTokenCookie = headersArray.find((header) => header.startsWith("refreshToken="));
+
+  if (!refreshTokenCookie) {
+    throw new Error("Expected refreshToken cookie");
+  }
+
+  const cookieValue = refreshTokenCookie.split(";")[0] ?? "";
+  const token = cookieValue.slice("refreshToken=".length);
+
+  if (token.length === 0) {
+    throw new Error("Expected non-empty refresh token cookie value");
+  }
+
+  return token;
+}
+
 describe("Auth API flow", () => {
   it("registers, logs in, refreshes token, logs out and blocks revoked refresh token", async () => {
     const container = buildContainer(
@@ -90,15 +120,17 @@ describe("Auth API flow", () => {
     const app = createApiApp({
       container,
     });
+    const agent = request.agent(app);
 
-    const registerResponse = await request(app).post("/api/v1/auth/register").send({
+    const registerResponse = await agent.post("/api/v1/auth/register").send({
       email: "test@example.com",
       password: "password123",
     });
 
     expect(registerResponse.status).toBe(201);
     expect(typeof registerResponse.body.accessToken).toBe("string");
-    expect(typeof registerResponse.body.refreshToken).toBe("string");
+    expect(registerResponse.body.refreshToken).toBeUndefined();
+    expect(extractRefreshTokenFromSetCookie(registerResponse.headers["set-cookie"])).toBeTruthy();
 
     const meResponse = await request(app)
       .get("/api/v1/auth/me")
@@ -107,31 +139,47 @@ describe("Auth API flow", () => {
     expect(meResponse.status).toBe(200);
     expect(meResponse.body.email).toBe("test@example.com");
 
-    const loginResponse = await request(app).post("/api/v1/auth/login").send({
+    const loginResponse = await agent.post("/api/v1/auth/login").send({
       email: "test@example.com",
       password: "password123",
     });
 
     expect(loginResponse.status).toBe(200);
-    expect(typeof loginResponse.body.refreshToken).toBe("string");
+    expect(typeof loginResponse.body.accessToken).toBe("string");
+    const revokedRefreshTokenCandidate = extractRefreshTokenFromSetCookie(
+      loginResponse.headers["set-cookie"],
+    );
 
-    const refreshResponse = await request(app).post("/api/v1/auth/refresh-token").send({
-      refreshToken: loginResponse.body.refreshToken,
-    });
+    const refreshResponse = await agent.post("/api/v1/auth/refresh-token");
 
     expect(refreshResponse.status).toBe(200);
-    expect(refreshResponse.body.refreshToken).not.toBe(loginResponse.body.refreshToken);
+    expect(typeof refreshResponse.body.accessToken).toBe("string");
+    const activeRefreshToken = extractRefreshTokenFromSetCookie(refreshResponse.headers["set-cookie"]);
+    expect(activeRefreshToken).not.toBe(revokedRefreshTokenCandidate);
 
-    const logoutResponse = await request(app).post("/api/v1/auth/logout").send({
-      refreshToken: refreshResponse.body.refreshToken,
-    });
+    const revokedRefreshResponse = await request(app)
+      .post("/api/v1/auth/refresh-token")
+      .set("Cookie", `refreshToken=${revokedRefreshTokenCandidate}`);
+
+    expect(revokedRefreshResponse.status).toBe(401);
+
+    const logoutResponse = await agent.post("/api/v1/auth/logout");
 
     expect(logoutResponse.status).toBe(204);
+    const setCookieHeader = logoutResponse.headers["set-cookie"];
+    const setCookieValues =
+      setCookieHeader === undefined
+        ? []
+        : Array.isArray(setCookieHeader)
+          ? setCookieHeader
+          : [setCookieHeader];
+    const clearCookieHeader = setCookieValues.find((header) => header.startsWith("refreshToken="));
+    expect(clearCookieHeader).toContain("Expires=");
 
-    const revokedRefreshResponse = await request(app).post("/api/v1/auth/refresh-token").send({
-      refreshToken: refreshResponse.body.refreshToken,
-    });
+    const refreshAfterLogoutResponse = await request(app)
+      .post("/api/v1/auth/refresh-token")
+      .set("Cookie", `refreshToken=${activeRefreshToken}`);
 
-    expect(revokedRefreshResponse.status).toBe(403);
+    expect(refreshAfterLogoutResponse.status).toBe(401);
   });
 });

@@ -92,9 +92,14 @@
               "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
               "const body = pm.response.json();",
               "pm.expect(body.accessToken).to.be.a('string');",
-              "pm.expect(body.refreshToken).to.be.a('string');",
-              "pm.collectionVariables.set('accessToken', body.accessToken);",
-              "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+              "pm.expect(body.refreshToken).to.eql(undefined);",
+              "const setCookieHeaders = pm.response.headers.all().filter((h) => h.key.toLowerCase() === 'set-cookie');",
+              "const refreshCookieHeader = setCookieHeaders.map((h) => h.value).find((value) => value.startsWith('refreshToken='));",
+              "pm.expect(refreshCookieHeader).to.be.a('string');",
+              "const refreshToken = refreshCookieHeader.split(';')[0].slice('refreshToken='.length);",
+              "pm.expect(refreshToken).to.be.a('string');",
+              "pm.collectionVariables.set('refreshToken', refreshToken);",
+              "pm.collectionVariables.set('accessToken', body.accessToken);"
             ]
           }
         }
@@ -586,9 +591,14 @@
               "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
               "const body = pm.response.json();",
               "pm.expect(body.accessToken).to.be.a('string');",
-              "pm.expect(body.refreshToken).to.be.a('string');",
-              "pm.collectionVariables.set('accessToken', body.accessToken);",
-              "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+              "pm.expect(body.refreshToken).to.eql(undefined);",
+              "const setCookieHeaders = pm.response.headers.all().filter((h) => h.key.toLowerCase() === 'set-cookie');",
+              "const refreshCookieHeader = setCookieHeaders.map((h) => h.value).find((value) => value.startsWith('refreshToken='));",
+              "pm.expect(refreshCookieHeader).to.be.a('string');",
+              "const refreshToken = refreshCookieHeader.split(';')[0].slice('refreshToken='.length);",
+              "pm.expect(refreshToken).to.be.a('string');",
+              "pm.collectionVariables.set('refreshToken', refreshToken);",
+              "pm.collectionVariables.set('accessToken', body.accessToken);"
             ]
           }
         }
@@ -631,26 +641,22 @@
               "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
               "const body = pm.response.json();",
               "pm.expect(body.accessToken).to.be.a('string');",
-              "pm.expect(body.refreshToken).to.be.a('string');",
+              "pm.expect(body.refreshToken).to.eql(undefined);",
               "pm.collectionVariables.set('revokedRefreshTokenCandidate', pm.collectionVariables.get('refreshToken'));",
-              "pm.collectionVariables.set('accessToken', body.accessToken);",
-              "pm.collectionVariables.set('refreshToken', body.refreshToken);"
+              "const setCookieHeaders = pm.response.headers.all().filter((h) => h.key.toLowerCase() === 'set-cookie');",
+              "const refreshCookieHeader = setCookieHeaders.map((h) => h.value).find((value) => value.startsWith('refreshToken='));",
+              "pm.expect(refreshCookieHeader).to.be.a('string');",
+              "const refreshToken = refreshCookieHeader.split(';')[0].slice('refreshToken='.length);",
+              "pm.expect(refreshToken).to.be.a('string');",
+              "pm.collectionVariables.set('refreshToken', refreshToken);",
+              "pm.collectionVariables.set('accessToken', body.accessToken);"
             ]
           }
         }
       ],
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-        },
+        "header": [],
         "url": {
           "raw": "{{baseUrl}}/api/v1/auth/refresh-token",
           "host": [
@@ -674,7 +680,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 403', function () { pm.response.to.have.status(403); });"
+              "pm.test('status is 401', function () { pm.response.to.have.status(401); });"
             ]
           }
         }
@@ -683,14 +689,10 @@
         "method": "POST",
         "header": [
           {
-            "key": "Content-Type",
-            "value": "application/json"
+            "key": "Cookie",
+            "value": "refreshToken={{revokedRefreshTokenCandidate}}"
           }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"refreshToken\": \"{{revokedRefreshTokenCandidate}}\"\n}"
-        },
         "url": {
           "raw": "{{baseUrl}}/api/v1/auth/refresh-token",
           "host": [
@@ -722,16 +724,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-        },
+        "header": [],
         "url": {
           "raw": "{{baseUrl}}/api/v1/auth/logout",
           "host": [
@@ -755,7 +748,7 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('status is 403', function () { pm.response.to.have.status(403); });"
+              "pm.test('status is 401', function () { pm.response.to.have.status(401); });"
             ]
           }
         }
@@ -764,14 +757,10 @@
         "method": "POST",
         "header": [
           {
-            "key": "Content-Type",
-            "value": "application/json"
+            "key": "Cookie",
+            "value": "refreshToken={{loggedOutRefreshToken}}"
           }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"refreshToken\": \"{{loggedOutRefreshToken}}\"\n}"
-        },
         "url": {
           "raw": "{{baseUrl}}/api/v1/auth/refresh-token",
           "host": [

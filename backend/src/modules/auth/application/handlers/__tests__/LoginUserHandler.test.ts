@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { ForbiddenError } from "@core/application/errors/AppError";
+import { UnauthorizedError } from "@core/application/errors/AppError";
 import { LoginUserCommand } from "@modules/auth/application/commands/LoginUserCommand";
 import { LoginUserHandler } from "@modules/auth/application/handlers/LoginUserHandler";
 import type { AuthRepository } from "@modules/auth/application/ports/AuthRepository";
@@ -63,6 +63,6 @@ describe("LoginUserHandler", () => {
 
     await expect(
       handler.execute(new LoginUserCommand("test@example.com", "password123")),
-    ).rejects.toBeInstanceOf(ForbiddenError);
+    ).rejects.toBeInstanceOf(UnauthorizedError);
   });
 });

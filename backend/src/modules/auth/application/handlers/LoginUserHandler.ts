@@ -1,4 +1,4 @@
-import { ForbiddenError } from "@core/application/errors/AppError";
+import { UnauthorizedError } from "@core/application/errors/AppError";
 import type { CommandHandler } from "@core/application/cqrs/CommandHandler";
 import type { AuthTokensDTO } from "@modules/auth/application/dto/AuthTokensDTO";
 import type { LoginUserCommand } from "@modules/auth/application/commands/LoginUserCommand";
@@ -19,7 +19,7 @@ export class LoginUserHandler implements CommandHandler<LoginUserCommand, AuthTo
     const userCredentials = await this.authRepository.findByEmail(email);
 
     if (userCredentials === null) {
-      throw new ForbiddenError("Invalid email or password");
+      throw new UnauthorizedError("Invalid email or password");
     }
 
     const isPasswordValid = await this.passwordHasher.verify(
@@ -28,7 +28,7 @@ export class LoginUserHandler implements CommandHandler<LoginUserCommand, AuthTo
     );
 
     if (!isPasswordValid) {
-      throw new ForbiddenError("Invalid email or password");
+      throw new UnauthorizedError("Invalid email or password");
     }
 
     return await this.authTokensIssuer.issueForUser(userCredentials);

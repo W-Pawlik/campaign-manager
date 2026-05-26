@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler, Router } from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
@@ -37,8 +38,14 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   app.use(requestContextMiddleware);
   app.use(requestLoggerMiddleware);
   app.use(helmet());
-  app.use(cors({ origin: corsOrigin }));
+  app.use(
+    cors({
+      origin: corsOrigin,
+      credentials: apiConfig.corsCredentials,
+    }),
+  );
   app.use(express.json());
+  app.use(cookieParser());
 
   const routesOptions =
     options.registerAdditionalRoutes === undefined

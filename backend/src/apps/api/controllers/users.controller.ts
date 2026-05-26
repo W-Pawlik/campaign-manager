@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import type { CommandBus } from "@core/application/cqrs/CommandBus";
 import type { QueryBus } from "@core/application/cqrs/QueryBus";
-import { ForbiddenError } from "@core/application/errors/AppError";
+import { UnauthorizedError } from "@core/application/errors/AppError";
 import { ChangeCurrentUserPasswordCommand } from "@modules/users/application/commands/ChangeCurrentUserPasswordCommand";
 import { DeleteCurrentUserAccountCommand } from "@modules/users/application/commands/DeleteCurrentUserAccountCommand";
 import { UpdateCurrentUserProfileCommand } from "@modules/users/application/commands/UpdateCurrentUserProfileCommand";
@@ -58,7 +58,7 @@ export class UsersController {
     const userId = res.locals.authUserId as string | undefined;
 
     if (!userId) {
-      throw new ForbiddenError("Authentication required");
+      throw new UnauthorizedError("Authentication required");
     }
 
     return userId;
