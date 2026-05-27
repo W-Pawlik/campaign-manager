@@ -16,7 +16,9 @@ import type { Email } from "@modules/auth/domain/value-objects/Email";
 import { loadCampaignsContainerModule } from "@modules/campaigns/campaigns.container-module";
 import { CAMPAIGNS_TYPES } from "@modules/campaigns/campaigns.types";
 import type { CampaignDetailsDTO } from "@modules/campaigns/application/dto/CampaignDetailsDTO";
+import type { CampaignInvitationDTO } from "@modules/campaigns/application/dto/CampaignInvitationDTO";
 import type { CampaignListItemDTO } from "@modules/campaigns/application/dto/CampaignListItemDTO";
+import type { CampaignMemberDTO } from "@modules/campaigns/application/dto/CampaignMemberDTO";
 import type { CampaignReadRepository } from "@modules/campaigns/application/ports/CampaignReadRepository";
 import type { CampaignRepository } from "@modules/campaigns/application/ports/CampaignRepository";
 import type { Campaign } from "@modules/campaigns/domain/entities/Campaign";
@@ -200,6 +202,29 @@ class InMemoryCampaignReadRepository implements CampaignReadRepository {
       archivedAt: campaign.archivedAt?.toISOString() ?? null,
       deletedAt: null,
     };
+  }
+
+  public async listMembers(campaignId: string): Promise<CampaignMemberDTO[]> {
+    return this.store.memberships
+      .filter((entry) => entry.campaignId === campaignId)
+      .map((entry, index) => ({
+        id: `member-${index + 1}`,
+        campaignId: entry.campaignId,
+        userId: entry.userId,
+        role: entry.role.value,
+        status: "ACTIVE",
+        nickname: null,
+        joinedAt: null,
+        invitedAt: null,
+        invitedById: null,
+        createdAt: new Date("2026-01-01T10:00:00.000Z").toISOString(),
+        updatedAt: new Date("2026-01-01T10:00:00.000Z").toISOString(),
+      }));
+  }
+
+  public async listInvitations(campaignId: string): Promise<CampaignInvitationDTO[]> {
+    void campaignId;
+    return [];
   }
 }
 

@@ -2,13 +2,21 @@ import type { Request, Response } from "express";
 import type { CommandBus } from "@core/application/cqrs/CommandBus";
 import type { QueryBus } from "@core/application/cqrs/QueryBus";
 import { UnauthorizedError, ValidationError } from "@core/application/errors/AppError";
+import { AcceptCampaignInvitationCommand } from "@modules/campaigns/application/commands/AcceptCampaignInvitationCommand";
 import { ArchiveCampaignCommand } from "@modules/campaigns/application/commands/ArchiveCampaignCommand";
+import { ChangeCampaignMemberRoleCommand } from "@modules/campaigns/application/commands/ChangeCampaignMemberRoleCommand";
 import { CreateCampaignCoverImageUploadCommand } from "@modules/campaigns/application/commands/CreateCampaignCoverImageUploadCommand";
 import { CreateCampaignCommand } from "@modules/campaigns/application/commands/CreateCampaignCommand";
+import { DeclineCampaignInvitationCommand } from "@modules/campaigns/application/commands/DeclineCampaignInvitationCommand";
 import { DeleteCampaignCommand } from "@modules/campaigns/application/commands/DeleteCampaignCommand";
+import { InviteCampaignMemberCommand } from "@modules/campaigns/application/commands/InviteCampaignMemberCommand";
+import { RemoveCampaignMemberCommand } from "@modules/campaigns/application/commands/RemoveCampaignMemberCommand";
 import { RestoreCampaignCommand } from "@modules/campaigns/application/commands/RestoreCampaignCommand";
+import { TransferCampaignOwnershipCommand } from "@modules/campaigns/application/commands/TransferCampaignOwnershipCommand";
 import { UpdateCampaignCommand } from "@modules/campaigns/application/commands/UpdateCampaignCommand";
 import { GetCampaignDetailsQuery } from "@modules/campaigns/application/queries/GetCampaignDetailsQuery";
+import { ListCampaignInvitationsQuery } from "@modules/campaigns/application/queries/ListCampaignInvitationsQuery";
+import { ListCampaignMembersQuery } from "@modules/campaigns/application/queries/ListCampaignMembersQuery";
 import { ListUserCampaignsQuery } from "@modules/campaigns/application/queries/ListUserCampaignsQuery";
 
 export class CampaignsController {
@@ -89,6 +97,114 @@ export class CampaignsController {
     res.status(201).json(result);
   }
 
+  public async listCampaignMembers(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+    const result = await this.queryBus.execute(
+      new ListCampaignMembersQuery({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+      }),
+    );
+
+    res.status(200).json(result);
+  }
+
+  public async inviteCampaignMember(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+    const result = await this.commandBus.execute(
+      new InviteCampaignMemberCommand({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+        userId: req.body.userId,
+        role: req.body.role,
+      }),
+    );
+
+    res.status(201).json(result);
+  }
+
+  public async updateCampaignMember(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+
+    if (req.body.role === "OWNER") {
+      await this.commandBus.execute(
+        new TransferCampaignOwnershipCommand({
+          campaignId: this.getCampaignId(req),
+          actorUserId,
+          memberId: this.getMemberId(req),
+        }),
+      );
+
+      res.status(204).send();
+      return;
+    }
+
+    await this.commandBus.execute(
+      new ChangeCampaignMemberRoleCommand({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+        memberId: this.getMemberId(req),
+        role: req.body.role,
+      }),
+    );
+
+    res.status(204).send();
+  }
+
+  public async removeCampaignMember(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+
+    await this.commandBus.execute(
+      new RemoveCampaignMemberCommand({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+        memberId: this.getMemberId(req),
+      }),
+    );
+
+    res.status(204).send();
+  }
+
+  public async listCampaignInvitations(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+    const result = await this.queryBus.execute(
+      new ListCampaignInvitationsQuery({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+      }),
+    );
+
+    res.status(200).json(result);
+  }
+
+  public async acceptCampaignInvitation(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+
+    await this.commandBus.execute(
+      new AcceptCampaignInvitationCommand({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+        invitationId: this.getInvitationId(req),
+      }),
+    );
+
+    res.status(204).send();
+  }
+
+  public async declineCampaignInvitation(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+
+    await this.commandBus.execute(
+      new DeclineCampaignInvitationCommand({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+        invitationId: this.getInvitationId(req),
+      }),
+    );
+
+    res.status(204).send();
+  }
+
   public async archiveCampaign(req: Request, res: Response): Promise<void> {
     const actorUserId = this.getAuthUserId(res);
 
@@ -146,5 +262,25 @@ export class CampaignsController {
     }
 
     return campaignId;
+  }
+
+  private getMemberId(req: Request): string {
+    const memberId = req.params.memberId;
+
+    if (typeof memberId !== "string" || memberId.trim().length === 0) {
+      throw new ValidationError("Campaign member id is required");
+    }
+
+    return memberId;
+  }
+
+  private getInvitationId(req: Request): string {
+    const invitationId = req.params.invitationId;
+
+    if (typeof invitationId !== "string" || invitationId.trim().length === 0) {
+      throw new ValidationError("Campaign invitation id is required");
+    }
+
+    return invitationId;
   }
 }

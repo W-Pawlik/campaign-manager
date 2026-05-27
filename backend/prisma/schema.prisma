@@ -37,6 +37,8 @@ model User {
   campaignMemberships CampaignMember[]
   ownedCampaigns      Campaign[]
   sentCampaignInvites CampaignMember[] @relation("CampaignMemberInvitedBy")
+  campaignInvitations CampaignInvitation[] @relation("CampaignInvitationUser")
+  sentInvitations     CampaignInvitation[] @relation("CampaignInvitationInvitedBy")
 
   @@map("users")
 }
@@ -91,10 +93,32 @@ model Campaign {
   deletedAt          DateTime?
   owner              User             @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   members            CampaignMember[]
+  invitations        CampaignInvitation[]
 
   @@index([ownerId])
   @@index([status])
   @@map("campaigns")
+}
+
+model CampaignInvitation {
+  id          String   @id
+  campaignId  String
+  userId      String
+  role        String
+  status      String
+  invitedById String
+  respondedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User     @relation("CampaignInvitationUser", fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy   User     @relation("CampaignInvitationInvitedBy", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  @@index([campaignId])
+  @@index([userId])
+  @@index([status])
+  @@unique([campaignId, userId, status])
+  @@map("campaign_invitations")
 }
 
 model CampaignMember {

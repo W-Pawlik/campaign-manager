@@ -5,6 +5,7 @@ export const MEMBER_STATUS = {
   ACTIVE: "ACTIVE",
   DECLINED: "DECLINED",
   REMOVED: "REMOVED",
+  LEFT: "LEFT",
 } as const;
 
 export type MemberStatusValue = (typeof MEMBER_STATUS)[keyof typeof MEMBER_STATUS];
@@ -23,7 +24,8 @@ export class MemberStatus {
       normalizedValue !== MEMBER_STATUS.INVITED &&
       normalizedValue !== MEMBER_STATUS.ACTIVE &&
       normalizedValue !== MEMBER_STATUS.DECLINED &&
-      normalizedValue !== MEMBER_STATUS.REMOVED
+      normalizedValue !== MEMBER_STATUS.REMOVED &&
+      normalizedValue !== MEMBER_STATUS.LEFT
     ) {
       throw new ValidationError("Invalid campaign member status");
     }

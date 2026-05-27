@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const campaignVisibilitySchema = z.enum(["PRIVATE", "INVITE_ONLY", "PUBLIC_READ_ONLY"]);
+const campaignMemberRoleSchema = z.enum(["OWNER", "GM", "CO_GM", "PLAYER", "OBSERVER"]);
 
 const nullableTrimmedStringSchema = z
   .string()
@@ -42,5 +43,18 @@ export const createCampaignCoverImageUploadSchema = z
   .object({
     fileName: z.string().trim().min(1).max(255),
     contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
+  })
+  .strict();
+
+export const inviteCampaignMemberSchema = z
+  .object({
+    userId: z.string().trim().min(1),
+    role: campaignMemberRoleSchema.exclude(["OWNER"]),
+  })
+  .strict();
+
+export const updateCampaignMemberSchema = z
+  .object({
+    role: campaignMemberRoleSchema,
   })
   .strict();

@@ -1,0 +1,364 @@
+{
+  "info": {
+    "name": "Campaign Manager - Campaigns",
+    "_postman_id": "00000000-0000-4000-8000-000026cf0df3",
+    "description": "Module collection for campaign CRUD and campaign cover image upload. Requires accessToken.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('campaignId', body.id);",
+              "pm.expect(body.role).to.eql('OWNER');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{campaignName}}\",\n  \"description\": \"Created from Postman module collection\",\n  \"visibility\": \"PRIVATE\",\n  \"defaultLanguage\": \"en\",\n  \"currentDateInWorld\": \"1492 DR\",\n  \"worldName\": \"Faerun\",\n  \"startingLevel\": 1\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List User Campaigns",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.expect(Array.isArray(pm.response.json())).to.eql(true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Campaign Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('campaignId'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.expect(pm.response.json().visibility).to.eql('PUBLIC_READ_ONLY');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{updatedCampaignName}}\",\n  \"visibility\": \"PUBLIC_READ_ONLY\",\n  \"worldName\": \"Waterdeep\",\n  \"startingLevel\": 3\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Campaign Cover Image Upload",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('coverImageUploadUrl', body.uploadUrl);",
+              "pm.collectionVariables.set('coverImageUrl', body.coverImageUrl);",
+              "pm.collectionVariables.set('coverImageKey', body.coverImageKey);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/cover-image-upload",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "cover-image-upload"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fileName\": \"cover.webp\",\n  \"contentType\": \"image/webp\"\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Archive Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/archive",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "archive"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Restore Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/restore",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "restore"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "campaignId",
+      "value": ""
+    },
+    {
+      "key": "campaignName",
+      "value": "Heroes of Waterdeep"
+    },
+    {
+      "key": "updatedCampaignName",
+      "value": "Shadows Over Waterdeep"
+    },
+    {
+      "key": "coverImageUploadUrl",
+      "value": ""
+    },
+    {
+      "key": "coverImageUrl",
+      "value": ""
+    },
+    {
+      "key": "coverImageKey",
+      "value": ""
+    }
+  ]
+}

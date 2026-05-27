@@ -4,6 +4,8 @@ import { createValidateBodyMiddleware } from "@api/middlewares/validate-request.
 import {
   createCampaignCoverImageUploadSchema,
   createCampaignSchema,
+  inviteCampaignMemberSchema,
+  updateCampaignMemberSchema,
   updateCampaignSchema,
 } from "@api/schemas/campaigns.schemas";
 
@@ -38,6 +40,37 @@ export function createCampaignsRouter(
       await controller.createCampaignCoverImageUpload(req, res);
     },
   );
+  router.get("/:campaignId/members", authMiddleware, async (req, res) => {
+    await controller.listCampaignMembers(req, res);
+  });
+  router.post(
+    "/:campaignId/members/invite",
+    authMiddleware,
+    createValidateBodyMiddleware(inviteCampaignMemberSchema),
+    async (req, res) => {
+      await controller.inviteCampaignMember(req, res);
+    },
+  );
+  router.patch(
+    "/:campaignId/members/:memberId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateCampaignMemberSchema),
+    async (req, res) => {
+      await controller.updateCampaignMember(req, res);
+    },
+  );
+  router.delete("/:campaignId/members/:memberId", authMiddleware, async (req, res) => {
+    await controller.removeCampaignMember(req, res);
+  });
+  router.get("/:campaignId/invitations", authMiddleware, async (req, res) => {
+    await controller.listCampaignInvitations(req, res);
+  });
+  router.post("/:campaignId/invitations/:invitationId/accept", authMiddleware, async (req, res) => {
+    await controller.acceptCampaignInvitation(req, res);
+  });
+  router.post("/:campaignId/invitations/:invitationId/decline", authMiddleware, async (req, res) => {
+    await controller.declineCampaignInvitation(req, res);
+  });
   router.post("/:campaignId/archive", authMiddleware, async (req, res) => {
     await controller.archiveCampaign(req, res);
   });

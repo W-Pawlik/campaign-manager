@@ -5,6 +5,7 @@ export const CAMPAIGN_ROLE = {
   GM: "GM",
   CO_GM: "CO_GM",
   PLAYER: "PLAYER",
+  OBSERVER: "OBSERVER",
 } as const;
 
 export type CampaignRoleValue = (typeof CAMPAIGN_ROLE)[keyof typeof CAMPAIGN_ROLE];
@@ -23,7 +24,8 @@ export class CampaignRole {
       normalizedValue !== CAMPAIGN_ROLE.OWNER &&
       normalizedValue !== CAMPAIGN_ROLE.GM &&
       normalizedValue !== CAMPAIGN_ROLE.CO_GM &&
-      normalizedValue !== CAMPAIGN_ROLE.PLAYER
+      normalizedValue !== CAMPAIGN_ROLE.PLAYER &&
+      normalizedValue !== CAMPAIGN_ROLE.OBSERVER
     ) {
       throw new ValidationError("Invalid campaign role");
     }
@@ -39,11 +41,19 @@ export class CampaignRole {
     return this.value === CAMPAIGN_ROLE.OWNER;
   }
 
+  public static player(): CampaignRole {
+    return new CampaignRole(CAMPAIGN_ROLE.PLAYER);
+  }
+
   public canSeeFullCampaign(): boolean {
     return (
       this.value === CAMPAIGN_ROLE.OWNER ||
       this.value === CAMPAIGN_ROLE.GM ||
       this.value === CAMPAIGN_ROLE.CO_GM
     );
+  }
+
+  public canManageMembers(): boolean {
+    return this.canSeeFullCampaign();
   }
 }

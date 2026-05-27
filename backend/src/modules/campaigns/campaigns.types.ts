@@ -1,7 +1,9 @@
 export const CAMPAIGNS_TYPES = {
   CampaignRepository: Symbol.for("campaigns.CampaignRepository"),
   CampaignReadRepository: Symbol.for("campaigns.CampaignReadRepository"),
+  CampaignMembershipRepository: Symbol.for("campaigns.CampaignMembershipRepository"),
   CampaignMapper: Symbol.for("campaigns.CampaignMapper"),
+  CampaignMembershipMapper: Symbol.for("campaigns.CampaignMembershipMapper"),
   CreateCampaignHandler: Symbol.for("campaigns.CreateCampaignHandler"),
   UpdateCampaignHandler: Symbol.for("campaigns.UpdateCampaignHandler"),
   CreateCampaignCoverImageUploadHandler: Symbol.for(
@@ -10,6 +12,15 @@ export const CAMPAIGNS_TYPES = {
   ArchiveCampaignHandler: Symbol.for("campaigns.ArchiveCampaignHandler"),
   RestoreCampaignHandler: Symbol.for("campaigns.RestoreCampaignHandler"),
   DeleteCampaignHandler: Symbol.for("campaigns.DeleteCampaignHandler"),
+  InviteCampaignMemberHandler: Symbol.for("campaigns.InviteCampaignMemberHandler"),
+  AcceptCampaignInvitationHandler: Symbol.for("campaigns.AcceptCampaignInvitationHandler"),
+  DeclineCampaignInvitationHandler: Symbol.for("campaigns.DeclineCampaignInvitationHandler"),
+  ChangeCampaignMemberRoleHandler: Symbol.for("campaigns.ChangeCampaignMemberRoleHandler"),
+  RemoveCampaignMemberHandler: Symbol.for("campaigns.RemoveCampaignMemberHandler"),
+  LeaveCampaignHandler: Symbol.for("campaigns.LeaveCampaignHandler"),
+  TransferCampaignOwnershipHandler: Symbol.for("campaigns.TransferCampaignOwnershipHandler"),
   ListUserCampaignsHandler: Symbol.for("campaigns.ListUserCampaignsHandler"),
   GetCampaignDetailsHandler: Symbol.for("campaigns.GetCampaignDetailsHandler"),
+  ListCampaignMembersHandler: Symbol.for("campaigns.ListCampaignMembersHandler"),
+  ListCampaignInvitationsHandler: Symbol.for("campaigns.ListCampaignInvitationsHandler"),
 } as const;
