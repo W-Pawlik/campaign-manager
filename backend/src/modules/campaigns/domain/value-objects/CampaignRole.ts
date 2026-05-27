@@ -3,6 +3,7 @@ import { ValidationError } from "@core/application/errors/AppError";
 export const CAMPAIGN_ROLE = {
   OWNER: "OWNER",
   GM: "GM",
+  CO_GM: "CO_GM",
   PLAYER: "PLAYER",
 } as const;
 
@@ -21,6 +22,7 @@ export class CampaignRole {
     if (
       normalizedValue !== CAMPAIGN_ROLE.OWNER &&
       normalizedValue !== CAMPAIGN_ROLE.GM &&
+      normalizedValue !== CAMPAIGN_ROLE.CO_GM &&
       normalizedValue !== CAMPAIGN_ROLE.PLAYER
     ) {
       throw new ValidationError("Invalid campaign role");
@@ -35,5 +37,13 @@ export class CampaignRole {
 
   public isOwner(): boolean {
     return this.value === CAMPAIGN_ROLE.OWNER;
+  }
+
+  public canSeeFullCampaign(): boolean {
+    return (
+      this.value === CAMPAIGN_ROLE.OWNER ||
+      this.value === CAMPAIGN_ROLE.GM ||
+      this.value === CAMPAIGN_ROLE.CO_GM
+    );
   }
 }

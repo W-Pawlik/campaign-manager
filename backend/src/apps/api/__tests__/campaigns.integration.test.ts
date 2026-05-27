@@ -3,7 +3,9 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApiApp } from "@api/app";
 import { loadApiContainerModule } from "@api/di/api.container-module";
+import type { FileStorage } from "@core/application/storage/FileStorage";
 import { buildContainer, type ContainerModuleLoader } from "@core/di/container";
+import { CORE_TYPES } from "@core/di/core.types";
 import { loadAuthContainerModule } from "@modules/auth/auth.container-module";
 import { AUTH_TYPES } from "@modules/auth/auth.types";
 import type { AuthRepository } from "@modules/auth/application/ports/AuthRepository";
@@ -145,13 +147,18 @@ class InMemoryCampaignReadRepository implements CampaignReadRepository {
 
       campaigns.push({
         id: campaign.id,
+        ownerId: campaign.ownerId,
         name: campaign.name.value,
         slug: campaign.slug,
+        description: campaign.description,
         status: campaign.status.value,
         visibility: campaign.visibility.value,
+        coverImageUrl: campaign.coverImageUrl,
+        worldName: campaign.worldName,
         role: entry.role.value,
         createdAt: campaign.createdAt.toISOString(),
         updatedAt: campaign.updatedAt.toISOString(),
+        archivedAt: campaign.archivedAt?.toISOString() ?? null,
       });
     }
 
@@ -175,13 +182,22 @@ class InMemoryCampaignReadRepository implements CampaignReadRepository {
 
     return {
       id: campaign.id,
+      ownerId: campaign.ownerId,
       name: campaign.name.value,
       slug: campaign.slug,
+      description: campaign.description,
+      gameSystemId: campaign.gameSystemId,
       status: campaign.status.value,
       visibility: campaign.visibility.value,
+      coverImageUrl: campaign.coverImageUrl,
+      defaultLanguage: campaign.defaultLanguage,
+      currentDateInWorld: campaign.currentDateInWorld,
+      worldName: campaign.worldName,
+      startingLevel: campaign.startingLevel,
       role: membership.role.value,
       createdAt: campaign.createdAt.toISOString(),
       updatedAt: campaign.updatedAt.toISOString(),
+      archivedAt: campaign.archivedAt?.toISOString() ?? null,
       deletedAt: null,
     };
   }
@@ -214,6 +230,21 @@ function createCampaignsTestingModule(): ContainerModuleLoader {
   };
 }
 
+function createFileStorageTestingModule(): ContainerModuleLoader {
+  const fileStorage: FileStorage = {
+    async createPresignedUploadUrl(input) {
+      return {
+        uploadUrl: `https://upload.example.test/${input.key}`,
+        publicUrl: `https://cdn.example.test/${input.key}`,
+      };
+    },
+  };
+
+  return (container: Container) => {
+    container.rebind<FileStorage>(CORE_TYPES.FileStorage).toConstantValue(fileStorage);
+  };
+}
+
 describe("Campaigns API flow", () => {
   it("creates campaign and lists it for authenticated user", async () => {
     const container = buildContainer(
@@ -221,6 +252,7 @@ describe("Campaigns API flow", () => {
       loadCampaignsContainerModule,
       createAuthTestingModule(),
       createCampaignsTestingModule(),
+      createFileStorageTestingModule(),
       loadApiContainerModule,
     );
     const app = createApiApp({ container });
@@ -252,5 +284,19 @@ describe("Campaigns API flow", () => {
     expect(listCampaignsResponse.body).toHaveLength(1);
     expect(listCampaignsResponse.body[0].id).toBe(createCampaignResponse.body.id);
     expect(listCampaignsResponse.body[0].slug).toBe("heroes-of-waterdeep");
+
+    const coverUploadResponse = await request(app)
+      .post(`/api/v1/campaigns/${createCampaignResponse.body.id}/cover-image-upload`)
+      .set("authorization", `Bearer ${registerResponse.body.accessToken}`)
+      .send({
+        fileName: "cover.webp",
+        contentType: "image/webp",
+      });
+
+    expect(coverUploadResponse.status).toBe(201);
+    expect(coverUploadResponse.body.uploadUrl).toContain("https://upload.example.test/");
+    expect(coverUploadResponse.body.coverImageUrl).toContain(
+      `/campaigns/${createCampaignResponse.body.id}/cover-images/`,
+    );
   });
 });

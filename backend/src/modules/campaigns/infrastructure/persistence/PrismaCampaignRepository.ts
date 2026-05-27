@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 import type { CampaignRepository } from "@modules/campaigns/application/ports/CampaignRepository";
 import type { Campaign } from "@modules/campaigns/domain/entities/Campaign";
 import { CAMPAIGN_ROLE, CampaignRole } from "@modules/campaigns/domain/value-objects/CampaignRole";
+import { MEMBER_STATUS } from "@modules/campaigns/domain/value-objects/MemberStatus";
 import type { CampaignMapper } from "@modules/campaigns/infrastructure/persistence/CampaignMapper";
 
 export class PrismaCampaignRepository implements CampaignRepository {
@@ -35,12 +36,11 @@ export class PrismaCampaignRepository implements CampaignRepository {
   }
 
   public async findUserRole(campaignId: string, userId: string): Promise<CampaignRole | null> {
-    const member = await this.prismaClient.campaignMember.findUnique({
+    const member = await this.prismaClient.campaignMember.findFirst({
       where: {
-        campaignId_userId: {
-          campaignId,
-          userId,
-        },
+        campaignId,
+        userId,
+        status: MEMBER_STATUS.ACTIVE,
       },
     });
 
@@ -56,12 +56,22 @@ export class PrismaCampaignRepository implements CampaignRepository {
       await tx.campaign.create({
         data: {
           id: campaign.id,
+          ownerId: campaign.ownerId,
           name: campaign.name.value,
           slug: campaign.slug,
+          description: campaign.description,
+          gameSystemId: campaign.gameSystemId,
           status: campaign.status.value,
           visibility: campaign.visibility.value,
+          coverImageUrl: campaign.coverImageUrl,
+          coverImageKey: campaign.coverImageKey,
+          defaultLanguage: campaign.defaultLanguage,
+          currentDateInWorld: campaign.currentDateInWorld,
+          worldName: campaign.worldName,
+          startingLevel: campaign.startingLevel,
           createdAt: campaign.createdAt,
           updatedAt: campaign.updatedAt,
+          archivedAt: campaign.archivedAt,
           deletedAt: campaign.deletedAt,
         },
       });
@@ -71,6 +81,8 @@ export class PrismaCampaignRepository implements CampaignRepository {
           campaignId: campaign.id,
           userId: ownerUserId,
           role: CAMPAIGN_ROLE.OWNER,
+          status: MEMBER_STATUS.ACTIVE,
+          joinedAt: campaign.createdAt,
         },
       });
     });

@@ -12,12 +12,22 @@ import { CampaignVisibility } from "@modules/campaigns/domain/value-objects/Camp
 function createArchivedCampaign(): Campaign {
   return Campaign.create({
     id: "campaign-1",
+    ownerId: "user-1",
     name: CampaignName.create("Old Name"),
     slug: "old-name",
+    description: null,
+    gameSystemId: null,
     status: CampaignStatus.archived(),
     visibility: CampaignVisibility.private(),
+    coverImageUrl: null,
+    coverImageKey: null,
+    defaultLanguage: null,
+    currentDateInWorld: null,
+    worldName: null,
+    startingLevel: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    archivedAt: new Date(),
     deletedAt: null,
   });
 }

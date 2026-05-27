@@ -5,7 +5,13 @@ export interface UpdateCampaignInput {
   campaignId: string;
   actorUserId: string;
   name?: string;
+  description?: string | null;
+  gameSystemId?: string | null;
   visibility?: string;
+  defaultLanguage?: string | null;
+  currentDateInWorld?: string | null;
+  worldName?: string | null;
+  startingLevel?: number | null;
 }
 
 export class UpdateCampaignCommand implements Command<CampaignDetailsDTO> {

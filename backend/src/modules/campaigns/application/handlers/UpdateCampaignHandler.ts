@@ -15,7 +15,16 @@ export class UpdateCampaignHandler
   public constructor(private readonly campaignRepository: CampaignRepository) {}
 
   public async execute(command: UpdateCampaignCommand): Promise<CampaignDetailsDTO> {
-    if (command.input.name === undefined && command.input.visibility === undefined) {
+    if (
+      command.input.name === undefined &&
+      command.input.description === undefined &&
+      command.input.gameSystemId === undefined &&
+      command.input.visibility === undefined &&
+      command.input.defaultLanguage === undefined &&
+      command.input.currentDateInWorld === undefined &&
+      command.input.worldName === undefined &&
+      command.input.startingLevel === undefined
+    ) {
       throw new ValidationError("At least one field must be provided for update");
     }
 
@@ -46,7 +55,23 @@ export class UpdateCampaignHandler
     const updatedCampaign = campaign.withUpdates({
       ...(name === undefined ? {} : { name }),
       ...(slug === undefined ? {} : { slug }),
+      ...(command.input.description === undefined
+        ? {}
+        : { description: command.input.description }),
+      ...(command.input.gameSystemId === undefined
+        ? {}
+        : { gameSystemId: command.input.gameSystemId }),
       ...(visibility === undefined ? {} : { visibility }),
+      ...(command.input.defaultLanguage === undefined
+        ? {}
+        : { defaultLanguage: command.input.defaultLanguage }),
+      ...(command.input.currentDateInWorld === undefined
+        ? {}
+        : { currentDateInWorld: command.input.currentDateInWorld }),
+      ...(command.input.worldName === undefined ? {} : { worldName: command.input.worldName }),
+      ...(command.input.startingLevel === undefined
+        ? {}
+        : { startingLevel: command.input.startingLevel }),
     });
 
     await this.campaignRepository.save(updatedCampaign);

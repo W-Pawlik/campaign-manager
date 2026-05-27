@@ -1,7 +1,11 @@
 import { Router, type RequestHandler } from "express";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import { createValidateBodyMiddleware } from "@api/middlewares/validate-request.middleware";
-import { createCampaignSchema, updateCampaignSchema } from "@api/schemas/campaigns.schemas";
+import {
+  createCampaignCoverImageUploadSchema,
+  createCampaignSchema,
+  updateCampaignSchema,
+} from "@api/schemas/campaigns.schemas";
 
 export function createCampaignsRouter(
   controller: CampaignsController,
@@ -24,6 +28,14 @@ export function createCampaignsRouter(
     createValidateBodyMiddleware(updateCampaignSchema),
     async (req, res) => {
       await controller.updateCampaign(req, res);
+    },
+  );
+  router.post(
+    "/:campaignId/cover-image-upload",
+    authMiddleware,
+    createValidateBodyMiddleware(createCampaignCoverImageUploadSchema),
+    async (req, res) => {
+      await controller.createCampaignCoverImageUpload(req, res);
     },
   );
   router.post("/:campaignId/archive", authMiddleware, async (req, res) => {

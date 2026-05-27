@@ -35,6 +35,8 @@ model User {
   sessions            UserSession[]
   profile             UserProfile?
   campaignMemberships CampaignMember[]
+  ownedCampaigns      Campaign[]
+  sentCampaignInvites CampaignMember[] @relation("CampaignMemberInvitedBy")
 
   @@map("users")
 }
@@ -69,32 +71,52 @@ model UserSession {
 }
 
 model Campaign {
-  id         String           @id
-  name       String
-  slug       String           @unique
-  status     String
-  visibility String
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  deletedAt  DateTime?
-  members    CampaignMember[]
+  id                 String           @id
+  ownerId            String
+  name               String
+  slug               String           @unique
+  description        String?
+  gameSystemId       String?
+  status             String
+  visibility         String
+  coverImageUrl      String?
+  coverImageKey      String?
+  defaultLanguage    String?
+  currentDateInWorld String?
+  worldName          String?
+  startingLevel      Int?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  archivedAt         DateTime?
+  deletedAt          DateTime?
+  owner              User             @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  members            CampaignMember[]
 
+  @@index([ownerId])
   @@index([status])
   @@map("campaigns")
 }
 
 model CampaignMember {
-  id         String   @id @default(cuid())
-  campaignId String
-  userId     String
-  role       String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  campaignId  String
+  userId      String
+  role        String
+  status      String    @default("ACTIVE")
+  nickname    String?
+  joinedAt    DateTime?
+  invitedAt   DateTime?
+  invitedById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  campaign    Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy   User?     @relation("CampaignMemberInvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
 
   @@unique([campaignId, userId])
+  @@index([status])
   @@index([userId])
   @@index([campaignId])
+  @@index([invitedById])
   @@map("campaign_members")
 }

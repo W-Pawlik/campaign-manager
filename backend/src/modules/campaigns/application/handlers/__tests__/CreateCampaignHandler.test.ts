@@ -11,12 +11,22 @@ import { CampaignVisibility } from "@modules/campaigns/domain/value-objects/Camp
 function createCampaign(slug: string): Campaign {
   return Campaign.create({
     id: "campaign-1",
+    ownerId: "user-1",
     name: CampaignName.create("Heroes of Waterdeep"),
     slug,
+    description: null,
+    gameSystemId: null,
     status: CampaignStatus.active(),
     visibility: CampaignVisibility.private(),
+    coverImageUrl: null,
+    coverImageKey: null,
+    defaultLanguage: null,
+    currentDateInWorld: null,
+    worldName: null,
+    startingLevel: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    archivedAt: null,
     deletedAt: null,
   });
 }

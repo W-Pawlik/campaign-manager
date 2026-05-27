@@ -1,10 +1,12 @@
 import type { Container } from "inversify";
+import { S3Client } from "@aws-sdk/client-s3";
 import type { PrismaClient } from "@prisma/client";
 import type { RedisClient } from "@core/infrastructure/redis/redis.client";
 import type { Cache } from "@core/application/cache/Cache";
 import type { DatabaseHealthChecker } from "@core/application/database/DatabaseHealthChecker";
 import type { RequestContextStore } from "@core/application/context/RequestContextStore";
 import type { TransactionManager } from "@core/application/database/TransactionManager";
+import type { FileStorage } from "@core/application/storage/FileStorage";
 import type { Logger } from "@core/application/logging/Logger";
 import { CommandBus } from "@core/application/cqrs/CommandBus";
 import type { HandlerResolver } from "@core/application/cqrs/HandlerResolver";
@@ -21,6 +23,7 @@ import { ErrorMapper } from "@core/infrastructure/errors/ErrorMapper";
 import { PinoLogger } from "@core/infrastructure/logger/PinoLogger";
 import { RedisCache } from "@core/infrastructure/redis/RedisCache";
 import { createRedisClient } from "@core/infrastructure/redis/redis.client";
+import { S3FileStorage } from "@core/infrastructure/storage/S3FileStorage";
 
 export function loadCoreContainerModule(container: Container): void {
   container
@@ -47,11 +50,26 @@ export function loadCoreContainerModule(container: Container): void {
     .toDynamicValue(() => createRedisClient())
     .inSingletonScope();
   container
+    .bind<S3Client>(CORE_TYPES.S3Client)
+    .toDynamicValue(() => new S3Client({ region: coreConfig.aws.region }))
+    .inSingletonScope();
+  container
     .bind<Cache>(CORE_TYPES.Cache)
     .toDynamicValue((context) => {
       const redisClient = context.get<RedisClient>(CORE_TYPES.RedisClient);
 
       return new RedisCache(redisClient);
+    })
+    .inSingletonScope();
+  container
+    .bind<FileStorage>(CORE_TYPES.FileStorage)
+    .toDynamicValue((context) => {
+      const s3Client = context.get<S3Client>(CORE_TYPES.S3Client);
+
+      return new S3FileStorage(s3Client, {
+        bucket: coreConfig.aws.s3Bucket,
+        region: coreConfig.aws.region,
+      });
     })
     .inSingletonScope();
   container

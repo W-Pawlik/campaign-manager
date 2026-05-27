@@ -28,12 +28,22 @@ export class CreateCampaignHandler
     const createdAt = new Date();
     const campaign = Campaign.create({
       id: randomUUID(),
+      ownerId: command.input.ownerUserId,
       name,
       slug,
+      description: command.input.description ?? null,
+      gameSystemId: command.input.gameSystemId ?? null,
       status: CampaignStatus.active(),
       visibility,
+      coverImageUrl: null,
+      coverImageKey: null,
+      defaultLanguage: command.input.defaultLanguage ?? null,
+      currentDateInWorld: command.input.currentDateInWorld ?? null,
+      worldName: command.input.worldName ?? null,
+      startingLevel: command.input.startingLevel ?? null,
       createdAt,
       updatedAt: createdAt,
+      archivedAt: null,
       deletedAt: null,
     });
 

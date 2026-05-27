@@ -4,7 +4,13 @@ import type { CampaignDetailsDTO } from "@modules/campaigns/application/dto/Camp
 export interface CreateCampaignInput {
   ownerUserId: string;
   name: string;
+  description?: string | null;
+  gameSystemId?: string | null;
   visibility?: string;
+  defaultLanguage?: string | null;
+  currentDateInWorld?: string | null;
+  worldName?: string | null;
+  startingLevel?: number | null;
 }
 
 export class CreateCampaignCommand implements Command<CampaignDetailsDTO> {

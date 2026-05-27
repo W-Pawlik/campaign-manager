@@ -4,6 +4,9 @@ export const CAMPAIGNS_TYPES = {
   CampaignMapper: Symbol.for("campaigns.CampaignMapper"),
   CreateCampaignHandler: Symbol.for("campaigns.CreateCampaignHandler"),
   UpdateCampaignHandler: Symbol.for("campaigns.UpdateCampaignHandler"),
+  CreateCampaignCoverImageUploadHandler: Symbol.for(
+    "campaigns.CreateCampaignCoverImageUploadHandler",
+  ),
   ArchiveCampaignHandler: Symbol.for("campaigns.ArchiveCampaignHandler"),
   RestoreCampaignHandler: Symbol.for("campaigns.RestoreCampaignHandler"),
   DeleteCampaignHandler: Symbol.for("campaigns.DeleteCampaignHandler"),

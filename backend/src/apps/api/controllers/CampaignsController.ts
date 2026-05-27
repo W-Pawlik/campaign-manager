@@ -3,6 +3,7 @@ import type { CommandBus } from "@core/application/cqrs/CommandBus";
 import type { QueryBus } from "@core/application/cqrs/QueryBus";
 import { UnauthorizedError, ValidationError } from "@core/application/errors/AppError";
 import { ArchiveCampaignCommand } from "@modules/campaigns/application/commands/ArchiveCampaignCommand";
+import { CreateCampaignCoverImageUploadCommand } from "@modules/campaigns/application/commands/CreateCampaignCoverImageUploadCommand";
 import { CreateCampaignCommand } from "@modules/campaigns/application/commands/CreateCampaignCommand";
 import { DeleteCampaignCommand } from "@modules/campaigns/application/commands/DeleteCampaignCommand";
 import { RestoreCampaignCommand } from "@modules/campaigns/application/commands/RestoreCampaignCommand";
@@ -29,7 +30,13 @@ export class CampaignsController {
       new CreateCampaignCommand({
         ownerUserId,
         name: req.body.name,
+        description: req.body.description,
+        gameSystemId: req.body.gameSystemId,
         visibility: req.body.visibility,
+        defaultLanguage: req.body.defaultLanguage,
+        currentDateInWorld: req.body.currentDateInWorld,
+        worldName: req.body.worldName,
+        startingLevel: req.body.startingLevel,
       }),
     );
 
@@ -55,11 +62,31 @@ export class CampaignsController {
         campaignId: this.getCampaignId(req),
         actorUserId,
         name: req.body.name,
+        description: req.body.description,
+        gameSystemId: req.body.gameSystemId,
         visibility: req.body.visibility,
+        defaultLanguage: req.body.defaultLanguage,
+        currentDateInWorld: req.body.currentDateInWorld,
+        worldName: req.body.worldName,
+        startingLevel: req.body.startingLevel,
       }),
     );
 
     res.status(200).json(result);
+  }
+
+  public async createCampaignCoverImageUpload(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+    const result = await this.commandBus.execute(
+      new CreateCampaignCoverImageUploadCommand({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+        fileName: req.body.fileName,
+        contentType: req.body.contentType,
+      }),
+    );
+
+    res.status(201).json(result);
   }
 
   public async archiveCampaign(req: Request, res: Response): Promise<void> {

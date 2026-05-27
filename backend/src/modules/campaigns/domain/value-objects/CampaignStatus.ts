@@ -1,7 +1,10 @@
 import { ValidationError } from "@core/application/errors/AppError";
 
 export const CAMPAIGN_STATUS = {
+  DRAFT: "DRAFT",
   ACTIVE: "ACTIVE",
+  PAUSED: "PAUSED",
+  COMPLETED: "COMPLETED",
   ARCHIVED: "ARCHIVED",
 } as const;
 
@@ -17,7 +20,13 @@ export class CampaignStatus {
   public static create(value: string): CampaignStatus {
     const normalizedValue = value.trim().toUpperCase();
 
-    if (normalizedValue !== CAMPAIGN_STATUS.ACTIVE && normalizedValue !== CAMPAIGN_STATUS.ARCHIVED) {
+    if (
+      normalizedValue !== CAMPAIGN_STATUS.DRAFT &&
+      normalizedValue !== CAMPAIGN_STATUS.ACTIVE &&
+      normalizedValue !== CAMPAIGN_STATUS.PAUSED &&
+      normalizedValue !== CAMPAIGN_STATUS.COMPLETED &&
+      normalizedValue !== CAMPAIGN_STATUS.ARCHIVED
+    ) {
       throw new ValidationError("Invalid campaign status");
     }
 
@@ -26,6 +35,14 @@ export class CampaignStatus {
 
   public static active(): CampaignStatus {
     return new CampaignStatus(CAMPAIGN_STATUS.ACTIVE);
+  }
+
+  public static paused(): CampaignStatus {
+    return new CampaignStatus(CAMPAIGN_STATUS.PAUSED);
+  }
+
+  public static completed(): CampaignStatus {
+    return new CampaignStatus(CAMPAIGN_STATUS.COMPLETED);
   }
 
   public static archived(): CampaignStatus {

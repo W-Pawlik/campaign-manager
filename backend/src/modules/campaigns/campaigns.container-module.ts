@@ -1,7 +1,9 @@
 import type { PrismaClient } from "@prisma/client";
 import type { Container } from "inversify";
+import type { FileStorage } from "@core/application/storage/FileStorage";
 import { CORE_TYPES } from "@core/di/core.types";
 import { ArchiveCampaignHandler } from "@modules/campaigns/application/handlers/ArchiveCampaignHandler";
+import { CreateCampaignCoverImageUploadHandler } from "@modules/campaigns/application/handlers/CreateCampaignCoverImageUploadHandler";
 import { CreateCampaignHandler } from "@modules/campaigns/application/handlers/CreateCampaignHandler";
 import { DeleteCampaignHandler } from "@modules/campaigns/application/handlers/DeleteCampaignHandler";
 import { GetCampaignDetailsHandler } from "@modules/campaigns/application/handlers/GetCampaignDetailsHandler";
@@ -55,6 +57,18 @@ export function loadCampaignsContainerModule(container: Container): void {
       const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
 
       return new UpdateCampaignHandler(campaignRepository);
+    })
+    .inTransientScope();
+
+  container
+    .bind<CreateCampaignCoverImageUploadHandler>(
+      CAMPAIGNS_TYPES.CreateCampaignCoverImageUploadHandler,
+    )
+    .toDynamicValue((context) => {
+      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
+      const fileStorage = context.get<FileStorage>(CORE_TYPES.FileStorage);
+
+      return new CreateCampaignCoverImageUploadHandler(campaignRepository, fileStorage);
     })
     .inTransientScope();
 
