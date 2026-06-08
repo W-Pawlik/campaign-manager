@@ -3,16 +3,16 @@ import type { CommandHandler } from "@core/application/cqrs/CommandHandler";
 import {
   ConflictError,
   ForbiddenError,
-  NotFoundError,
   ValidationError,
 } from "@core/application/errors/AppError";
 import type { InviteCampaignMemberCommand } from "@modules/campaigns/application/commands/InviteCampaignMemberCommand";
 import type { CampaignInvitationDTO } from "@modules/campaigns/application/dto/CampaignInvitationDTO";
 import type { CampaignMembershipRepository } from "@modules/campaigns/application/ports/CampaignMembershipRepository";
-import type { CampaignRepository } from "@modules/campaigns/application/ports/CampaignRepository";
-import { requireCampaignManagerRole } from "@modules/campaigns/application/services/CampaignMembershipAccess";
+import type { CampaignAccessApplicationService } from "@modules/campaigns/application/services/CampaignAccessApplicationService";
 import { mapCampaignInvitationDto } from "@modules/campaigns/application/services/CampaignMembershipDtoMapper";
 import { CampaignInvitation } from "@modules/campaigns/domain/entities/CampaignInvitation";
+import { CAMPAIGN_PERMISSION_ACTION } from "@modules/campaigns/domain/services/CampaignPermissionDomainService";
+import type { CampaignPermissionDomainService } from "@modules/campaigns/domain/services/CampaignPermissionDomainService";
 import { CAMPAIGN_ROLE, CampaignRole } from "@modules/campaigns/domain/value-objects/CampaignRole";
 import { MemberStatus } from "@modules/campaigns/domain/value-objects/MemberStatus";
 
@@ -20,21 +20,16 @@ export class InviteCampaignMemberHandler
   implements CommandHandler<InviteCampaignMemberCommand, CampaignInvitationDTO>
 {
   public constructor(
-    private readonly campaignRepository: CampaignRepository,
     private readonly membershipRepository: CampaignMembershipRepository,
+    private readonly accessService: CampaignAccessApplicationService,
+    private readonly permissionService: CampaignPermissionDomainService,
   ) {}
 
   public async execute(command: InviteCampaignMemberCommand): Promise<CampaignInvitationDTO> {
-    const campaign = await this.campaignRepository.findById(command.input.campaignId);
-
-    if (campaign === null || campaign.deletedAt !== null) {
-      throw new NotFoundError("Campaign not found");
-    }
-
-    const actorRole = await requireCampaignManagerRole(
-      this.membershipRepository,
+    const { role: actorRole } = await this.accessService.requirePermission(
       command.input.campaignId,
       command.input.actorUserId,
+      CAMPAIGN_PERMISSION_ACTION.MEMBER_INVITE,
     );
 
     const role = CampaignRole.create(command.input.role);
@@ -43,7 +38,7 @@ export class InviteCampaignMemberHandler
       throw new ValidationError("Use ownership transfer to assign owner role");
     }
 
-    if (role.canSeeFullCampaign() && !actorRole.isOwner()) {
+    if (!this.permissionService.canInviteRole(actorRole, role)) {
       throw new ForbiddenError("Only campaign owner can invite GM or CO_GM members");
     }
 

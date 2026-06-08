@@ -22,7 +22,10 @@ import { UpdateCampaignHandler } from "@modules/campaigns/application/handlers/U
 import type { CampaignMembershipRepository } from "@modules/campaigns/application/ports/CampaignMembershipRepository";
 import type { CampaignReadRepository } from "@modules/campaigns/application/ports/CampaignReadRepository";
 import type { CampaignRepository } from "@modules/campaigns/application/ports/CampaignRepository";
+import { CampaignAccessApplicationService } from "@modules/campaigns/application/services/CampaignAccessApplicationService";
+import { CampaignVisibilityApplicationService } from "@modules/campaigns/application/services/CampaignVisibilityApplicationService";
 import { CAMPAIGNS_TYPES } from "@modules/campaigns/campaigns.types";
+import { CampaignPermissionDomainService } from "@modules/campaigns/domain/services/CampaignPermissionDomainService";
 import { CampaignMapper } from "@modules/campaigns/infrastructure/persistence/CampaignMapper";
 import { CampaignMembershipMapper } from "@modules/campaigns/infrastructure/persistence/CampaignMembershipMapper";
 import { PrismaCampaignMembershipRepository } from "@modules/campaigns/infrastructure/persistence/PrismaCampaignMembershipRepository";
@@ -72,6 +75,43 @@ export function loadCampaignsContainerModule(container: Container): void {
     .inSingletonScope();
 
   container
+    .bind<CampaignPermissionDomainService>(CAMPAIGNS_TYPES.CampaignPermissionDomainService)
+    .toDynamicValue(() => new CampaignPermissionDomainService())
+    .inSingletonScope();
+
+  container
+    .bind<CampaignAccessApplicationService>(CAMPAIGNS_TYPES.CampaignAccessApplicationService)
+    .toDynamicValue((context) => {
+      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
+      const membershipRepository = context.get<CampaignMembershipRepository>(
+        CAMPAIGNS_TYPES.CampaignMembershipRepository,
+      );
+      const permissionService = context.get<CampaignPermissionDomainService>(
+        CAMPAIGNS_TYPES.CampaignPermissionDomainService,
+      );
+
+      return new CampaignAccessApplicationService(
+        campaignRepository,
+        membershipRepository,
+        permissionService,
+      );
+    })
+    .inTransientScope();
+
+  container
+    .bind<CampaignVisibilityApplicationService>(
+      CAMPAIGNS_TYPES.CampaignVisibilityApplicationService,
+    )
+    .toDynamicValue((context) => {
+      const permissionService = context.get<CampaignPermissionDomainService>(
+        CAMPAIGNS_TYPES.CampaignPermissionDomainService,
+      );
+
+      return new CampaignVisibilityApplicationService(permissionService);
+    })
+    .inTransientScope();
+
+  container
     .bind<CreateCampaignHandler>(CAMPAIGNS_TYPES.CreateCampaignHandler)
     .toDynamicValue((context) => {
       const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
@@ -84,8 +124,11 @@ export function loadCampaignsContainerModule(container: Container): void {
     .bind<UpdateCampaignHandler>(CAMPAIGNS_TYPES.UpdateCampaignHandler)
     .toDynamicValue((context) => {
       const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
 
-      return new UpdateCampaignHandler(campaignRepository);
+      return new UpdateCampaignHandler(campaignRepository, accessService);
     })
     .inTransientScope();
 
@@ -95,9 +138,16 @@ export function loadCampaignsContainerModule(container: Container): void {
     )
     .toDynamicValue((context) => {
       const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
       const fileStorage = context.get<FileStorage>(CORE_TYPES.FileStorage);
 
-      return new CreateCampaignCoverImageUploadHandler(campaignRepository, fileStorage);
+      return new CreateCampaignCoverImageUploadHandler(
+        campaignRepository,
+        accessService,
+        fileStorage,
+      );
     })
     .inTransientScope();
 
@@ -105,20 +155,32 @@ export function loadCampaignsContainerModule(container: Container): void {
     .bind<ArchiveCampaignHandler>(CAMPAIGNS_TYPES.ArchiveCampaignHandler)
     .toDynamicValue((context) => {
       const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
 
-      return new ArchiveCampaignHandler(campaignRepository);
+      return new ArchiveCampaignHandler(campaignRepository, accessService);
     })
     .inTransientScope();
 
   container
     .bind<InviteCampaignMemberHandler>(CAMPAIGNS_TYPES.InviteCampaignMemberHandler)
     .toDynamicValue((context) => {
-      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
       const membershipRepository = context.get<CampaignMembershipRepository>(
         CAMPAIGNS_TYPES.CampaignMembershipRepository,
       );
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
+      const permissionService = context.get<CampaignPermissionDomainService>(
+        CAMPAIGNS_TYPES.CampaignPermissionDomainService,
+      );
 
-      return new InviteCampaignMemberHandler(campaignRepository, membershipRepository);
+      return new InviteCampaignMemberHandler(
+        membershipRepository,
+        accessService,
+        permissionService,
+      );
     })
     .inTransientScope();
 
@@ -149,48 +211,56 @@ export function loadCampaignsContainerModule(container: Container): void {
   container
     .bind<ChangeCampaignMemberRoleHandler>(CAMPAIGNS_TYPES.ChangeCampaignMemberRoleHandler)
     .toDynamicValue((context) => {
-      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
       const membershipRepository = context.get<CampaignMembershipRepository>(
         CAMPAIGNS_TYPES.CampaignMembershipRepository,
       );
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
 
-      return new ChangeCampaignMemberRoleHandler(campaignRepository, membershipRepository);
+      return new ChangeCampaignMemberRoleHandler(membershipRepository, accessService);
     })
     .inTransientScope();
 
   container
     .bind<RemoveCampaignMemberHandler>(CAMPAIGNS_TYPES.RemoveCampaignMemberHandler)
     .toDynamicValue((context) => {
-      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
       const membershipRepository = context.get<CampaignMembershipRepository>(
         CAMPAIGNS_TYPES.CampaignMembershipRepository,
       );
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
 
-      return new RemoveCampaignMemberHandler(campaignRepository, membershipRepository);
+      return new RemoveCampaignMemberHandler(membershipRepository, accessService);
     })
     .inTransientScope();
 
   container
     .bind<LeaveCampaignHandler>(CAMPAIGNS_TYPES.LeaveCampaignHandler)
     .toDynamicValue((context) => {
-      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
       const membershipRepository = context.get<CampaignMembershipRepository>(
         CAMPAIGNS_TYPES.CampaignMembershipRepository,
       );
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
 
-      return new LeaveCampaignHandler(campaignRepository, membershipRepository);
+      return new LeaveCampaignHandler(membershipRepository, accessService);
     })
     .inTransientScope();
 
   container
     .bind<TransferCampaignOwnershipHandler>(CAMPAIGNS_TYPES.TransferCampaignOwnershipHandler)
     .toDynamicValue((context) => {
-      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
       const membershipRepository = context.get<CampaignMembershipRepository>(
         CAMPAIGNS_TYPES.CampaignMembershipRepository,
       );
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
 
-      return new TransferCampaignOwnershipHandler(campaignRepository, membershipRepository);
+      return new TransferCampaignOwnershipHandler(membershipRepository, accessService);
     })
     .inTransientScope();
 
@@ -198,8 +268,11 @@ export function loadCampaignsContainerModule(container: Container): void {
     .bind<RestoreCampaignHandler>(CAMPAIGNS_TYPES.RestoreCampaignHandler)
     .toDynamicValue((context) => {
       const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
 
-      return new RestoreCampaignHandler(campaignRepository);
+      return new RestoreCampaignHandler(campaignRepository, accessService);
     })
     .inTransientScope();
 
@@ -207,8 +280,11 @@ export function loadCampaignsContainerModule(container: Container): void {
     .bind<DeleteCampaignHandler>(CAMPAIGNS_TYPES.DeleteCampaignHandler)
     .toDynamicValue((context) => {
       const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
 
-      return new DeleteCampaignHandler(campaignRepository);
+      return new DeleteCampaignHandler(campaignRepository, accessService);
     })
     .inTransientScope();
 
@@ -226,28 +302,26 @@ export function loadCampaignsContainerModule(container: Container): void {
   container
     .bind<GetCampaignDetailsHandler>(CAMPAIGNS_TYPES.GetCampaignDetailsHandler)
     .toDynamicValue((context) => {
-      const campaignReadRepository = context.get<CampaignReadRepository>(
-        CAMPAIGNS_TYPES.CampaignReadRepository,
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
       );
 
-      return new GetCampaignDetailsHandler(campaignReadRepository);
+      return new GetCampaignDetailsHandler(accessService);
     })
     .inTransientScope();
 
   container
     .bind<ListCampaignMembersHandler>(CAMPAIGNS_TYPES.ListCampaignMembersHandler)
     .toDynamicValue((context) => {
-      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
-      const membershipRepository = context.get<CampaignMembershipRepository>(
-        CAMPAIGNS_TYPES.CampaignMembershipRepository,
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
       );
       const campaignReadRepository = context.get<CampaignReadRepository>(
         CAMPAIGNS_TYPES.CampaignReadRepository,
       );
 
       return new ListCampaignMembersHandler(
-        campaignRepository,
-        membershipRepository,
+        accessService,
         campaignReadRepository,
       );
     })
@@ -256,17 +330,15 @@ export function loadCampaignsContainerModule(container: Container): void {
   container
     .bind<ListCampaignInvitationsHandler>(CAMPAIGNS_TYPES.ListCampaignInvitationsHandler)
     .toDynamicValue((context) => {
-      const campaignRepository = context.get<CampaignRepository>(CAMPAIGNS_TYPES.CampaignRepository);
-      const membershipRepository = context.get<CampaignMembershipRepository>(
-        CAMPAIGNS_TYPES.CampaignMembershipRepository,
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
       );
       const campaignReadRepository = context.get<CampaignReadRepository>(
         CAMPAIGNS_TYPES.CampaignReadRepository,
       );
 
       return new ListCampaignInvitationsHandler(
-        campaignRepository,
-        membershipRepository,
+        accessService,
         campaignReadRepository,
       );
     })

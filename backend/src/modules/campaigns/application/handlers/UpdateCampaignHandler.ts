@@ -1,18 +1,23 @@
 import type { CommandHandler } from "@core/application/cqrs/CommandHandler";
-import { ForbiddenError, NotFoundError, ValidationError } from "@core/application/errors/AppError";
+import { ValidationError } from "@core/application/errors/AppError";
 import type { UpdateCampaignCommand } from "@modules/campaigns/application/commands/UpdateCampaignCommand";
 import type { CampaignDetailsDTO } from "@modules/campaigns/application/dto/CampaignDetailsDTO";
 import type { CampaignRepository } from "@modules/campaigns/application/ports/CampaignRepository";
+import type { CampaignAccessApplicationService } from "@modules/campaigns/application/services/CampaignAccessApplicationService";
 import { mapCampaignDetailsFromDomain } from "@modules/campaigns/application/services/CampaignDtoMapper";
 import { buildCampaignSlugBaseFromName } from "@modules/campaigns/application/services/CampaignSlugService";
 import { findUniqueCampaignSlug } from "@modules/campaigns/application/services/UniqueCampaignSlugFinder";
+import { CAMPAIGN_PERMISSION_ACTION } from "@modules/campaigns/domain/services/CampaignPermissionDomainService";
 import { CampaignName } from "@modules/campaigns/domain/value-objects/CampaignName";
 import { CampaignVisibility } from "@modules/campaigns/domain/value-objects/CampaignVisibility";
 
 export class UpdateCampaignHandler
   implements CommandHandler<UpdateCampaignCommand, CampaignDetailsDTO>
 {
-  public constructor(private readonly campaignRepository: CampaignRepository) {}
+  public constructor(
+    private readonly campaignRepository: CampaignRepository,
+    private readonly accessService: CampaignAccessApplicationService,
+  ) {}
 
   public async execute(command: UpdateCampaignCommand): Promise<CampaignDetailsDTO> {
     if (
@@ -28,17 +33,11 @@ export class UpdateCampaignHandler
       throw new ValidationError("At least one field must be provided for update");
     }
 
-    const campaign = await this.campaignRepository.findById(command.input.campaignId);
-
-    if (campaign === null || campaign.deletedAt !== null) {
-      throw new NotFoundError("Campaign not found");
-    }
-
-    const role = await this.campaignRepository.findUserRole(command.input.campaignId, command.input.actorUserId);
-
-    if (role === null || !role.isOwner()) {
-      throw new ForbiddenError("Only campaign owner can modify campaign");
-    }
+    const { campaign, role } = await this.accessService.requirePermission(
+      command.input.campaignId,
+      command.input.actorUserId,
+      CAMPAIGN_PERMISSION_ACTION.CAMPAIGN_UPDATE,
+    );
 
     const name = command.input.name === undefined ? undefined : CampaignName.create(command.input.name);
     let slug: string | undefined;

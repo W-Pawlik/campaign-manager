@@ -1,24 +1,22 @@
 import type { QueryHandler } from "@core/application/cqrs/QueryHandler";
-import { NotFoundError } from "@core/application/errors/AppError";
-import type { GetCampaignDetailsQuery } from "@modules/campaigns/application/queries/GetCampaignDetailsQuery";
 import type { CampaignDetailsDTO } from "@modules/campaigns/application/dto/CampaignDetailsDTO";
-import type { CampaignReadRepository } from "@modules/campaigns/application/ports/CampaignReadRepository";
+import type { GetCampaignDetailsQuery } from "@modules/campaigns/application/queries/GetCampaignDetailsQuery";
+import type { CampaignAccessApplicationService } from "@modules/campaigns/application/services/CampaignAccessApplicationService";
+import { mapCampaignDetailsFromDomain } from "@modules/campaigns/application/services/CampaignDtoMapper";
+import { CAMPAIGN_PERMISSION_ACTION } from "@modules/campaigns/domain/services/CampaignPermissionDomainService";
 
 export class GetCampaignDetailsHandler
   implements QueryHandler<GetCampaignDetailsQuery, CampaignDetailsDTO>
 {
-  public constructor(private readonly campaignReadRepository: CampaignReadRepository) {}
+  public constructor(private readonly accessService: CampaignAccessApplicationService) {}
 
   public async execute(query: GetCampaignDetailsQuery): Promise<CampaignDetailsDTO> {
-    const campaign = await this.campaignReadRepository.getDetailsForUser(
+    const { campaign, role } = await this.accessService.requirePermission(
       query.input.campaignId,
       query.input.userId,
+      CAMPAIGN_PERMISSION_ACTION.CAMPAIGN_READ,
     );
 
-    if (campaign === null) {
-      throw new NotFoundError("Campaign not found");
-    }
-
-    return campaign;
+    return mapCampaignDetailsFromDomain(campaign, role);
   }
 }

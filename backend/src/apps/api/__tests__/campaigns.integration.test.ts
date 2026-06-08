@@ -19,10 +19,13 @@ import type { CampaignDetailsDTO } from "@modules/campaigns/application/dto/Camp
 import type { CampaignInvitationDTO } from "@modules/campaigns/application/dto/CampaignInvitationDTO";
 import type { CampaignListItemDTO } from "@modules/campaigns/application/dto/CampaignListItemDTO";
 import type { CampaignMemberDTO } from "@modules/campaigns/application/dto/CampaignMemberDTO";
+import type { CampaignMembershipRepository } from "@modules/campaigns/application/ports/CampaignMembershipRepository";
 import type { CampaignReadRepository } from "@modules/campaigns/application/ports/CampaignReadRepository";
 import type { CampaignRepository } from "@modules/campaigns/application/ports/CampaignRepository";
 import type { Campaign } from "@modules/campaigns/domain/entities/Campaign";
+import { CampaignMember } from "@modules/campaigns/domain/entities/CampaignMember";
 import { CampaignRole } from "@modules/campaigns/domain/value-objects/CampaignRole";
+import { MemberStatus } from "@modules/campaigns/domain/value-objects/MemberStatus";
 
 class InMemoryAuthRepository implements AuthRepository {
   private readonly usersById = new Map<string, UserCredentials>();
@@ -228,6 +231,103 @@ class InMemoryCampaignReadRepository implements CampaignReadRepository {
   }
 }
 
+class InMemoryCampaignMembershipRepository implements CampaignMembershipRepository {
+  public constructor(private readonly store: InMemoryCampaignStore) {}
+
+  public async findActiveMemberByUserId(
+    campaignId: string,
+    userId: string,
+  ): Promise<CampaignMember | null> {
+    const index = this.store.memberships.findIndex(
+      (entry) => entry.campaignId === campaignId && entry.userId === userId,
+    );
+
+    if (index === -1) {
+      return null;
+    }
+
+    const membership = this.store.memberships[index];
+
+    if (membership === undefined) {
+      return null;
+    }
+
+    return CampaignMember.create({
+      id: `member-${index + 1}`,
+      campaignId: membership.campaignId,
+      userId: membership.userId,
+      role: membership.role,
+      status: MemberStatus.active(),
+      nickname: null,
+      joinedAt: new Date("2026-01-01T10:00:00.000Z"),
+      invitedAt: null,
+      invitedById: null,
+      createdAt: new Date("2026-01-01T10:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T10:00:00.000Z"),
+    });
+  }
+
+  public async findMemberById(
+    campaignId: string,
+    memberId: string,
+  ): Promise<CampaignMember | null> {
+    const memberIndex = Number.parseInt(memberId.replace("member-", ""), 10) - 1;
+    const membership = this.store.memberships[memberIndex];
+
+    if (membership === undefined || membership.campaignId !== campaignId) {
+      return null;
+    }
+
+    return CampaignMember.create({
+      id: memberId,
+      campaignId: membership.campaignId,
+      userId: membership.userId,
+      role: membership.role,
+      status: MemberStatus.active(),
+      nickname: null,
+      joinedAt: new Date("2026-01-01T10:00:00.000Z"),
+      invitedAt: null,
+      invitedById: null,
+      createdAt: new Date("2026-01-01T10:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T10:00:00.000Z"),
+    });
+  }
+
+  public async findActiveInvitationByUserId(): Promise<null> {
+    return null;
+  }
+
+  public async findInvitationById(): Promise<null> {
+    return null;
+  }
+
+  public async createInvitation(): Promise<void> {}
+
+  public async saveInvitation(): Promise<void> {}
+
+  public async upsertActiveMemberFromInvitation(): Promise<CampaignMember> {
+    throw new Error("Not implemented in campaigns API integration test");
+  }
+
+  public async saveMember(): Promise<void> {}
+
+  public async transferOwnership(): Promise<void> {}
+
+  public async countActiveOwners(campaignId: string): Promise<number> {
+    return this.store.memberships.filter(
+      (entry) => entry.campaignId === campaignId && entry.role.isOwner(),
+    ).length;
+  }
+
+  public async findUserRole(campaignId: string, userId: string): Promise<CampaignRole | null> {
+    const membership = this.store.memberships.find(
+      (entry) => entry.campaignId === campaignId && entry.userId === userId,
+    );
+
+    return membership?.role ?? null;
+  }
+}
+
 function createAuthTestingModule(): ContainerModuleLoader {
   const authRepository = new InMemoryAuthRepository();
   const userSessionRepository = new InMemoryUserSessionRepository();
@@ -244,6 +344,7 @@ function createCampaignsTestingModule(): ContainerModuleLoader {
   const store = new InMemoryCampaignStore();
   const campaignRepository = new InMemoryCampaignRepository(store);
   const campaignReadRepository = new InMemoryCampaignReadRepository(store);
+  const campaignMembershipRepository = new InMemoryCampaignMembershipRepository(store);
 
   return (container: Container) => {
     container
@@ -252,6 +353,9 @@ function createCampaignsTestingModule(): ContainerModuleLoader {
     container
       .rebind<CampaignReadRepository>(CAMPAIGNS_TYPES.CampaignReadRepository)
       .toConstantValue(campaignReadRepository);
+    container
+      .rebind<CampaignMembershipRepository>(CAMPAIGNS_TYPES.CampaignMembershipRepository)
+      .toConstantValue(campaignMembershipRepository);
   };
 }
 

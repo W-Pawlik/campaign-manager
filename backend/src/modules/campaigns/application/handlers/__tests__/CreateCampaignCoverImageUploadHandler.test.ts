@@ -2,12 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 import type { FileStorage } from "@core/application/storage/FileStorage";
 import { CreateCampaignCoverImageUploadCommand } from "@modules/campaigns/application/commands/CreateCampaignCoverImageUploadCommand";
 import { CreateCampaignCoverImageUploadHandler } from "@modules/campaigns/application/handlers/CreateCampaignCoverImageUploadHandler";
+import type { CampaignMembershipRepository } from "@modules/campaigns/application/ports/CampaignMembershipRepository";
 import type { CampaignRepository } from "@modules/campaigns/application/ports/CampaignRepository";
+import { CampaignAccessApplicationService } from "@modules/campaigns/application/services/CampaignAccessApplicationService";
 import { Campaign } from "@modules/campaigns/domain/entities/Campaign";
+import { CampaignMember } from "@modules/campaigns/domain/entities/CampaignMember";
+import { CampaignPermissionDomainService } from "@modules/campaigns/domain/services/CampaignPermissionDomainService";
 import { CampaignName } from "@modules/campaigns/domain/value-objects/CampaignName";
 import { CampaignRole } from "@modules/campaigns/domain/value-objects/CampaignRole";
 import { CampaignStatus } from "@modules/campaigns/domain/value-objects/CampaignStatus";
 import { CampaignVisibility } from "@modules/campaigns/domain/value-objects/CampaignVisibility";
+import { MemberStatus } from "@modules/campaigns/domain/value-objects/MemberStatus";
 
 function createCampaign(): Campaign {
   return Campaign.create({
@@ -32,6 +37,38 @@ function createCampaign(): Campaign {
   });
 }
 
+function createOwnerMember(): CampaignMember {
+  return CampaignMember.create({
+    id: "member-1",
+    campaignId: "campaign-1",
+    userId: "user-1",
+    role: CampaignRole.owner(),
+    status: MemberStatus.active(),
+    nickname: null,
+    joinedAt: new Date("2026-01-01T10:00:00.000Z"),
+    invitedAt: null,
+    invitedById: null,
+    createdAt: new Date("2026-01-01T10:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T10:00:00.000Z"),
+  });
+}
+
+function createMembershipRepository(): CampaignMembershipRepository {
+  return {
+    findActiveMemberByUserId: vi.fn().mockResolvedValue(createOwnerMember()),
+    findMemberById: vi.fn(),
+    findActiveInvitationByUserId: vi.fn(),
+    findInvitationById: vi.fn(),
+    createInvitation: vi.fn(),
+    saveInvitation: vi.fn(),
+    upsertActiveMemberFromInvitation: vi.fn(),
+    saveMember: vi.fn(),
+    transferOwnership: vi.fn(),
+    countActiveOwners: vi.fn(),
+    findUserRole: vi.fn(),
+  };
+}
+
 describe("CreateCampaignCoverImageUploadHandler", () => {
   it("creates a presigned upload URL and stores the cover image reference", async () => {
     const savedCampaigns: Campaign[] = [];
@@ -50,7 +87,17 @@ describe("CreateCampaignCoverImageUploadHandler", () => {
         publicUrl: "https://cdn.example.test/cover.webp",
       }),
     };
-    const handler = new CreateCampaignCoverImageUploadHandler(campaignRepository, fileStorage);
+    const membershipRepository = createMembershipRepository();
+    const accessService = new CampaignAccessApplicationService(
+      campaignRepository,
+      membershipRepository,
+      new CampaignPermissionDomainService(),
+    );
+    const handler = new CreateCampaignCoverImageUploadHandler(
+      campaignRepository,
+      accessService,
+      fileStorage,
+    );
 
     const result = await handler.execute(
       new CreateCampaignCoverImageUploadCommand({
