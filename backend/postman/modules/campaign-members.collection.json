@@ -2,7 +2,7 @@
   "info": {
     "name": "Campaign Manager - Campaign Members",
     "_postman_id": "00000000-0000-4000-8000-00007e901601",
-    "description": "Module collection for campaign members and invitations. Requires accessToken, campaignId and user/member/invitation ids.",
+    "description": "Module collection for campaign members and invitations. Requires campaignId and the appropriate owner, staff or invited-user token depending on the request. Listing members and invitations plus inviting members require staff access, while role changes, ownership transfer and member removal require owner access.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -17,7 +17,8 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+                  "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.expect(Array.isArray(pm.response.json())).to.eql(true);"
                 ]
               }
             }
@@ -55,7 +56,10 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
-                  "pm.collectionVariables.set('invitationId', pm.response.json().id);"
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('invitationId', body.id);",
+                  "pm.expect(body.userId).to.eql(pm.collectionVariables.get('invitedUserId'));",
+                  "pm.expect(body.role).to.eql('PLAYER');"
                 ]
               }
             }
@@ -236,7 +240,10 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('status is 200', function () { pm.response.to.have.status(200); });"
+                  "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+                  "const invitations = pm.response.json();",
+                  "pm.expect(Array.isArray(invitations)).to.eql(true);",
+                  "if (invitations.length > 0) { pm.collectionVariables.set('invitationId', invitations[0].id); }"
                 ]
               }
             }

@@ -2,7 +2,7 @@
   "info": {
     "name": "Campaign Manager Flow - Campaigns",
     "_postman_id": "00000000-0000-4000-8000-00007f529d9f",
-    "description": "End-to-end campaign lifecycle flow. Creates its own user and campaign.",
+    "description": "End-to-end campaign lifecycle flow. Creates its own owner user and exercises owner-only campaign operations.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -65,7 +65,9 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
-              "pm.collectionVariables.set('campaignId', pm.response.json().id);"
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('campaignId', body.id);",
+              "pm.expect(body.role).to.eql('OWNER');"
             ]
           }
         }
@@ -153,7 +155,9 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
-              "pm.collectionVariables.set('coverImageKey', pm.response.json().coverImageKey);"
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('coverImageKey', body.coverImageKey);",
+              "pm.expect(body.coverImageUrl).to.include('/campaigns/' + pm.collectionVariables.get('campaignId') + '/cover-images/');"
             ]
           }
         }
@@ -259,6 +263,78 @@
             "campaigns",
             "{{campaignId}}",
             "restore"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Campaign",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Deleted Campaign Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 404', function () { pm.response.to.have.status(404); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}"
           ]
         }
       },

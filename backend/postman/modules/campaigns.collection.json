@@ -2,7 +2,7 @@
   "info": {
     "name": "Campaign Manager - Campaigns",
     "_postman_id": "00000000-0000-4000-8000-000026cf0df3",
-    "description": "Module collection for campaign CRUD and campaign cover image upload. Requires accessToken.",
+    "description": "Module collection for campaign CRUD and campaign cover image upload. Requires accessToken. Campaign updates, cover upload, archive, restore and delete are OWNER-only operations enforced by backend permissions.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -17,7 +17,8 @@
               "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
               "const body = pm.response.json();",
               "pm.collectionVariables.set('campaignId', body.id);",
-              "pm.expect(body.role).to.eql('OWNER');"
+              "pm.expect(body.role).to.eql('OWNER');",
+              "pm.expect(body.visibility).to.eql('PRIVATE');"
             ]
           }
         }
@@ -97,7 +98,9 @@
             "type": "text/javascript",
             "exec": [
               "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
-              "pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('campaignId'));"
+              "const body = pm.response.json();",
+              "pm.expect(body.id).to.eql(pm.collectionVariables.get('campaignId'));",
+              "pm.expect(body.role).to.eql('OWNER');"
             ]
           }
         }
@@ -182,7 +185,8 @@
               "const body = pm.response.json();",
               "pm.collectionVariables.set('coverImageUploadUrl', body.uploadUrl);",
               "pm.collectionVariables.set('coverImageUrl', body.coverImageUrl);",
-              "pm.collectionVariables.set('coverImageKey', body.coverImageKey);"
+              "pm.collectionVariables.set('coverImageKey', body.coverImageKey);",
+              "pm.expect(body.coverImageUrl).to.include('/campaigns/' + pm.collectionVariables.get('campaignId') + '/cover-images/');"
             ]
           }
         }

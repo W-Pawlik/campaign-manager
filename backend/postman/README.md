@@ -30,3 +30,10 @@ postman/
 - If a module endpoint depends on another module, document the required variables in that module collection and add a runnable scenario in `flows/`.
 - Avoid rebuilding one giant collection. Flows are allowed to be sequential; module collections should stay easy to edit manually.
 
+## Current Coverage
+
+- `modules/campaigns.collection.json` covers campaign CRUD, cover image upload and owner-only campaign actions.
+- `modules/campaign-members.collection.json` covers member listing, invitations, role changes, removal and ownership transfer.
+- `flows/campaign-flow.collection.json` covers an owner-driven campaign lifecycle including soft deletion visibility.
+- `flows/campaign-members-flow.collection.json` covers invitation lifecycle, member removal, reinvitation and ownership transfer.
+

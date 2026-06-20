@@ -2,7 +2,7 @@
   "info": {
     "name": "Campaign Manager Flow - Campaign Members",
     "_postman_id": "00000000-0000-4000-8000-00004ff8332b",
-    "description": "End-to-end member invitation flow. Creates owner and invited users, campaign, invitation, acceptance, role change and removal.",
+    "description": "End-to-end member invitation flow. Creates owner and invited users, exercises invitation listing, acceptance, role changes, removal, reinvitation and ownership transfer.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -275,6 +275,46 @@
       "response": []
     },
     {
+      "name": "List Invitations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const invitation = pm.response.json().find((entry) => entry.userId === pm.collectionVariables.get('invitedUserId') && entry.status === 'INVITED');",
+              "pm.expect(invitation).to.not.eql(undefined);",
+              "pm.collectionVariables.set('invitationId', invitation.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ownerAccessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/invitations",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "invitations"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Accept Invitation",
       "event": [
         {
@@ -432,6 +472,220 @@
             "{{campaignId}}",
             "members",
             "{{memberId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Invite Removed User Again",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "pm.collectionVariables.set('invitationId', pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ownerAccessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/members/invite",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "members",
+            "invite"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{invitedUserId}}\",\n  \"role\": \"CO_GM\"\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Accept Reinvite",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{invitedAccessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/invitations/{{invitationId}}/accept",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "invitations",
+            "{{invitationId}}",
+            "accept"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Members After Reinvite",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const member = pm.response.json().find((entry) => entry.userId === pm.collectionVariables.get('invitedUserId') && entry.status === 'ACTIVE');",
+              "pm.expect(member.role).to.eql('CO_GM');",
+              "pm.collectionVariables.set('memberId', member.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ownerAccessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/members",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "members"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Transfer Ownership",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{ownerAccessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/members/{{memberId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "members",
+            "{{memberId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"role\": \"OWNER\"\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify Ownership Transfer",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const members = pm.response.json();",
+              "const newOwner = members.find((entry) => entry.userId === pm.collectionVariables.get('invitedUserId'));",
+              "const previousOwner = members.find((entry) => entry.userId === pm.collectionVariables.get('ownerUserId'));",
+              "pm.expect(newOwner.role).to.eql('OWNER');",
+              "pm.expect(previousOwner.role).to.eql('GM');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{invitedAccessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/members",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "members"
           ]
         }
       },
