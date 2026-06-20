@@ -10,6 +10,8 @@ import { createApiRouter } from "@api/routes";
 import type { HealthController } from "@api/controllers/HealthController";
 import type { AuthController } from "@api/controllers/AuthController";
 import type { UsersController } from "@api/controllers/users.controller";
+import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
+import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 
 export interface CreateApiAppOptions {
@@ -29,6 +31,12 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   const authController = options.container.get<AuthController>(API_TYPES.AuthController);
   const usersController = options.container.get<UsersController>(API_TYPES.UsersController);
   const campaignsController = options.container.get<CampaignsController>(API_TYPES.CampaignsController);
+  const campaignMembersController = options.container.get<CampaignMembersController>(
+    API_TYPES.CampaignMembersController,
+  );
+  const campaignCharactersController = options.container.get<CampaignCharactersController>(
+    API_TYPES.CampaignCharactersController,
+  );
 
   const corsOrigin =
     apiConfig.corsOrigin === "*"
@@ -58,6 +66,8 @@ export function createApiApp(options: CreateApiAppOptions): Express {
       authController,
       usersController,
       campaignsController,
+      campaignMembersController,
+      campaignCharactersController,
       authMiddleware,
       ...routesOptions,
     }),

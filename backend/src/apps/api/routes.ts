@@ -2,6 +2,8 @@ import { Router, type RequestHandler } from "express";
 import type { HealthController } from "@api/controllers/HealthController";
 import type { AuthController } from "@api/controllers/AuthController";
 import type { UsersController } from "@api/controllers/users.controller";
+import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
+import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import { createHealthRouter } from "@api/routes/health.route";
 import { createAuthRouter } from "@api/routes/auth.route";
@@ -13,6 +15,8 @@ export interface ApiRoutesOptions {
   authController: AuthController;
   usersController: UsersController;
   campaignsController: CampaignsController;
+  campaignMembersController: CampaignMembersController;
+  campaignCharactersController: CampaignCharactersController;
   authMiddleware: RequestHandler;
   registerAdditionalRoutes?: (router: Router) => void;
 }
@@ -25,7 +29,12 @@ export function createApiRouter(options: ApiRoutesOptions): RequestHandler {
   router.use("/api/v1/users", createUsersRouter(options.usersController, options.authMiddleware));
   router.use(
     "/api/v1/campaigns",
-    createCampaignsRouter(options.campaignsController, options.authMiddleware),
+    createCampaignsRouter(
+      options.campaignsController,
+      options.campaignMembersController,
+      options.campaignCharactersController,
+      options.authMiddleware,
+    ),
   );
 
   if (options.registerAdditionalRoutes) {

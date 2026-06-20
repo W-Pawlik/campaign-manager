@@ -1,4 +1,6 @@
 import { Router, type RequestHandler } from "express";
+import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
+import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import { createValidateBodyMiddleware } from "@api/middlewares/validate-request.middleware";
 import {
@@ -12,26 +14,28 @@ import {
 } from "@api/schemas/campaigns.schemas";
 
 export function createCampaignsRouter(
-  controller: CampaignsController,
+  campaignsController: CampaignsController,
+  campaignMembersController: CampaignMembersController,
+  campaignCharactersController: CampaignCharactersController,
   authMiddleware: RequestHandler,
 ): Router {
   const router = Router();
 
   router.get("/", authMiddleware, async (req, res) => {
-    await controller.listUserCampaigns(req, res);
+    await campaignsController.listUserCampaigns(req, res);
   });
   router.post("/", authMiddleware, createValidateBodyMiddleware(createCampaignSchema), async (req, res) => {
-    await controller.createCampaign(req, res);
+    await campaignsController.createCampaign(req, res);
   });
   router.get("/:campaignId", authMiddleware, async (req, res) => {
-    await controller.getCampaignDetails(req, res);
+    await campaignsController.getCampaignDetails(req, res);
   });
   router.patch(
     "/:campaignId",
     authMiddleware,
     createValidateBodyMiddleware(updateCampaignSchema),
     async (req, res) => {
-      await controller.updateCampaign(req, res);
+      await campaignsController.updateCampaign(req, res);
     },
   );
   router.post(
@@ -39,46 +43,46 @@ export function createCampaignsRouter(
     authMiddleware,
     createValidateBodyMiddleware(createCampaignCoverImageUploadSchema),
     async (req, res) => {
-      await controller.createCampaignCoverImageUpload(req, res);
+      await campaignsController.createCampaignCoverImageUpload(req, res);
     },
   );
   router.get("/:campaignId/characters", authMiddleware, async (req, res) => {
-    await controller.listCampaignCharacters(req, res);
+    await campaignCharactersController.listCampaignCharacters(req, res);
   });
   router.post(
     "/:campaignId/characters",
     authMiddleware,
     createValidateBodyMiddleware(createCharacterSchema),
     async (req, res) => {
-      await controller.createCharacter(req, res);
+      await campaignCharactersController.createCharacter(req, res);
     },
   );
   router.get("/:campaignId/characters/:characterId", authMiddleware, async (req, res) => {
-    await controller.getCharacterDetails(req, res);
+    await campaignCharactersController.getCharacterDetails(req, res);
   });
   router.patch(
     "/:campaignId/characters/:characterId",
     authMiddleware,
     createValidateBodyMiddleware(updateCharacterSchema),
     async (req, res) => {
-      await controller.updateCharacter(req, res);
+      await campaignCharactersController.updateCharacter(req, res);
     },
   );
   router.delete("/:campaignId/characters/:characterId", authMiddleware, async (req, res) => {
-    await controller.deleteCharacter(req, res);
+    await campaignCharactersController.deleteCharacter(req, res);
   });
   router.post("/:campaignId/characters/:characterId/archive", authMiddleware, async (req, res) => {
-    await controller.archiveCharacter(req, res);
+    await campaignCharactersController.archiveCharacter(req, res);
   });
   router.get("/:campaignId/members", authMiddleware, async (req, res) => {
-    await controller.listCampaignMembers(req, res);
+    await campaignMembersController.listCampaignMembers(req, res);
   });
   router.post(
     "/:campaignId/members/invite",
     authMiddleware,
     createValidateBodyMiddleware(inviteCampaignMemberSchema),
     async (req, res) => {
-      await controller.inviteCampaignMember(req, res);
+      await campaignMembersController.inviteCampaignMember(req, res);
     },
   );
   router.patch(
@@ -86,29 +90,29 @@ export function createCampaignsRouter(
     authMiddleware,
     createValidateBodyMiddleware(updateCampaignMemberSchema),
     async (req, res) => {
-      await controller.updateCampaignMember(req, res);
+      await campaignMembersController.updateCampaignMember(req, res);
     },
   );
   router.delete("/:campaignId/members/:memberId", authMiddleware, async (req, res) => {
-    await controller.removeCampaignMember(req, res);
+    await campaignMembersController.removeCampaignMember(req, res);
   });
   router.get("/:campaignId/invitations", authMiddleware, async (req, res) => {
-    await controller.listCampaignInvitations(req, res);
+    await campaignMembersController.listCampaignInvitations(req, res);
   });
   router.post("/:campaignId/invitations/:invitationId/accept", authMiddleware, async (req, res) => {
-    await controller.acceptCampaignInvitation(req, res);
+    await campaignMembersController.acceptCampaignInvitation(req, res);
   });
   router.post("/:campaignId/invitations/:invitationId/decline", authMiddleware, async (req, res) => {
-    await controller.declineCampaignInvitation(req, res);
+    await campaignMembersController.declineCampaignInvitation(req, res);
   });
   router.post("/:campaignId/archive", authMiddleware, async (req, res) => {
-    await controller.archiveCampaign(req, res);
+    await campaignsController.archiveCampaign(req, res);
   });
   router.post("/:campaignId/restore", authMiddleware, async (req, res) => {
-    await controller.restoreCampaign(req, res);
+    await campaignsController.restoreCampaign(req, res);
   });
   router.delete("/:campaignId", authMiddleware, async (req, res) => {
-    await controller.deleteCampaign(req, res);
+    await campaignsController.deleteCampaign(req, res);
   });
 
   return router;

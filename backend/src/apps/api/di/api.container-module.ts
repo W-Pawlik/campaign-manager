@@ -1,6 +1,8 @@
 import type { ErrorRequestHandler, RequestHandler } from "express";
 import type { Container } from "inversify";
 import { AuthController } from "@api/controllers/AuthController";
+import { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
+import { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import { CampaignsController } from "@api/controllers/CampaignsController";
 import { HealthController } from "@api/controllers/HealthController";
 import { UsersController } from "@api/controllers/users.controller";
@@ -53,6 +55,24 @@ export function loadApiContainerModule(container: Container): void {
       const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
 
       return new CampaignsController(commandBus, queryBus);
+    })
+    .inTransientScope();
+  container
+    .bind<CampaignMembersController>(API_TYPES.CampaignMembersController)
+    .toDynamicValue((context) => {
+      const commandBus = context.get<CommandBus>(CORE_TYPES.CommandBus);
+      const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
+
+      return new CampaignMembersController(commandBus, queryBus);
+    })
+    .inTransientScope();
+  container
+    .bind<CampaignCharactersController>(API_TYPES.CampaignCharactersController)
+    .toDynamicValue((context) => {
+      const commandBus = context.get<CommandBus>(CORE_TYPES.CommandBus);
+      const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
+
+      return new CampaignCharactersController(commandBus, queryBus);
     })
     .inTransientScope();
 
