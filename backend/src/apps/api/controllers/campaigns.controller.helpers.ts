@@ -31,6 +31,10 @@ export function getNpcId(req: Request): string {
   return getRequiredRouteParam(req, "npcId", "NPC id is required");
 }
 
+export function getLocationId(req: Request): string {
+  return getRequiredRouteParam(req, "locationId", "Location id is required");
+}
+
 function getRequiredRouteParam(req: Request, paramName: string, errorMessage: string): string {
   const value = req.params[paramName];
 

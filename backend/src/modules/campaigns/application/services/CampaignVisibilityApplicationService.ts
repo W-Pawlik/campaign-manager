@@ -1,5 +1,6 @@
 import type { CampaignRole } from "@modules/campaigns/domain/value-objects/CampaignRole";
 import type { CampaignPermissionDomainService } from "@modules/campaigns/domain/services/CampaignPermissionDomainService";
+import { CAMPAIGN_PERMISSION_ACTION } from "@modules/campaigns/domain/services/CampaignPermissionDomainService";
 
 type SecretFieldFilter<T> = (value: T) => T;
 
@@ -8,6 +9,10 @@ export class CampaignVisibilityApplicationService {
 
   public canSeeSecretContent(role: CampaignRole): boolean {
     return this.permissionService.canSeeSecretContent(role);
+  }
+
+  public canSeeHiddenLocation(role: CampaignRole): boolean {
+    return this.permissionService.can(role, CAMPAIGN_PERMISSION_ACTION.LOCATION_READ_HIDDEN);
   }
 
   public filterSecretValue<T>(value: T, role: CampaignRole): T | null {

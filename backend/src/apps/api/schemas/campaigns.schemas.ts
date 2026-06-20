@@ -14,6 +14,22 @@ const characterStatusSchema = z.enum([
 const npcAttitudeSchema = z.enum(["FRIENDLY", "NEUTRAL", "HOSTILE", "UNKNOWN"]);
 const npcImportanceSchema = z.enum(["MINOR", "SUPPORTING", "MAJOR", "BOSS"]);
 const npcStatusSchema = z.enum(["ALIVE", "DEAD", "MISSING", "UNKNOWN", "ARCHIVED"]);
+const locationTypeSchema = z.enum([
+  "WORLD",
+  "CONTINENT",
+  "REGION",
+  "KINGDOM",
+  "CITY",
+  "DISTRICT",
+  "BUILDING",
+  "DUNGEON",
+  "ROOM",
+  "LANDMARK",
+  "PLANE",
+  "OTHER",
+]);
+const locationStatusSchema = z.enum(["ACTIVE", "DESTROYED", "LOST", "HIDDEN", "ARCHIVED"]);
+const locationVisibilitySchema = z.enum(["PUBLIC", "DISCOVERED", "GM_ONLY"]);
 
 const nullableTrimmedStringSchema = z
   .string()
@@ -174,3 +190,33 @@ export const updateNpcSchema = z
 
 export type CreateNpcRequestBody = z.infer<typeof createNpcSchema>;
 export type UpdateNpcRequestBody = z.infer<typeof updateNpcSchema>;
+
+const createOrUpdateLocationSchemaShape = {
+  parentLocationId: nullableUuidSchema.optional(),
+  name: z.string().trim().min(1).max(120).optional(),
+  type: locationTypeSchema.optional(),
+  shortDescription: nullableLongTextSchema.optional(),
+  description: nullableLongTextSchema.optional(),
+  gmNotes: nullableLongTextSchema.optional(),
+  mapImageUrl: nullableUrlSchema.optional(),
+  coordinates: nullableJsonSchema.optional(),
+  status: locationStatusSchema.optional(),
+  visibility: locationVisibilitySchema.optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createLocationSchema = z
+  .object({
+    ...createOrUpdateLocationSchemaShape,
+    name: z.string().trim().min(1).max(120),
+  })
+  .strict();
+
+export const updateLocationSchema = z
+  .object(createOrUpdateLocationSchemaShape)
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export type CreateLocationRequestBody = z.infer<typeof createLocationSchema>;
+export type UpdateLocationRequestBody = z.infer<typeof updateLocationSchema>;

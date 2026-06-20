@@ -2,6 +2,7 @@ import type { ErrorRequestHandler, RequestHandler } from "express";
 import type { Container } from "inversify";
 import { AuthController } from "@api/controllers/AuthController";
 import { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
+import { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
 import { CampaignsController } from "@api/controllers/CampaignsController";
@@ -83,6 +84,15 @@ export function loadApiContainerModule(container: Container): void {
       const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
 
       return new CampaignNpcsController(commandBus, queryBus);
+    })
+    .inTransientScope();
+  container
+    .bind<CampaignLocationsController>(API_TYPES.CampaignLocationsController)
+    .toDynamicValue((context) => {
+      const commandBus = context.get<CommandBus>(CORE_TYPES.CommandBus);
+      const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
+
+      return new CampaignLocationsController(commandBus, queryBus);
     })
     .inTransientScope();
 

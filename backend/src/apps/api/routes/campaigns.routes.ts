@@ -1,5 +1,6 @@
 import { Router, type RequestHandler } from "express";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
+import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
@@ -8,11 +9,13 @@ import {
   createCampaignCoverImageUploadSchema,
   createCampaignSchema,
   createCharacterSchema,
+  createLocationSchema,
   createNpcSchema,
   inviteCampaignMemberSchema,
   updateCharacterSchema,
   updateCampaignMemberSchema,
   updateCampaignSchema,
+  updateLocationSchema,
   updateNpcSchema,
 } from "@api/schemas/campaigns.schemas";
 
@@ -21,6 +24,7 @@ export function createCampaignsRouter(
   campaignMembersController: CampaignMembersController,
   campaignCharactersController: CampaignCharactersController,
   campaignNpcsController: CampaignNpcsController,
+  campaignLocationsController: CampaignLocationsController,
   authMiddleware: RequestHandler,
 ): Router {
   const router = Router();
@@ -102,6 +106,31 @@ export function createCampaignsRouter(
   );
   router.delete("/:campaignId/npcs/:npcId", authMiddleware, async (req, res) => {
     await campaignNpcsController.deleteNpc(req, res);
+  });
+  router.get("/:campaignId/locations", authMiddleware, async (req, res) => {
+    await campaignLocationsController.listCampaignLocations(req, res);
+  });
+  router.post(
+    "/:campaignId/locations",
+    authMiddleware,
+    createValidateBodyMiddleware(createLocationSchema),
+    async (req, res) => {
+      await campaignLocationsController.createLocation(req, res);
+    },
+  );
+  router.get("/:campaignId/locations/:locationId", authMiddleware, async (req, res) => {
+    await campaignLocationsController.getLocationDetails(req, res);
+  });
+  router.patch(
+    "/:campaignId/locations/:locationId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateLocationSchema),
+    async (req, res) => {
+      await campaignLocationsController.updateLocation(req, res);
+    },
+  );
+  router.delete("/:campaignId/locations/:locationId", authMiddleware, async (req, res) => {
+    await campaignLocationsController.deleteLocation(req, res);
   });
   router.get("/:campaignId/members", authMiddleware, async (req, res) => {
     await campaignMembersController.listCampaignMembers(req, res);

@@ -38,6 +38,7 @@ model User {
   ownedCampaigns      Campaign[]
   ownedCharacters     Character[]         @relation("CharacterOwner")
   createdNpcs         Npc[]               @relation("NpcCreator")
+  createdLocations    Location[]          @relation("LocationCreator")
   sentCampaignInvites CampaignMember[] @relation("CampaignMemberInvitedBy")
   campaignInvitations CampaignInvitation[] @relation("CampaignInvitationUser")
   sentInvitations     CampaignInvitation[] @relation("CampaignInvitationInvitedBy")
@@ -98,6 +99,7 @@ model Campaign {
   invitations        CampaignInvitation[]
   characters         Character[]
   npcs               Npc[]
+  locations          Location[]
 
   @@index([ownerId])
   @@index([status])
@@ -242,4 +244,35 @@ model Npc {
   @@index([importance])
   @@index([deletedAt])
   @@map("npcs")
+}
+
+model Location {
+  id               String    @id
+  campaignId       String
+  parentLocationId String?
+  name             String
+  type             String
+  shortDescription String?
+  description      String?
+  gmNotes          String?
+  mapImageUrl      String?
+  coordinates      Json?
+  status           String
+  visibility       String
+  createdById      String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+  campaign         Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  parentLocation   Location? @relation("LocationHierarchy", fields: [parentLocationId], references: [id], onDelete: SetNull)
+  childLocations   Location[] @relation("LocationHierarchy")
+  createdBy        User      @relation("LocationCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([campaignId])
+  @@index([parentLocationId])
+  @@index([createdById])
+  @@index([status])
+  @@index([visibility])
+  @@index([deletedAt])
+  @@map("locations")
 }
