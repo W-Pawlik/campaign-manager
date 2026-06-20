@@ -267,6 +267,16 @@ class InMemoryCampaignMembershipRepository implements CampaignMembershipReposito
     });
   }
 
+  public async listActiveMembers(campaignId: string): Promise<CampaignMember[]> {
+    const members = await Promise.all(
+      this.store.memberships
+        .filter((entry) => entry.campaignId === campaignId)
+        .map((entry) => this.findActiveMemberByUserId(entry.campaignId, entry.userId)),
+    );
+
+    return members.filter((member): member is CampaignMember => member !== null);
+  }
+
   public async findMemberById(
     campaignId: string,
     memberId: string,
@@ -429,3 +439,5 @@ describe("Campaigns API flow", () => {
     );
   });
 });
+
+

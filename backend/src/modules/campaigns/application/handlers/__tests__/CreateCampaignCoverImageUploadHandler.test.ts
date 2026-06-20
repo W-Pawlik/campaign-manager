@@ -56,6 +56,7 @@ function createOwnerMember(): CampaignMember {
 function createMembershipRepository(): CampaignMembershipRepository {
   return {
     findActiveMemberByUserId: vi.fn().mockResolvedValue(createOwnerMember()),
+    listActiveMembers: vi.fn().mockResolvedValue([]),
     findMemberById: vi.fn(),
     findActiveInvitationByUserId: vi.fn(),
     findInvitationById: vi.fn(),
@@ -118,3 +119,5 @@ describe("CreateCampaignCoverImageUploadHandler", () => {
     expect(result.uploadUrl).toBe("https://upload.example.test");
   });
 });
+
+

@@ -40,6 +40,8 @@ model User {
   createdNpcs         Npc[]               @relation("NpcCreator")
   createdLocations    Location[]          @relation("LocationCreator")
   authoredNotes       Note[]              @relation("NoteAuthor")
+  gameSessions        GameSession[]       @relation("GameSessionCreator")
+  sessionParticipants SessionParticipant[] @relation("SessionParticipantUser")
   sentCampaignInvites CampaignMember[] @relation("CampaignMemberInvitedBy")
   campaignInvitations CampaignInvitation[] @relation("CampaignInvitationUser")
   sentInvitations     CampaignInvitation[] @relation("CampaignInvitationInvitedBy")
@@ -102,6 +104,7 @@ model Campaign {
   npcs               Npc[]
   locations          Location[]
   notes              Note[]
+  gameSessions       GameSession[]
 
   @@index([ownerId])
   @@index([status])
@@ -304,4 +307,55 @@ model Note {
   @@index([isPinned])
   @@index([deletedAt])
   @@map("notes")
+}
+
+model GameSession {
+  id               String      @id
+  campaignId       String
+  title            String
+  description      String?
+  status           String
+  scheduledStartAt DateTime?
+  scheduledEndAt   DateTime?
+  actualStartAt    DateTime?
+  actualEndAt      DateTime?
+  locationType     String?
+  locationDetails  String?
+  meetingUrl       String?
+  summaryPublic    String?
+  summaryPrivate   String?
+  createdById      String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  cancelledAt      DateTime?
+  campaign         Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  createdBy        User        @relation("GameSessionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  participants     SessionParticipant[]
+
+  @@index([campaignId])
+  @@index([createdById])
+  @@index([status])
+  @@index([scheduledStartAt])
+  @@index([cancelledAt])
+  @@map("game_sessions")
+}
+
+model SessionParticipant {
+  id               String      @id
+  sessionId        String
+  userId           String
+  characterId      String?
+  attendanceStatus String
+  note             String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  session          GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user             User        @relation("SessionParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([characterId])
+  @@index([attendanceStatus])
+  @@map("session_participants")
 }

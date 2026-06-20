@@ -15,6 +15,7 @@ import type { CampaignLocationsController } from "@api/controllers/CampaignLocat
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
 import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
+import type { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 
 export interface CreateApiAppOptions {
@@ -48,6 +49,9 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   );
   const campaignNotesController = options.container.get<CampaignNotesController>(
     API_TYPES.CampaignNotesController,
+  );
+  const campaignSessionsController = options.container.get<CampaignSessionsController>(
+    API_TYPES.CampaignSessionsController,
   );
 
   const corsOrigin =
@@ -83,6 +87,7 @@ export function createApiApp(options: CreateApiAppOptions): Express {
       campaignNpcsController,
       campaignLocationsController,
       campaignNotesController,
+      campaignSessionsController,
       authMiddleware,
       ...routesOptions,
     }),

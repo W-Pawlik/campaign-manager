@@ -1,0 +1,15 @@
+export const SESSIONS_TYPES = {
+  GameSessionRepository: Symbol.for("sessions.GameSessionRepository"),
+  GameSessionReadRepository: Symbol.for("sessions.GameSessionReadRepository"),
+  SessionParticipantRepository: Symbol.for("sessions.SessionParticipantRepository"),
+  SessionMapper: Symbol.for("sessions.SessionMapper"),
+  CreateSessionHandler: Symbol.for("sessions.CreateSessionHandler"),
+  UpdateSessionHandler: Symbol.for("sessions.UpdateSessionHandler"),
+  CancelSessionHandler: Symbol.for("sessions.CancelSessionHandler"),
+  ConfirmSessionAttendanceHandler: Symbol.for("sessions.ConfirmSessionAttendanceHandler"),
+  DeclineSessionAttendanceHandler: Symbol.for("sessions.DeclineSessionAttendanceHandler"),
+  CompleteSessionHandler: Symbol.for("sessions.CompleteSessionHandler"),
+  ListCampaignSessionsHandler: Symbol.for("sessions.ListCampaignSessionsHandler"),
+  GetSessionDetailsHandler: Symbol.for("sessions.GetSessionDetailsHandler"),
+  ListSessionParticipantsHandler: Symbol.for("sessions.ListSessionParticipantsHandler"),
+} as const;

@@ -39,6 +39,10 @@ export function getNoteId(req: Request): string {
   return getRequiredRouteParam(req, "noteId", "Note id is required");
 }
 
+export function getSessionId(req: Request): string {
+  return getRequiredRouteParam(req, "sessionId", "Session id is required");
+}
+
 function getRequiredRouteParam(req: Request, paramName: string, errorMessage: string): string {
   const value = req.params[paramName];
 

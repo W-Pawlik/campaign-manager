@@ -4,6 +4,7 @@ import type { CampaignLocationsController } from "@api/controllers/CampaignLocat
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
 import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
+import type { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import { createValidateBodyMiddleware } from "@api/middlewares/validate-request.middleware";
 import {
@@ -13,6 +14,7 @@ import {
   createLocationSchema,
   createNoteSchema,
   createNpcSchema,
+  createSessionSchema,
   inviteCampaignMemberSchema,
   updateCharacterSchema,
   updateCampaignMemberSchema,
@@ -20,6 +22,7 @@ import {
   updateLocationSchema,
   updateNoteSchema,
   updateNpcSchema,
+  updateSessionSchema,
 } from "@api/schemas/campaigns.schemas";
 
 export function createCampaignsRouter(
@@ -29,6 +32,7 @@ export function createCampaignsRouter(
   campaignNpcsController: CampaignNpcsController,
   campaignLocationsController: CampaignLocationsController,
   campaignNotesController: CampaignNotesController,
+  campaignSessionsController: CampaignSessionsController,
   authMiddleware: RequestHandler,
 ): Router {
   const router = Router();
@@ -160,6 +164,40 @@ export function createCampaignsRouter(
   );
   router.delete("/:campaignId/notes/:noteId", authMiddleware, async (req, res) => {
     await campaignNotesController.deleteNote(req, res);
+  });
+  router.get("/:campaignId/sessions", authMiddleware, async (req, res) => {
+    await campaignSessionsController.listCampaignSessions(req, res);
+  });
+  router.post(
+    "/:campaignId/sessions",
+    authMiddleware,
+    createValidateBodyMiddleware(createSessionSchema),
+    async (req, res) => {
+      await campaignSessionsController.createSession(req, res);
+    },
+  );
+  router.get("/:campaignId/sessions/:sessionId", authMiddleware, async (req, res) => {
+    await campaignSessionsController.getSessionDetails(req, res);
+  });
+  router.patch(
+    "/:campaignId/sessions/:sessionId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateSessionSchema),
+    async (req, res) => {
+      await campaignSessionsController.updateSession(req, res);
+    },
+  );
+  router.delete("/:campaignId/sessions/:sessionId", authMiddleware, async (req, res) => {
+    await campaignSessionsController.cancelSession(req, res);
+  });
+  router.post("/:campaignId/sessions/:sessionId/confirm", authMiddleware, async (req, res) => {
+    await campaignSessionsController.confirmAttendance(req, res);
+  });
+  router.post("/:campaignId/sessions/:sessionId/decline", authMiddleware, async (req, res) => {
+    await campaignSessionsController.declineAttendance(req, res);
+  });
+  router.post("/:campaignId/sessions/:sessionId/complete", authMiddleware, async (req, res) => {
+    await campaignSessionsController.completeSession(req, res);
   });
   router.get("/:campaignId/members", authMiddleware, async (req, res) => {
     await campaignMembersController.listCampaignMembers(req, res);

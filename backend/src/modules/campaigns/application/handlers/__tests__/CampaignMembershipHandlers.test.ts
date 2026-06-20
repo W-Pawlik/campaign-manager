@@ -74,6 +74,7 @@ function createMembershipRepository(): CampaignMembershipRepository {
 
       return Promise.resolve(null);
     }),
+    listActiveMembers: vi.fn().mockResolvedValue([]),
     findMemberById: vi.fn(),
     findActiveInvitationByUserId: vi.fn().mockResolvedValue(null),
     findInvitationById: vi.fn(),
@@ -146,3 +147,5 @@ describe("campaign membership handlers", () => {
     expect(membershipRepository.saveMember).not.toHaveBeenCalled();
   });
 });
+
+

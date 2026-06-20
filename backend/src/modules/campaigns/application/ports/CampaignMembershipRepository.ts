@@ -4,6 +4,7 @@ import type { CampaignRole } from "@modules/campaigns/domain/value-objects/Campa
 
 export interface CampaignMembershipRepository {
   findActiveMemberByUserId(campaignId: string, userId: string): Promise<CampaignMember | null>;
+  listActiveMembers(campaignId: string): Promise<CampaignMember[]>;
   findMemberById(campaignId: string, memberId: string): Promise<CampaignMember | null>;
   findActiveInvitationByUserId(
     campaignId: string,

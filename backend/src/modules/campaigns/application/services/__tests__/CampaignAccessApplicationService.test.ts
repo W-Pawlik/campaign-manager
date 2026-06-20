@@ -67,6 +67,7 @@ function createCampaignRepository(campaign: Campaign | null): CampaignRepository
 function createMembershipRepository(member: CampaignMember | null): CampaignMembershipRepository {
   return {
     findActiveMemberByUserId: vi.fn().mockResolvedValue(member),
+    listActiveMembers: vi.fn().mockResolvedValue([]),
     findMemberById: vi.fn(),
     findActiveInvitationByUserId: vi.fn(),
     findInvitationById: vi.fn(),
@@ -141,3 +142,5 @@ describe("CampaignAccessApplicationService", () => {
     ).rejects.toBeInstanceOf(NotFoundError);
   });
 });
+
+

@@ -5,6 +5,7 @@ import { registerCharactersHandlers } from "@modules/characters/characters.handl
 import { registerLocationsHandlers } from "@modules/locations/locations.handlers";
 import { registerNotesHandlers } from "@modules/notes/notes.handlers";
 import { registerNpcsHandlers } from "@modules/npcs/npcs.handlers";
+import { registerSessionsHandlers } from "@modules/sessions/sessions.handlers";
 import { registerUsersHandlers } from "@modules/users/users.handlers";
 
 export function registerHandlers(container: Container): void {
@@ -15,4 +16,5 @@ export function registerHandlers(container: Container): void {
   registerLocationsHandlers(container);
   registerNotesHandlers(container);
   registerNpcsHandlers(container);
+  registerSessionsHandlers(container);
 }

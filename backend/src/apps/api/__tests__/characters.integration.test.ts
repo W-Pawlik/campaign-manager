@@ -175,6 +175,16 @@ class InMemoryCampaignMembershipRepository implements CampaignMembershipReposito
     });
   }
 
+  public async listActiveMembers(campaignId: string): Promise<CampaignMember[]> {
+    const members = await Promise.all(
+      this.store.memberships
+        .filter((entry) => entry.campaignId === campaignId)
+        .map((entry) => this.findActiveMemberByUserId(entry.campaignId, entry.userId)),
+    );
+
+    return members.filter((member): member is CampaignMember => member !== null);
+  }
+
   public async findMemberById(): Promise<CampaignMember | null> {
     return null;
   }
@@ -492,3 +502,5 @@ describe("Characters API flow", () => {
     expect(deletedDetailsResponse.status).toBe(404);
   });
 });
+
+

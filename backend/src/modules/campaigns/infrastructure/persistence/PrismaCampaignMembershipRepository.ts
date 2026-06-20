@@ -28,6 +28,20 @@ export class PrismaCampaignMembershipRepository implements CampaignMembershipRep
     return member === null ? null : this.mapper.memberToDomain(member);
   }
 
+  public async listActiveMembers(campaignId: string): Promise<CampaignMember[]> {
+    const members = await this.prismaClient.campaignMember.findMany({
+      where: {
+        campaignId,
+        status: MEMBER_STATUS.ACTIVE,
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    return members.map((member) => this.mapper.memberToDomain(member));
+  }
+
   public async findMemberById(
     campaignId: string,
     memberId: string,

@@ -30,6 +30,8 @@ const locationTypeSchema = z.enum([
 ]);
 const locationStatusSchema = z.enum(["ACTIVE", "DESTROYED", "LOST", "HIDDEN", "ARCHIVED"]);
 const locationVisibilitySchema = z.enum(["PUBLIC", "DISCOVERED", "GM_ONLY"]);
+const sessionStatusSchema = z.enum(["PLANNED", "CONFIRMED", "COMPLETED", "CANCELLED", "POSTPONED"]);
+const sessionLocationTypeSchema = z.enum(["ONLINE", "IN_PERSON", "HYBRID", "UNKNOWN"]);
 const noteVisibilitySchema = z.enum([
   "PRIVATE_AUTHOR",
   "PRIVATE_GM",
@@ -70,6 +72,7 @@ const nullableLongTextSchema = z.string().trim().min(1).max(10000).nullable();
 const nullableJsonSchema = z.unknown().nullable();
 const nullableUuidSchema = z.uuid().nullable();
 const nullableUrlSchema = z.string().trim().url().nullable();
+const nullableDatetimeSchema = z.string().datetime({ offset: true }).nullable();
 const optionalAbilityScoreSchema = z.number().int().min(1).max(30).nullable().optional();
 
 export const createCampaignSchema = z
@@ -249,6 +252,38 @@ export const updateLocationSchema = z
 
 export type CreateLocationRequestBody = z.infer<typeof createLocationSchema>;
 export type UpdateLocationRequestBody = z.infer<typeof updateLocationSchema>;
+
+const createOrUpdateSessionSchemaShape = {
+  title: z.string().trim().min(1).max(200).optional(),
+  description: nullableLongTextSchema.optional(),
+  status: sessionStatusSchema.optional(),
+  scheduledStartAt: nullableDatetimeSchema.optional(),
+  scheduledEndAt: nullableDatetimeSchema.optional(),
+  actualStartAt: nullableDatetimeSchema.optional(),
+  actualEndAt: nullableDatetimeSchema.optional(),
+  locationType: sessionLocationTypeSchema.nullable().optional(),
+  locationDetails: nullableLongTextSchema.optional(),
+  meetingUrl: nullableUrlSchema.optional(),
+  summaryPublic: nullableLongTextSchema.optional(),
+  summaryPrivate: nullableLongTextSchema.optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createSessionSchema = z
+  .object({
+    ...createOrUpdateSessionSchemaShape,
+    title: z.string().trim().min(1).max(200),
+  })
+  .strict();
+
+export const updateSessionSchema = z
+  .object(createOrUpdateSessionSchemaShape)
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export type CreateSessionRequestBody = z.infer<typeof createSessionSchema>;
+export type UpdateSessionRequestBody = z.infer<typeof updateSessionSchema>;
 
 const createOrUpdateNoteSchemaShape = {
   title: z.string().trim().min(1).max(200).nullable().optional(),
