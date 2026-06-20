@@ -1,22 +1,26 @@
 import { Router, type RequestHandler } from "express";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
+import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import { createValidateBodyMiddleware } from "@api/middlewares/validate-request.middleware";
 import {
   createCampaignCoverImageUploadSchema,
   createCampaignSchema,
   createCharacterSchema,
+  createNpcSchema,
   inviteCampaignMemberSchema,
   updateCharacterSchema,
   updateCampaignMemberSchema,
   updateCampaignSchema,
+  updateNpcSchema,
 } from "@api/schemas/campaigns.schemas";
 
 export function createCampaignsRouter(
   campaignsController: CampaignsController,
   campaignMembersController: CampaignMembersController,
   campaignCharactersController: CampaignCharactersController,
+  campaignNpcsController: CampaignNpcsController,
   authMiddleware: RequestHandler,
 ): Router {
   const router = Router();
@@ -73,6 +77,31 @@ export function createCampaignsRouter(
   });
   router.post("/:campaignId/characters/:characterId/archive", authMiddleware, async (req, res) => {
     await campaignCharactersController.archiveCharacter(req, res);
+  });
+  router.get("/:campaignId/npcs", authMiddleware, async (req, res) => {
+    await campaignNpcsController.listCampaignNpcs(req, res);
+  });
+  router.post(
+    "/:campaignId/npcs",
+    authMiddleware,
+    createValidateBodyMiddleware(createNpcSchema),
+    async (req, res) => {
+      await campaignNpcsController.createNpc(req, res);
+    },
+  );
+  router.get("/:campaignId/npcs/:npcId", authMiddleware, async (req, res) => {
+    await campaignNpcsController.getNpcDetails(req, res);
+  });
+  router.patch(
+    "/:campaignId/npcs/:npcId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateNpcSchema),
+    async (req, res) => {
+      await campaignNpcsController.updateNpc(req, res);
+    },
+  );
+  router.delete("/:campaignId/npcs/:npcId", authMiddleware, async (req, res) => {
+    await campaignNpcsController.deleteNpc(req, res);
   });
   router.get("/:campaignId/members", authMiddleware, async (req, res) => {
     await campaignMembersController.listCampaignMembers(req, res);

@@ -8,6 +8,7 @@ import type {
   CreateCharacterRequestBody,
   UpdateCharacterRequestBody,
 } from "@api/schemas/campaigns.schemas";
+import { omitUndefinedProperties } from "@api/mappers/request-mapper.utils";
 
 interface MapCreateCharacterCommandInputParams {
   campaignId: string;
@@ -48,10 +49,4 @@ export function mapUpdateCharacterCommandInput(
     actorUserId: params.actorUserId,
     ...body,
   };
-}
-
-function omitUndefinedProperties<T extends Record<string, unknown>>(input: T): Partial<T> {
-  const entries = Object.entries(input).filter(([, value]) => value !== undefined);
-
-  return Object.fromEntries(entries) as Partial<T>;
 }

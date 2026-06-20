@@ -27,6 +27,10 @@ export function getCharacterId(req: Request): string {
   return getRequiredRouteParam(req, "characterId", "Character id is required");
 }
 
+export function getNpcId(req: Request): string {
+  return getRequiredRouteParam(req, "npcId", "NPC id is required");
+}
+
 function getRequiredRouteParam(req: Request, paramName: string, errorMessage: string): string {
   const value = req.params[paramName];
 

@@ -11,6 +11,9 @@ const characterStatusSchema = z.enum([
   "RETIRED",
   "ARCHIVED",
 ]);
+const npcAttitudeSchema = z.enum(["FRIENDLY", "NEUTRAL", "HOSTILE", "UNKNOWN"]);
+const npcImportanceSchema = z.enum(["MINOR", "SUPPORTING", "MAJOR", "BOSS"]);
+const npcStatusSchema = z.enum(["ALIVE", "DEAD", "MISSING", "UNKNOWN", "ARCHIVED"]);
 
 const nullableTrimmedStringSchema = z
   .string()
@@ -133,3 +136,41 @@ export const updateCharacterSchema = z
 
 export type CreateCharacterRequestBody = z.infer<typeof createCharacterSchema>;
 export type UpdateCharacterRequestBody = z.infer<typeof updateCharacterSchema>;
+
+const createOrUpdateNpcSchemaShape = {
+  name: z.string().trim().min(1).max(120).optional(),
+  title: z.string().trim().min(1).max(120).nullable().optional(),
+  avatarUrl: nullableUrlSchema.optional(),
+  race: z.string().trim().min(1).max(120).nullable().optional(),
+  occupation: z.string().trim().min(1).max(120).nullable().optional(),
+  faction: z.string().trim().min(1).max(120).nullable().optional(),
+  locationId: nullableUuidSchema.optional(),
+  attitude: npcAttitudeSchema.optional(),
+  importance: npcImportanceSchema.optional(),
+  status: npcStatusSchema.optional(),
+  publicDescription: nullableLongTextSchema.optional(),
+  gmNotes: nullableLongTextSchema.optional(),
+  appearance: nullableLongTextSchema.optional(),
+  personality: nullableLongTextSchema.optional(),
+  motivations: nullableLongTextSchema.optional(),
+  secrets: nullableLongTextSchema.optional(),
+  statBlock: nullableJsonSchema.optional(),
+  externalReferenceId: nullableUuidSchema.optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createNpcSchema = z
+  .object({
+    ...createOrUpdateNpcSchemaShape,
+    name: z.string().trim().min(1).max(120),
+  })
+  .strict();
+
+export const updateNpcSchema = z
+  .object(createOrUpdateNpcSchemaShape)
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export type CreateNpcRequestBody = z.infer<typeof createNpcSchema>;
+export type UpdateNpcRequestBody = z.infer<typeof updateNpcSchema>;
