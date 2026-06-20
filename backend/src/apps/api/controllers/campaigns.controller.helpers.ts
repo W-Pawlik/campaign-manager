@@ -35,6 +35,10 @@ export function getLocationId(req: Request): string {
   return getRequiredRouteParam(req, "locationId", "Location id is required");
 }
 
+export function getNoteId(req: Request): string {
+  return getRequiredRouteParam(req, "noteId", "Note id is required");
+}
+
 function getRequiredRouteParam(req: Request, paramName: string, errorMessage: string): string {
   const value = req.params[paramName];
 

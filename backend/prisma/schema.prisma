@@ -39,6 +39,7 @@ model User {
   ownedCharacters     Character[]         @relation("CharacterOwner")
   createdNpcs         Npc[]               @relation("NpcCreator")
   createdLocations    Location[]          @relation("LocationCreator")
+  authoredNotes       Note[]              @relation("NoteAuthor")
   sentCampaignInvites CampaignMember[] @relation("CampaignMemberInvitedBy")
   campaignInvitations CampaignInvitation[] @relation("CampaignInvitationUser")
   sentInvitations     CampaignInvitation[] @relation("CampaignInvitationInvitedBy")
@@ -100,6 +101,7 @@ model Campaign {
   characters         Character[]
   npcs               Npc[]
   locations          Location[]
+  notes              Note[]
 
   @@index([ownerId])
   @@index([status])
@@ -275,4 +277,31 @@ model Location {
   @@index([visibility])
   @@index([deletedAt])
   @@map("locations")
+}
+
+model Note {
+  id                String    @id
+  campaignId        String
+  authorId          String
+  title             String?
+  content           String
+  visibility        String
+  category          String
+  relatedEntityType String?
+  relatedEntityId   String?
+  isPinned          Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+  campaign          Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  author            User      @relation("NoteAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([campaignId])
+  @@index([authorId])
+  @@index([visibility])
+  @@index([category])
+  @@index([relatedEntityType, relatedEntityId])
+  @@index([isPinned])
+  @@index([deletedAt])
+  @@map("notes")
 }

@@ -30,6 +30,35 @@ const locationTypeSchema = z.enum([
 ]);
 const locationStatusSchema = z.enum(["ACTIVE", "DESTROYED", "LOST", "HIDDEN", "ARCHIVED"]);
 const locationVisibilitySchema = z.enum(["PUBLIC", "DISCOVERED", "GM_ONLY"]);
+const noteVisibilitySchema = z.enum([
+  "PRIVATE_AUTHOR",
+  "PRIVATE_GM",
+  "CAMPAIGN_PUBLIC",
+  "SESSION_PUBLIC",
+  "CHARACTER_OWNER",
+]);
+const noteCategorySchema = z.enum([
+  "GENERAL",
+  "SESSION",
+  "CHARACTER",
+  "QUEST",
+  "LOCATION",
+  "NPC",
+  "ITEM",
+  "LORE",
+  "GM_SECRET",
+  "PLAYER_NOTE",
+]);
+const relatedEntityTypeSchema = z.enum([
+  "CAMPAIGN",
+  "SESSION",
+  "CHARACTER",
+  "NPC",
+  "QUEST",
+  "LOCATION",
+  "ITEM",
+  "CHRONICLE_ENTRY",
+]);
 
 const nullableTrimmedStringSchema = z
   .string()
@@ -220,3 +249,29 @@ export const updateLocationSchema = z
 
 export type CreateLocationRequestBody = z.infer<typeof createLocationSchema>;
 export type UpdateLocationRequestBody = z.infer<typeof updateLocationSchema>;
+
+const createOrUpdateNoteSchemaShape = {
+  title: z.string().trim().min(1).max(200).nullable().optional(),
+  content: z.string().trim().min(1).max(20000).optional(),
+  visibility: noteVisibilitySchema.optional(),
+  category: noteCategorySchema.optional(),
+  relatedEntityType: relatedEntityTypeSchema.nullable().optional(),
+  relatedEntityId: nullableUuidSchema.optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createNoteSchema = z
+  .object({
+    ...createOrUpdateNoteSchemaShape,
+    content: z.string().trim().min(1).max(20000),
+  })
+  .strict();
+
+export const updateNoteSchema = z
+  .object(createOrUpdateNoteSchemaShape)
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export type CreateNoteRequestBody = z.infer<typeof createNoteSchema>;
+export type UpdateNoteRequestBody = z.infer<typeof updateNoteSchema>;

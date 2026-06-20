@@ -1,0 +1,16 @@
+export const NOTES_TYPES = {
+  NoteRepository: Symbol.for("notes.NoteRepository"),
+  NoteReadRepository: Symbol.for("notes.NoteReadRepository"),
+  NoteMapper: Symbol.for("notes.NoteMapper"),
+  NotePermissionDomainService: Symbol.for("notes.NotePermissionDomainService"),
+  NoteRelatedEntityApplicationService: Symbol.for("notes.NoteRelatedEntityApplicationService"),
+  NoteVisibilityApplicationService: Symbol.for("notes.NoteVisibilityApplicationService"),
+  CreateNoteHandler: Symbol.for("notes.CreateNoteHandler"),
+  UpdateNoteHandler: Symbol.for("notes.UpdateNoteHandler"),
+  DeleteNoteHandler: Symbol.for("notes.DeleteNoteHandler"),
+  PinNoteHandler: Symbol.for("notes.PinNoteHandler"),
+  UnpinNoteHandler: Symbol.for("notes.UnpinNoteHandler"),
+  ListCampaignNotesHandler: Symbol.for("notes.ListCampaignNotesHandler"),
+  GetNoteDetailsHandler: Symbol.for("notes.GetNoteDetailsHandler"),
+  ListRelatedNotesHandler: Symbol.for("notes.ListRelatedNotesHandler"),
+} as const;

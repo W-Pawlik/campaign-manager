@@ -5,6 +5,7 @@ import type { UsersController } from "@api/controllers/users.controller";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
 import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
+import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
 import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import { createHealthRouter } from "@api/routes/health.route";
@@ -21,6 +22,7 @@ export interface ApiRoutesOptions {
   campaignCharactersController: CampaignCharactersController;
   campaignNpcsController: CampaignNpcsController;
   campaignLocationsController: CampaignLocationsController;
+  campaignNotesController: CampaignNotesController;
   authMiddleware: RequestHandler;
   registerAdditionalRoutes?: (router: Router) => void;
 }
@@ -39,6 +41,7 @@ export function createApiRouter(options: ApiRoutesOptions): RequestHandler {
       options.campaignCharactersController,
       options.campaignNpcsController,
       options.campaignLocationsController,
+      options.campaignNotesController,
       options.authMiddleware,
     ),
   );

@@ -7,6 +7,7 @@ export const API_TYPES = {
   CampaignCharactersController: Symbol.for("api.CampaignCharactersController"),
   CampaignNpcsController: Symbol.for("api.CampaignNpcsController"),
   CampaignLocationsController: Symbol.for("api.CampaignLocationsController"),
+  CampaignNotesController: Symbol.for("api.CampaignNotesController"),
   AuthMiddleware: Symbol.for("api.AuthMiddleware"),
   RequestContextMiddleware: Symbol.for("api.RequestContextMiddleware"),
   RequestLoggerMiddleware: Symbol.for("api.RequestLoggerMiddleware"),
