@@ -13,6 +13,7 @@ import type { RedisClient } from "@core/infrastructure/redis/redis.client";
 import { RedisShutdownHook } from "@core/infrastructure/shutdown/RedisShutdownHook";
 import { loadAuthContainerModule } from "@modules/auth/auth.container-module";
 import { loadCampaignsContainerModule } from "@modules/campaigns/campaigns.container-module";
+import { loadCharactersContainerModule } from "@modules/characters/characters.container-module";
 import { loadUsersContainerModule } from "@modules/users/users.container-module";
 
 async function bootstrap(): Promise<void> {
@@ -20,6 +21,7 @@ async function bootstrap(): Promise<void> {
     loadAuthContainerModule,
     loadUsersContainerModule,
     loadCampaignsContainerModule,
+    loadCharactersContainerModule,
     loadApiContainerModule,
   );
   const logger = container.get<Logger>(CORE_TYPES.Logger);

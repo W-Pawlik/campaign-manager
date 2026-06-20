@@ -36,6 +36,7 @@ model User {
   profile             UserProfile?
   campaignMemberships CampaignMember[]
   ownedCampaigns      Campaign[]
+  ownedCharacters     Character[]         @relation("CharacterOwner")
   sentCampaignInvites CampaignMember[] @relation("CampaignMemberInvitedBy")
   campaignInvitations CampaignInvitation[] @relation("CampaignInvitationUser")
   sentInvitations     CampaignInvitation[] @relation("CampaignInvitationInvitedBy")
@@ -94,6 +95,7 @@ model Campaign {
   owner              User             @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   members            CampaignMember[]
   invitations        CampaignInvitation[]
+  characters         Character[]
 
   @@index([ownerId])
   @@index([status])
@@ -143,4 +145,62 @@ model CampaignMember {
   @@index([campaignId])
   @@index([invitedById])
   @@map("campaign_members")
+}
+
+model Character {
+  id                     String    @id
+  campaignId             String
+  ownerUserId            String?
+  sheetTemplateId        String?
+  name                   String
+  avatarUrl              String?
+  type                   String
+  status                 String
+  race                   String?
+  characterClass         String?
+  subclass               String?
+  level                  Int?
+  background             String?
+  alignment              String?
+  experiencePoints       Int?
+  armorClass             Int?
+  initiativeBonus        Int?
+  speed                  String?
+  maxHitPoints           Int?
+  currentHitPoints       Int?
+  temporaryHitPoints     Int?
+  hitDice                String?
+  strength               Int?
+  dexterity              Int?
+  constitution           Int?
+  intelligence           Int?
+  wisdom                 Int?
+  charisma               Int?
+  proficiencyBonus       Int?
+  savingThrows           Json?
+  skills                 Json?
+  proficiencies          Json?
+  languages              Json?
+  attacksAndSpellcasting Json?
+  spellcasting           Json?
+  featuresAndTraits      Json?
+  personalityTraits      String?
+  ideals                 String?
+  bonds                  String?
+  flaws                  String?
+  backstory              String?
+  appearance             String?
+  customData             Json?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime?
+  campaign               Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  owner                  User?     @relation("CharacterOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+
+  @@index([campaignId])
+  @@index([ownerUserId])
+  @@index([status])
+  @@index([type])
+  @@index([deletedAt])
+  @@map("characters")
 }

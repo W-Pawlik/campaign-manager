@@ -18,6 +18,12 @@ import { GetCampaignDetailsQuery } from "@modules/campaigns/application/queries/
 import { ListCampaignInvitationsQuery } from "@modules/campaigns/application/queries/ListCampaignInvitationsQuery";
 import { ListCampaignMembersQuery } from "@modules/campaigns/application/queries/ListCampaignMembersQuery";
 import { ListUserCampaignsQuery } from "@modules/campaigns/application/queries/ListUserCampaignsQuery";
+import { ArchiveCharacterCommand } from "@modules/characters/application/commands/ArchiveCharacterCommand";
+import { CreateCharacterCommand } from "@modules/characters/application/commands/CreateCharacterCommand";
+import { DeleteCharacterCommand } from "@modules/characters/application/commands/DeleteCharacterCommand";
+import { UpdateCharacterCommand } from "@modules/characters/application/commands/UpdateCharacterCommand";
+import { GetCharacterDetailsQuery } from "@modules/characters/application/queries/GetCharacterDetailsQuery";
+import { ListCampaignCharactersQuery } from "@modules/characters/application/queries/ListCampaignCharactersQuery";
 
 export class CampaignsController {
   public constructor(
@@ -95,6 +101,166 @@ export class CampaignsController {
     );
 
     res.status(201).json(result);
+  }
+
+  public async listCampaignCharacters(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+    const result = await this.queryBus.execute(
+      new ListCampaignCharactersQuery({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+      }),
+    );
+
+    res.status(200).json(result);
+  }
+
+  public async createCharacter(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+    const result = await this.commandBus.execute(
+      new CreateCharacterCommand({
+        campaignId: this.getCampaignId(req),
+        actorUserId,
+        ownerUserId: req.body.ownerUserId,
+        sheetTemplateId: req.body.sheetTemplateId,
+        name: req.body.name,
+        avatarUrl: req.body.avatarUrl,
+        type: req.body.type,
+        status: req.body.status,
+        race: req.body.race,
+        characterClass: req.body.characterClass,
+        subclass: req.body.subclass,
+        level: req.body.level,
+        background: req.body.background,
+        alignment: req.body.alignment,
+        experiencePoints: req.body.experiencePoints,
+        armorClass: req.body.armorClass,
+        initiativeBonus: req.body.initiativeBonus,
+        speed: req.body.speed,
+        maxHitPoints: req.body.maxHitPoints,
+        currentHitPoints: req.body.currentHitPoints,
+        temporaryHitPoints: req.body.temporaryHitPoints,
+        hitDice: req.body.hitDice,
+        strength: req.body.strength,
+        dexterity: req.body.dexterity,
+        constitution: req.body.constitution,
+        intelligence: req.body.intelligence,
+        wisdom: req.body.wisdom,
+        charisma: req.body.charisma,
+        proficiencyBonus: req.body.proficiencyBonus,
+        savingThrows: req.body.savingThrows,
+        skills: req.body.skills,
+        proficiencies: req.body.proficiencies,
+        languages: req.body.languages,
+        attacksAndSpellcasting: req.body.attacksAndSpellcasting,
+        spellcasting: req.body.spellcasting,
+        featuresAndTraits: req.body.featuresAndTraits,
+        personalityTraits: req.body.personalityTraits,
+        ideals: req.body.ideals,
+        bonds: req.body.bonds,
+        flaws: req.body.flaws,
+        backstory: req.body.backstory,
+        appearance: req.body.appearance,
+        customData: req.body.customData,
+      }),
+    );
+
+    res.status(201).json(result);
+  }
+
+  public async getCharacterDetails(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+    const result = await this.queryBus.execute(
+      new GetCharacterDetailsQuery({
+        campaignId: this.getCampaignId(req),
+        characterId: this.getCharacterId(req),
+        actorUserId,
+      }),
+    );
+
+    res.status(200).json(result);
+  }
+
+  public async updateCharacter(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+    const result = await this.commandBus.execute(
+      new UpdateCharacterCommand({
+        campaignId: this.getCampaignId(req),
+        characterId: this.getCharacterId(req),
+        actorUserId,
+        ownerUserId: req.body.ownerUserId,
+        sheetTemplateId: req.body.sheetTemplateId,
+        name: req.body.name,
+        avatarUrl: req.body.avatarUrl,
+        type: req.body.type,
+        status: req.body.status,
+        race: req.body.race,
+        characterClass: req.body.characterClass,
+        subclass: req.body.subclass,
+        level: req.body.level,
+        background: req.body.background,
+        alignment: req.body.alignment,
+        experiencePoints: req.body.experiencePoints,
+        armorClass: req.body.armorClass,
+        initiativeBonus: req.body.initiativeBonus,
+        speed: req.body.speed,
+        maxHitPoints: req.body.maxHitPoints,
+        currentHitPoints: req.body.currentHitPoints,
+        temporaryHitPoints: req.body.temporaryHitPoints,
+        hitDice: req.body.hitDice,
+        strength: req.body.strength,
+        dexterity: req.body.dexterity,
+        constitution: req.body.constitution,
+        intelligence: req.body.intelligence,
+        wisdom: req.body.wisdom,
+        charisma: req.body.charisma,
+        proficiencyBonus: req.body.proficiencyBonus,
+        savingThrows: req.body.savingThrows,
+        skills: req.body.skills,
+        proficiencies: req.body.proficiencies,
+        languages: req.body.languages,
+        attacksAndSpellcasting: req.body.attacksAndSpellcasting,
+        spellcasting: req.body.spellcasting,
+        featuresAndTraits: req.body.featuresAndTraits,
+        personalityTraits: req.body.personalityTraits,
+        ideals: req.body.ideals,
+        bonds: req.body.bonds,
+        flaws: req.body.flaws,
+        backstory: req.body.backstory,
+        appearance: req.body.appearance,
+        customData: req.body.customData,
+      }),
+    );
+
+    res.status(200).json(result);
+  }
+
+  public async deleteCharacter(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+
+    await this.commandBus.execute(
+      new DeleteCharacterCommand({
+        campaignId: this.getCampaignId(req),
+        characterId: this.getCharacterId(req),
+        actorUserId,
+      }),
+    );
+
+    res.status(204).send();
+  }
+
+  public async archiveCharacter(req: Request, res: Response): Promise<void> {
+    const actorUserId = this.getAuthUserId(res);
+
+    await this.commandBus.execute(
+      new ArchiveCharacterCommand({
+        campaignId: this.getCampaignId(req),
+        characterId: this.getCharacterId(req),
+        actorUserId,
+      }),
+    );
+
+    res.status(204).send();
   }
 
   public async listCampaignMembers(req: Request, res: Response): Promise<void> {
@@ -282,5 +448,15 @@ export class CampaignsController {
     }
 
     return invitationId;
+  }
+
+  private getCharacterId(req: Request): string {
+    const characterId = req.params.characterId;
+
+    if (typeof characterId !== "string" || characterId.trim().length === 0) {
+      throw new ValidationError("Character id is required");
+    }
+
+    return characterId;
   }
 }
