@@ -1,6 +1,7 @@
 import { Router, type RequestHandler } from "express";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
 import type { CampaignChronicleController } from "@api/controllers/CampaignChronicleController";
+import type { CampaignInventoryController } from "@api/controllers/CampaignInventoryController";
 import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
@@ -14,6 +15,7 @@ import {
   createCampaignSchema,
   createCharacterSchema,
   createChronicleEntrySchema,
+  createInventoryItemSchema,
   createLocationSchema,
   createQuestObjectiveSchema,
   createQuestSchema,
@@ -22,8 +24,10 @@ import {
   createSessionSchema,
   inviteCampaignMemberSchema,
   updateCharacterSchema,
+  transferInventoryItemSchema,
   updateCampaignMemberSchema,
   updateCampaignSchema,
+  updateInventoryItemSchema,
   updateLocationSchema,
   updateQuestObjectiveSchema,
   updateQuestSchema,
@@ -38,6 +42,7 @@ export function createCampaignsRouter(
   campaignMembersController: CampaignMembersController,
   campaignCharactersController: CampaignCharactersController,
   campaignChronicleController: CampaignChronicleController,
+  campaignInventoryController: CampaignInventoryController,
   campaignNpcsController: CampaignNpcsController,
   campaignLocationsController: CampaignLocationsController,
   campaignQuestsController: CampaignQuestsController,
@@ -100,6 +105,39 @@ export function createCampaignsRouter(
   router.post("/:campaignId/characters/:characterId/archive", authMiddleware, async (req, res) => {
     await campaignCharactersController.archiveCharacter(req, res);
   });
+  router.get("/:campaignId/inventory", authMiddleware, async (req, res) => {
+    await campaignInventoryController.listCampaignInventory(req, res);
+  });
+  router.post(
+    "/:campaignId/inventory",
+    authMiddleware,
+    createValidateBodyMiddleware(createInventoryItemSchema),
+    async (req, res) => {
+      await campaignInventoryController.createInventoryItem(req, res);
+    },
+  );
+  router.get("/:campaignId/inventory/:itemId", authMiddleware, async (req, res) => {
+    await campaignInventoryController.getInventoryItemDetails(req, res);
+  });
+  router.patch(
+    "/:campaignId/inventory/:itemId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateInventoryItemSchema),
+    async (req, res) => {
+      await campaignInventoryController.updateInventoryItem(req, res);
+    },
+  );
+  router.delete("/:campaignId/inventory/:itemId", authMiddleware, async (req, res) => {
+    await campaignInventoryController.deleteInventoryItem(req, res);
+  });
+  router.post(
+    "/:campaignId/inventory/:itemId/transfer",
+    authMiddleware,
+    createValidateBodyMiddleware(transferInventoryItemSchema),
+    async (req, res) => {
+      await campaignInventoryController.transferInventoryItem(req, res);
+    },
+  );
   router.get("/:campaignId/chronicle", authMiddleware, async (req, res) => {
     await campaignChronicleController.listCampaignChronicle(req, res);
   });

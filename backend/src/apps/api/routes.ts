@@ -4,6 +4,7 @@ import type { AuthController } from "@api/controllers/AuthController";
 import type { UsersController } from "@api/controllers/users.controller";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
 import type { CampaignChronicleController } from "@api/controllers/CampaignChronicleController";
+import type { CampaignInventoryController } from "@api/controllers/CampaignInventoryController";
 import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
@@ -24,6 +25,7 @@ export interface ApiRoutesOptions {
   campaignMembersController: CampaignMembersController;
   campaignCharactersController: CampaignCharactersController;
   campaignChronicleController: CampaignChronicleController;
+  campaignInventoryController: CampaignInventoryController;
   campaignNpcsController: CampaignNpcsController;
   campaignLocationsController: CampaignLocationsController;
   campaignQuestsController: CampaignQuestsController;
@@ -46,6 +48,7 @@ export function createApiRouter(options: ApiRoutesOptions): RequestHandler {
       options.campaignMembersController,
       options.campaignCharactersController,
       options.campaignChronicleController,
+      options.campaignInventoryController,
       options.campaignNpcsController,
       options.campaignLocationsController,
       options.campaignQuestsController,

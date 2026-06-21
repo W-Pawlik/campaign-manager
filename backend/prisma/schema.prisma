@@ -109,6 +109,7 @@ model Campaign {
   gameSessions       GameSession[]
   chronicleEntries   ChronicleEntry[]
   quests             Quest[]
+  inventoryItems     InventoryItem[]
 
   @@index([ownerId])
   @@index([status])
@@ -454,4 +455,54 @@ model QuestRelation {
   @@index([entityType, entityId])
   @@unique([questId, entityType, entityId, relationType])
   @@map("quest_relations")
+}
+
+model ItemTemplate {
+  id                  String   @id
+  source              String
+  externalReferenceId String?
+  name                String
+  type                String
+  rarity              String?
+  description         String?
+  properties          Json?
+  weight              Float?
+  valueAmount         Float?
+  valueCurrency       String?
+  createdById         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([source])
+  @@index([type])
+  @@map("item_templates")
+}
+
+model InventoryItem {
+  id               String   @id
+  campaignId       String
+  itemTemplateId   String?
+  name             String
+  description      String?
+  quantity         Int
+  charges          Int?
+  maxCharges       Int?
+  isEquipped       Boolean  @default(false)
+  isAttuned        Boolean  @default(false)
+  isIdentified     Boolean  @default(true)
+  ownerType        String
+  ownerId          String
+  visibility       String
+  customProperties Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  deletedAt        DateTime?
+  campaign         Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@index([itemTemplateId])
+  @@index([ownerType, ownerId])
+  @@index([visibility])
+  @@index([deletedAt])
+  @@map("inventory_items")
 }

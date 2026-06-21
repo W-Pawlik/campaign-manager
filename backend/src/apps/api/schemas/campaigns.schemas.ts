@@ -47,6 +47,8 @@ const questTypeSchema = z.enum(["MAIN", "SIDE", "PERSONAL", "FACTION", "WORLD_EV
 const questVisibilitySchema = z.enum(["PUBLIC", "GM_ONLY", "DISCOVERED"]);
 const questPrioritySchema = z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]);
 const objectiveStatusSchema = z.enum(["TODO", "IN_PROGRESS", "DONE", "FAILED", "OPTIONAL_SKIPPED"]);
+const inventoryOwnerTypeSchema = z.enum(["CHARACTER", "CAMPAIGN_PARTY", "NPC", "LOCATION", "QUEST"]);
+const itemVisibilitySchema = z.enum(["PUBLIC", "OWNER_ONLY", "GM_ONLY"]);
 const noteVisibilitySchema = z.enum([
   "PRIVATE_AUTHOR",
   "PRIVATE_GM",
@@ -383,6 +385,62 @@ export const updateQuestObjectiveSchema = z
 
 export type CreateQuestObjectiveRequestBody = z.infer<typeof createQuestObjectiveSchema>;
 export type UpdateQuestObjectiveRequestBody = z.infer<typeof updateQuestObjectiveSchema>;
+
+const createInventoryItemSchemaShape = {
+  itemTemplateId: nullableUuidSchema.optional(),
+  name: z.string().trim().min(1).max(200).optional(),
+  description: nullableLongTextSchema.optional(),
+  quantity: z.number().int().min(0).optional(),
+  charges: z.number().int().min(0).nullable().optional(),
+  maxCharges: z.number().int().min(0).nullable().optional(),
+  isEquipped: z.boolean().optional(),
+  isAttuned: z.boolean().optional(),
+  isIdentified: z.boolean().optional(),
+  ownerType: inventoryOwnerTypeSchema.optional(),
+  ownerId: z.uuid().optional(),
+  visibility: itemVisibilitySchema.optional(),
+  customProperties: nullableJsonSchema.optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createInventoryItemSchema = z
+  .object({
+    ...createInventoryItemSchemaShape,
+    ownerType: inventoryOwnerTypeSchema,
+    ownerId: z.uuid(),
+  })
+  .strict()
+  .refine((input) => input.itemTemplateId !== undefined || input.name !== undefined, {
+    message: "itemTemplateId or name must be provided",
+  });
+
+export const updateInventoryItemSchema = z
+  .object({
+    name: z.string().trim().min(1).max(200).optional(),
+    description: nullableLongTextSchema.optional(),
+    quantity: z.number().int().min(0).optional(),
+    charges: z.number().int().min(0).nullable().optional(),
+    maxCharges: z.number().int().min(0).nullable().optional(),
+    isAttuned: z.boolean().optional(),
+    isIdentified: z.boolean().optional(),
+    visibility: itemVisibilitySchema.optional(),
+    customProperties: nullableJsonSchema.optional(),
+  })
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export const transferInventoryItemSchema = z
+  .object({
+    targetOwnerType: inventoryOwnerTypeSchema,
+    targetOwnerId: z.uuid(),
+    quantity: z.number().int().min(1).optional(),
+  })
+  .strict();
+
+export type CreateInventoryItemRequestBody = z.infer<typeof createInventoryItemSchema>;
+export type UpdateInventoryItemRequestBody = z.infer<typeof updateInventoryItemSchema>;
+export type TransferInventoryItemRequestBody = z.infer<typeof transferInventoryItemSchema>;
 
 const createOrUpdateNoteSchemaShape = {
   title: z.string().trim().min(1).max(200).nullable().optional(),

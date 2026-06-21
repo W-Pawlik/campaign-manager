@@ -3,6 +3,7 @@ import type { Container } from "inversify";
 import { AuthController } from "@api/controllers/AuthController";
 import { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
 import { CampaignChronicleController } from "@api/controllers/CampaignChronicleController";
+import { CampaignInventoryController } from "@api/controllers/CampaignInventoryController";
 import { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import { CampaignNotesController } from "@api/controllers/CampaignNotesController";
@@ -88,6 +89,15 @@ export function loadApiContainerModule(container: Container): void {
       const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
 
       return new CampaignChronicleController(commandBus, queryBus);
+    })
+    .inTransientScope();
+  container
+    .bind<CampaignInventoryController>(API_TYPES.CampaignInventoryController)
+    .toDynamicValue((context) => {
+      const commandBus = context.get<CommandBus>(CORE_TYPES.CommandBus);
+      const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
+
+      return new CampaignInventoryController(commandBus, queryBus);
     })
     .inTransientScope();
   container

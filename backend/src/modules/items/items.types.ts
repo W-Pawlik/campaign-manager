@@ -1,0 +1,18 @@
+export const ITEMS_TYPES = {
+  ItemMapper: Symbol.for("items.ItemMapper"),
+  ItemTemplateRepository: Symbol.for("items.ItemTemplateRepository"),
+  InventoryItemRepository: Symbol.for("items.InventoryItemRepository"),
+  InventoryItemReadRepository: Symbol.for("items.InventoryItemReadRepository"),
+  InventoryOwnerApplicationService: Symbol.for("items.InventoryOwnerApplicationService"),
+  InventoryVisibilityApplicationService: Symbol.for("items.InventoryVisibilityApplicationService"),
+  CreateItemTemplateHandler: Symbol.for("items.CreateItemTemplateHandler"),
+  CreateInventoryItemHandler: Symbol.for("items.CreateInventoryItemHandler"),
+  UpdateInventoryItemHandler: Symbol.for("items.UpdateInventoryItemHandler"),
+  DeleteInventoryItemHandler: Symbol.for("items.DeleteInventoryItemHandler"),
+  TransferInventoryItemHandler: Symbol.for("items.TransferInventoryItemHandler"),
+  EquipInventoryItemHandler: Symbol.for("items.EquipInventoryItemHandler"),
+  UnequipInventoryItemHandler: Symbol.for("items.UnequipInventoryItemHandler"),
+  ListCampaignInventoryHandler: Symbol.for("items.ListCampaignInventoryHandler"),
+  GetInventoryItemDetailsHandler: Symbol.for("items.GetInventoryItemDetailsHandler"),
+  ListOwnerInventoryHandler: Symbol.for("items.ListOwnerInventoryHandler"),
+} as const;

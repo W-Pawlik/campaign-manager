@@ -39,6 +39,10 @@ export function getQuestId(req: Request): string {
   return getRequiredRouteParam(req, "questId", "Quest id is required");
 }
 
+export function getInventoryItemId(req: Request): string {
+  return getRequiredRouteParam(req, "itemId", "Inventory item id is required");
+}
+
 export function getObjectiveId(req: Request): string {
   return getRequiredRouteParam(req, "objectiveId", "Quest objective id is required");
 }
