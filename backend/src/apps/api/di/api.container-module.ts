@@ -7,6 +7,7 @@ import { CampaignLocationsController } from "@api/controllers/CampaignLocationsC
 import { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import { CampaignNotesController } from "@api/controllers/CampaignNotesController";
 import { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
+import { CampaignQuestsController } from "@api/controllers/CampaignQuestsController";
 import { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import { CampaignsController } from "@api/controllers/CampaignsController";
 import { HealthController } from "@api/controllers/HealthController";
@@ -105,6 +106,15 @@ export function loadApiContainerModule(container: Container): void {
       const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
 
       return new CampaignLocationsController(commandBus, queryBus);
+    })
+    .inTransientScope();
+  container
+    .bind<CampaignQuestsController>(API_TYPES.CampaignQuestsController)
+    .toDynamicValue((context) => {
+      const commandBus = context.get<CommandBus>(CORE_TYPES.CommandBus);
+      const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
+
+      return new CampaignQuestsController(commandBus, queryBus);
     })
     .inTransientScope();
   container

@@ -16,6 +16,7 @@ import type { CampaignLocationsController } from "@api/controllers/CampaignLocat
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
 import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
+import type { CampaignQuestsController } from "@api/controllers/CampaignQuestsController";
 import type { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 
@@ -50,6 +51,9 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   );
   const campaignLocationsController = options.container.get<CampaignLocationsController>(
     API_TYPES.CampaignLocationsController,
+  );
+  const campaignQuestsController = options.container.get<CampaignQuestsController>(
+    API_TYPES.CampaignQuestsController,
   );
   const campaignNotesController = options.container.get<CampaignNotesController>(
     API_TYPES.CampaignNotesController,
@@ -91,6 +95,7 @@ export function createApiApp(options: CreateApiAppOptions): Express {
       campaignChronicleController,
       campaignNpcsController,
       campaignLocationsController,
+      campaignQuestsController,
       campaignNotesController,
       campaignSessionsController,
       authMiddleware,

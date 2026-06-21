@@ -33,6 +33,20 @@ const locationVisibilitySchema = z.enum(["PUBLIC", "DISCOVERED", "GM_ONLY"]);
 const sessionStatusSchema = z.enum(["PLANNED", "CONFIRMED", "COMPLETED", "CANCELLED", "POSTPONED"]);
 const sessionLocationTypeSchema = z.enum(["ONLINE", "IN_PERSON", "HYBRID", "UNKNOWN"]);
 const chronicleVisibilitySchema = z.enum(["PUBLIC", "GM_ONLY", "DRAFT"]);
+const questStatusSchema = z.enum([
+  "DRAFT",
+  "AVAILABLE",
+  "ACTIVE",
+  "ON_HOLD",
+  "COMPLETED",
+  "FAILED",
+  "ABANDONED",
+  "HIDDEN",
+]);
+const questTypeSchema = z.enum(["MAIN", "SIDE", "PERSONAL", "FACTION", "WORLD_EVENT"]);
+const questVisibilitySchema = z.enum(["PUBLIC", "GM_ONLY", "DISCOVERED"]);
+const questPrioritySchema = z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]);
+const objectiveStatusSchema = z.enum(["TODO", "IN_PROGRESS", "DONE", "FAILED", "OPTIONAL_SKIPPED"]);
 const noteVisibilitySchema = z.enum([
   "PRIVATE_AUTHOR",
   "PRIVATE_GM",
@@ -312,6 +326,63 @@ export const updateChronicleEntrySchema = z
 
 export type CreateChronicleEntryRequestBody = z.infer<typeof createChronicleEntrySchema>;
 export type UpdateChronicleEntryRequestBody = z.infer<typeof updateChronicleEntrySchema>;
+
+const createOrUpdateQuestSchemaShape = {
+  title: z.string().trim().min(1).max(200).optional(),
+  description: nullableLongTextSchema.optional(),
+  status: questStatusSchema.optional(),
+  type: questTypeSchema.optional(),
+  visibility: questVisibilitySchema.optional(),
+  priority: questPrioritySchema.optional(),
+  giverNpcId: nullableUuidSchema.optional(),
+  relatedLocationId: nullableUuidSchema.optional(),
+  startedAt: nullableDatetimeSchema.optional(),
+  completedAt: nullableDatetimeSchema.optional(),
+  failedAt: nullableDatetimeSchema.optional(),
+  rewardDescription: nullableLongTextSchema.optional(),
+  gmNotes: nullableLongTextSchema.optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createQuestSchema = z
+  .object({
+    ...createOrUpdateQuestSchemaShape,
+    title: z.string().trim().min(1).max(200),
+  })
+  .strict();
+
+export const updateQuestSchema = z
+  .object(createOrUpdateQuestSchemaShape)
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export type CreateQuestRequestBody = z.infer<typeof createQuestSchema>;
+export type UpdateQuestRequestBody = z.infer<typeof updateQuestSchema>;
+
+const createOrUpdateQuestObjectiveSchemaShape = {
+  title: z.string().trim().min(1).max(200).optional(),
+  description: nullableLongTextSchema.optional(),
+  status: objectiveStatusSchema.optional(),
+  sortOrder: z.number().int().min(0).optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createQuestObjectiveSchema = z
+  .object({
+    ...createOrUpdateQuestObjectiveSchemaShape,
+    title: z.string().trim().min(1).max(200),
+  })
+  .strict();
+
+export const updateQuestObjectiveSchema = z
+  .object(createOrUpdateQuestObjectiveSchemaShape)
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export type CreateQuestObjectiveRequestBody = z.infer<typeof createQuestObjectiveSchema>;
+export type UpdateQuestObjectiveRequestBody = z.infer<typeof updateQuestObjectiveSchema>;
 
 const createOrUpdateNoteSchemaShape = {
   title: z.string().trim().min(1).max(200).nullable().optional(),

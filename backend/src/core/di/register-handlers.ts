@@ -6,6 +6,7 @@ import { registerChronicleHandlers } from "@modules/chronicle/chronicle.handlers
 import { registerLocationsHandlers } from "@modules/locations/locations.handlers";
 import { registerNotesHandlers } from "@modules/notes/notes.handlers";
 import { registerNpcsHandlers } from "@modules/npcs/npcs.handlers";
+import { registerQuestsHandlers } from "@modules/quests/quests.handlers";
 import { registerSessionsHandlers } from "@modules/sessions/sessions.handlers";
 import { registerUsersHandlers } from "@modules/users/users.handlers";
 
@@ -18,5 +19,6 @@ export function registerHandlers(container: Container): void {
   registerLocationsHandlers(container);
   registerNotesHandlers(container);
   registerNpcsHandlers(container);
+  registerQuestsHandlers(container);
   registerSessionsHandlers(container);
 }

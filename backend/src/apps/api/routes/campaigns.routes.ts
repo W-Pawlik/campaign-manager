@@ -5,6 +5,7 @@ import type { CampaignLocationsController } from "@api/controllers/CampaignLocat
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
 import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
+import type { CampaignQuestsController } from "@api/controllers/CampaignQuestsController";
 import type { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import { createValidateBodyMiddleware } from "@api/middlewares/validate-request.middleware";
@@ -14,6 +15,8 @@ import {
   createCharacterSchema,
   createChronicleEntrySchema,
   createLocationSchema,
+  createQuestObjectiveSchema,
+  createQuestSchema,
   createNoteSchema,
   createNpcSchema,
   createSessionSchema,
@@ -22,6 +25,8 @@ import {
   updateCampaignMemberSchema,
   updateCampaignSchema,
   updateLocationSchema,
+  updateQuestObjectiveSchema,
+  updateQuestSchema,
   updateChronicleEntrySchema,
   updateNoteSchema,
   updateNpcSchema,
@@ -35,6 +40,7 @@ export function createCampaignsRouter(
   campaignChronicleController: CampaignChronicleController,
   campaignNpcsController: CampaignNpcsController,
   campaignLocationsController: CampaignLocationsController,
+  campaignQuestsController: CampaignQuestsController,
   campaignNotesController: CampaignNotesController,
   campaignSessionsController: CampaignSessionsController,
   authMiddleware: RequestHandler,
@@ -172,6 +178,54 @@ export function createCampaignsRouter(
   router.get("/:campaignId/notes", authMiddleware, async (req, res) => {
     await campaignNotesController.listCampaignNotes(req, res);
   });
+  router.get("/:campaignId/quests", authMiddleware, async (req, res) => {
+    await campaignQuestsController.listCampaignQuests(req, res);
+  });
+  router.post(
+    "/:campaignId/quests",
+    authMiddleware,
+    createValidateBodyMiddleware(createQuestSchema),
+    async (req, res) => {
+      await campaignQuestsController.createQuest(req, res);
+    },
+  );
+  router.get("/:campaignId/quests/:questId", authMiddleware, async (req, res) => {
+    await campaignQuestsController.getQuestDetails(req, res);
+  });
+  router.patch(
+    "/:campaignId/quests/:questId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateQuestSchema),
+    async (req, res) => {
+      await campaignQuestsController.updateQuest(req, res);
+    },
+  );
+  router.delete("/:campaignId/quests/:questId", authMiddleware, async (req, res) => {
+    await campaignQuestsController.deleteQuest(req, res);
+  });
+  router.post(
+    "/:campaignId/quests/:questId/objectives",
+    authMiddleware,
+    createValidateBodyMiddleware(createQuestObjectiveSchema),
+    async (req, res) => {
+      await campaignQuestsController.addQuestObjective(req, res);
+    },
+  );
+  router.patch(
+    "/:campaignId/quests/:questId/objectives/:objectiveId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateQuestObjectiveSchema),
+    async (req, res) => {
+      await campaignQuestsController.updateQuestObjective(req, res);
+    },
+  );
+  router.delete(
+    "/:campaignId/quests/:questId/objectives/:objectiveId",
+    authMiddleware,
+    async (req, res) => {
+      await campaignQuestsController.deleteQuestObjective(req, res);
+    },
+  );
   router.post(
     "/:campaignId/notes",
     authMiddleware,

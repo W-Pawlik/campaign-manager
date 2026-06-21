@@ -18,6 +18,7 @@ import { loadChronicleContainerModule } from "@modules/chronicle/chronicle.conta
 import { loadLocationsContainerModule } from "@modules/locations/locations.container-module";
 import { loadNotesContainerModule } from "@modules/notes/notes.container-module";
 import { loadNpcsContainerModule } from "@modules/npcs/npcs.container-module";
+import { loadQuestsContainerModule } from "@modules/quests/quests.container-module";
 import { loadSessionsContainerModule } from "@modules/sessions/sessions.container-module";
 import { loadUsersContainerModule } from "@modules/users/users.container-module";
 
@@ -31,6 +32,7 @@ async function bootstrap(): Promise<void> {
     loadLocationsContainerModule,
     loadNotesContainerModule,
     loadNpcsContainerModule,
+    loadQuestsContainerModule,
     loadSessionsContainerModule,
     loadApiContainerModule,
   );

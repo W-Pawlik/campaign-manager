@@ -43,6 +43,7 @@ model User {
   gameSessions        GameSession[]       @relation("GameSessionCreator")
   sessionParticipants SessionParticipant[] @relation("SessionParticipantUser")
   createdChronicleEntries ChronicleEntry[] @relation("ChronicleEntryCreator")
+  createdQuests       Quest[]             @relation("QuestCreator")
   sentCampaignInvites CampaignMember[] @relation("CampaignMemberInvitedBy")
   campaignInvitations CampaignInvitation[] @relation("CampaignInvitationUser")
   sentInvitations     CampaignInvitation[] @relation("CampaignInvitationInvitedBy")
@@ -107,6 +108,7 @@ model Campaign {
   notes              Note[]
   gameSessions       GameSession[]
   chronicleEntries   ChronicleEntry[]
+  quests             Quest[]
 
   @@index([ownerId])
   @@index([status])
@@ -385,4 +387,71 @@ model ChronicleEntry {
   @@index([visibility])
   @@index([occurredAt])
   @@map("chronicle_entries")
+}
+
+model Quest {
+  id                String    @id
+  campaignId        String
+  title             String
+  description       String?
+  status            String
+  type              String
+  visibility        String
+  priority          String
+  giverNpcId        String?
+  relatedLocationId String?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  failedAt          DateTime?
+  rewardDescription String?
+  gmNotes           String?
+  createdById       String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+  campaign          Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  createdBy         User      @relation("QuestCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  objectives        QuestObjective[]
+  relations         QuestRelation[]
+
+  @@index([campaignId])
+  @@index([status])
+  @@index([visibility])
+  @@index([createdById])
+  @@index([giverNpcId])
+  @@index([relatedLocationId])
+  @@index([deletedAt])
+  @@map("quests")
+}
+
+model QuestObjective {
+  id          String   @id
+  questId      String
+  title       String
+  description String?
+  status      String
+  sortOrder   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  quest       Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@index([questId])
+  @@index([status])
+  @@index([sortOrder])
+  @@map("quest_objectives")
+}
+
+model QuestRelation {
+  id           String   @id
+  questId      String
+  entityType   String
+  entityId     String
+  relationType String
+  createdAt    DateTime @default(now())
+  quest        Quest    @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@index([questId])
+  @@index([entityType, entityId])
+  @@unique([questId, entityType, entityId, relationType])
+  @@map("quest_relations")
 }

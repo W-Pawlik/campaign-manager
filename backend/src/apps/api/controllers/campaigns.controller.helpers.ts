@@ -35,6 +35,14 @@ export function getLocationId(req: Request): string {
   return getRequiredRouteParam(req, "locationId", "Location id is required");
 }
 
+export function getQuestId(req: Request): string {
+  return getRequiredRouteParam(req, "questId", "Quest id is required");
+}
+
+export function getObjectiveId(req: Request): string {
+  return getRequiredRouteParam(req, "objectiveId", "Quest objective id is required");
+}
+
 export function getNoteId(req: Request): string {
   return getRequiredRouteParam(req, "noteId", "Note id is required");
 }

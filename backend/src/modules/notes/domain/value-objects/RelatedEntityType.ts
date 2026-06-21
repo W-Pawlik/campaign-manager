@@ -32,4 +32,32 @@ export class RelatedEntityType {
   public isCharacter(): boolean {
     return this.value === RELATED_ENTITY_TYPE.CHARACTER;
   }
+
+  public isNpc(): boolean {
+    return this.value === RELATED_ENTITY_TYPE.NPC;
+  }
+
+  public isQuest(): boolean {
+    return this.value === RELATED_ENTITY_TYPE.QUEST;
+  }
+
+  public isLocation(): boolean {
+    return this.value === RELATED_ENTITY_TYPE.LOCATION;
+  }
+
+  public isSession(): boolean {
+    return this.value === RELATED_ENTITY_TYPE.SESSION;
+  }
+
+  public isCampaign(): boolean {
+    return this.value === RELATED_ENTITY_TYPE.CAMPAIGN;
+  }
+
+  public isItem(): boolean {
+    return this.value === RELATED_ENTITY_TYPE.ITEM;
+  }
+
+  public isChronicleEntry(): boolean {
+    return this.value === RELATED_ENTITY_TYPE.CHRONICLE_ENTRY;
+  }
 }
