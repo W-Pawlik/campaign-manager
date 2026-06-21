@@ -43,6 +43,10 @@ export function getSessionId(req: Request): string {
   return getRequiredRouteParam(req, "sessionId", "Session id is required");
 }
 
+export function getChronicleEntryId(req: Request): string {
+  return getRequiredRouteParam(req, "entryId", "Chronicle entry id is required");
+}
+
 function getRequiredRouteParam(req: Request, paramName: string, errorMessage: string): string {
   const value = req.params[paramName];
 

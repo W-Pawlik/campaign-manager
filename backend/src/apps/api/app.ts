@@ -11,6 +11,7 @@ import type { HealthController } from "@api/controllers/HealthController";
 import type { AuthController } from "@api/controllers/AuthController";
 import type { UsersController } from "@api/controllers/users.controller";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
+import type { CampaignChronicleController } from "@api/controllers/CampaignChronicleController";
 import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
@@ -40,6 +41,9 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   );
   const campaignCharactersController = options.container.get<CampaignCharactersController>(
     API_TYPES.CampaignCharactersController,
+  );
+  const campaignChronicleController = options.container.get<CampaignChronicleController>(
+    API_TYPES.CampaignChronicleController,
   );
   const campaignNpcsController = options.container.get<CampaignNpcsController>(
     API_TYPES.CampaignNpcsController,
@@ -84,6 +88,7 @@ export function createApiApp(options: CreateApiAppOptions): Express {
       campaignsController,
       campaignMembersController,
       campaignCharactersController,
+      campaignChronicleController,
       campaignNpcsController,
       campaignLocationsController,
       campaignNotesController,

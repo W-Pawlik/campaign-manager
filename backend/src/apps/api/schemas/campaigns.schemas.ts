@@ -32,6 +32,7 @@ const locationStatusSchema = z.enum(["ACTIVE", "DESTROYED", "LOST", "HIDDEN", "A
 const locationVisibilitySchema = z.enum(["PUBLIC", "DISCOVERED", "GM_ONLY"]);
 const sessionStatusSchema = z.enum(["PLANNED", "CONFIRMED", "COMPLETED", "CANCELLED", "POSTPONED"]);
 const sessionLocationTypeSchema = z.enum(["ONLINE", "IN_PERSON", "HYBRID", "UNKNOWN"]);
+const chronicleVisibilitySchema = z.enum(["PUBLIC", "GM_ONLY", "DRAFT"]);
 const noteVisibilitySchema = z.enum([
   "PRIVATE_AUTHOR",
   "PRIVATE_GM",
@@ -284,6 +285,33 @@ export const updateSessionSchema = z
 
 export type CreateSessionRequestBody = z.infer<typeof createSessionSchema>;
 export type UpdateSessionRequestBody = z.infer<typeof updateSessionSchema>;
+
+const createOrUpdateChronicleEntrySchemaShape = {
+  sessionId: nullableUuidSchema.optional(),
+  title: z.string().trim().min(1).max(200).optional(),
+  content: z.string().trim().min(1).max(20000).optional(),
+  inWorldDate: z.string().trim().min(1).max(120).nullable().optional(),
+  occurredAt: nullableDatetimeSchema.optional(),
+  visibility: chronicleVisibilitySchema.optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createChronicleEntrySchema = z
+  .object({
+    ...createOrUpdateChronicleEntrySchemaShape,
+    title: z.string().trim().min(1).max(200),
+    content: z.string().trim().min(1).max(20000),
+  })
+  .strict();
+
+export const updateChronicleEntrySchema = z
+  .object(createOrUpdateChronicleEntrySchemaShape)
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export type CreateChronicleEntryRequestBody = z.infer<typeof createChronicleEntrySchema>;
+export type UpdateChronicleEntryRequestBody = z.infer<typeof updateChronicleEntrySchema>;
 
 const createOrUpdateNoteSchemaShape = {
   title: z.string().trim().min(1).max(200).nullable().optional(),

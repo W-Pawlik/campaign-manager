@@ -1,5 +1,6 @@
 import { Router, type RequestHandler } from "express";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
+import type { CampaignChronicleController } from "@api/controllers/CampaignChronicleController";
 import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
@@ -11,6 +12,7 @@ import {
   createCampaignCoverImageUploadSchema,
   createCampaignSchema,
   createCharacterSchema,
+  createChronicleEntrySchema,
   createLocationSchema,
   createNoteSchema,
   createNpcSchema,
@@ -20,6 +22,7 @@ import {
   updateCampaignMemberSchema,
   updateCampaignSchema,
   updateLocationSchema,
+  updateChronicleEntrySchema,
   updateNoteSchema,
   updateNpcSchema,
   updateSessionSchema,
@@ -29,6 +32,7 @@ export function createCampaignsRouter(
   campaignsController: CampaignsController,
   campaignMembersController: CampaignMembersController,
   campaignCharactersController: CampaignCharactersController,
+  campaignChronicleController: CampaignChronicleController,
   campaignNpcsController: CampaignNpcsController,
   campaignLocationsController: CampaignLocationsController,
   campaignNotesController: CampaignNotesController,
@@ -89,6 +93,31 @@ export function createCampaignsRouter(
   });
   router.post("/:campaignId/characters/:characterId/archive", authMiddleware, async (req, res) => {
     await campaignCharactersController.archiveCharacter(req, res);
+  });
+  router.get("/:campaignId/chronicle", authMiddleware, async (req, res) => {
+    await campaignChronicleController.listCampaignChronicle(req, res);
+  });
+  router.post(
+    "/:campaignId/chronicle",
+    authMiddleware,
+    createValidateBodyMiddleware(createChronicleEntrySchema),
+    async (req, res) => {
+      await campaignChronicleController.createChronicleEntry(req, res);
+    },
+  );
+  router.get("/:campaignId/chronicle/:entryId", authMiddleware, async (req, res) => {
+    await campaignChronicleController.getChronicleEntryDetails(req, res);
+  });
+  router.patch(
+    "/:campaignId/chronicle/:entryId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateChronicleEntrySchema),
+    async (req, res) => {
+      await campaignChronicleController.updateChronicleEntry(req, res);
+    },
+  );
+  router.delete("/:campaignId/chronicle/:entryId", authMiddleware, async (req, res) => {
+    await campaignChronicleController.deleteChronicleEntry(req, res);
   });
   router.get("/:campaignId/npcs", authMiddleware, async (req, res) => {
     await campaignNpcsController.listCampaignNpcs(req, res);
