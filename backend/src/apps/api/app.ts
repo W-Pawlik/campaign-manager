@@ -21,6 +21,7 @@ import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsContro
 import type { CampaignQuestsController } from "@api/controllers/CampaignQuestsController";
 import type { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
+import type { ExternalOpen5eController } from "@api/controllers/ExternalOpen5eController";
 
 export interface CreateApiAppOptions {
   container: Container;
@@ -69,6 +70,9 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   const campaignSessionsController = options.container.get<CampaignSessionsController>(
     API_TYPES.CampaignSessionsController,
   );
+  const externalOpen5eController = options.container.get<ExternalOpen5eController>(
+    API_TYPES.ExternalOpen5eController,
+  );
 
   const corsOrigin =
     apiConfig.corsOrigin === "*"
@@ -108,6 +112,7 @@ export function createApiApp(options: CreateApiAppOptions): Express {
       campaignQuestsController,
       campaignNotesController,
       campaignSessionsController,
+      externalOpen5eController,
       authMiddleware,
       ...routesOptions,
     }),

@@ -8,11 +8,13 @@ import {
   mapCreateMonsterCommandInput,
   mapUpdateMonsterCommandInput,
 } from "@api/mappers/MonsterCommandRequestMapper";
+import { mapImportOpen5eMonsterCommandInput } from "@api/mappers/MonsterImportRequestMapper";
 import { mapListCampaignMonstersQueryInput } from "@api/mappers/MonsterQueryRequestMapper";
 import type { CommandBus } from "@core/application/cqrs/CommandBus";
 import type { QueryBus } from "@core/application/cqrs/QueryBus";
 import { ArchiveMonsterCommand } from "@modules/monsters/application/commands/ArchiveMonsterCommand";
 import { CreateCustomMonsterCommand } from "@modules/monsters/application/commands/CreateCustomMonsterCommand";
+import { ImportOpen5eCreatureAsMonsterCommand } from "@modules/monsters/application/commands/ImportOpen5eCreatureAsMonsterCommand";
 import { UpdateMonsterCommand } from "@modules/monsters/application/commands/UpdateMonsterCommand";
 import { GetMonsterDetailsQuery } from "@modules/monsters/application/queries/GetMonsterDetailsQuery";
 import { ListCampaignMonstersQuery } from "@modules/monsters/application/queries/ListCampaignMonstersQuery";
@@ -66,6 +68,22 @@ export class CampaignMonstersController {
     );
 
     res.status(200).json(result);
+  }
+
+  public async importOpen5eMonster(req: Request, res: Response): Promise<void> {
+    const actorUserId = getAuthUserId(res);
+    const campaignId = getCampaignId(req);
+    const result = await this.commandBus.execute(
+      new ImportOpen5eCreatureAsMonsterCommand(
+        mapImportOpen5eMonsterCommandInput({
+          campaignId,
+          actorUserId,
+          body: req.body,
+        }),
+      ),
+    );
+
+    res.status(201).json(result);
   }
 
   public async updateMonster(req: Request, res: Response): Promise<void> {

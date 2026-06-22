@@ -1,0 +1,154 @@
+{
+  "info": {
+    "name": "Campaign Manager - External Open5e",
+    "_postman_id": "00000000-0000-4000-8000-0000a11ce002",
+    "description": "Module collection for authenticated Open5e search and details endpoints exposed by Campaign Manager. Search stays lightweight and does not persist results, while details may cache the external reference in the backend database.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Search Open5e Resources",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(Array.isArray(body)).to.eql(true);",
+              "if (body.length > 0) {",
+              "  pm.collectionVariables.set('open5eResultKey', body[0].key);",
+              "  pm.collectionVariables.set('open5eResourceType', body[0].resourceType);",
+              "}",
+              "const creatureResult = body.find((entry) => entry.resourceType === 'CREATURE');",
+              "if (creatureResult) { pm.collectionVariables.set('open5eCreatureKey', creatureResult.key); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/external/open5e/search?query={{open5eQuery}}&resourceType={{open5eSearchResourceType}}&limit={{open5eLimit}}&page={{open5ePage}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "external",
+            "open5e",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "query",
+              "value": "{{open5eQuery}}"
+            },
+            {
+              "key": "resourceType",
+              "value": "{{open5eSearchResourceType}}"
+            },
+            {
+              "key": "limit",
+              "value": "{{open5eLimit}}"
+            },
+            {
+              "key": "page",
+              "value": "{{open5ePage}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Open5e Resource Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('externalReferenceId', body.id);",
+              "if (body.key) { pm.collectionVariables.set('open5eResultKey', body.key); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/external/open5e/resources/{{open5eResourceType}}/{{open5eResultKey}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "external",
+            "open5e",
+            "resources",
+            "{{open5eResourceType}}",
+            "{{open5eResultKey}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "externalReferenceId",
+      "value": ""
+    },
+    {
+      "key": "open5eQuery",
+      "value": "goblin"
+    },
+    {
+      "key": "open5eSearchResourceType",
+      "value": "CREATURE"
+    },
+    {
+      "key": "open5eResourceType",
+      "value": "CREATURE"
+    },
+    {
+      "key": "open5eResultKey",
+      "value": "a5e-mm_goblin"
+    },
+    {
+      "key": "open5eCreatureKey",
+      "value": "a5e-mm_goblin"
+    },
+    {
+      "key": "open5eLimit",
+      "value": "10"
+    },
+    {
+      "key": "open5ePage",
+      "value": "1"
+    }
+  ]
+}

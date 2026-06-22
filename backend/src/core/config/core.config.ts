@@ -61,4 +61,8 @@ export const coreConfig = {
     region: env.AWS_REGION,
     s3Bucket: env.AWS_S3_BUCKET,
   },
+  open5e: {
+    apiBaseUrl: env.OPEN5E_API_BASE_URL,
+    timeoutMs: env.OPEN5E_TIMEOUT_MS,
+  },
 } as const;

@@ -304,6 +304,25 @@ export const updateMonsterSchema = z
 export type CreateMonsterRequestBody = z.infer<typeof createMonsterSchema>;
 export type UpdateMonsterRequestBody = z.infer<typeof updateMonsterSchema>;
 
+export const importOpen5eMonsterSchema = z
+  .object({
+    resourceKey: z.string().trim().min(1).max(255).optional(),
+    externalReferenceId: z.uuid().optional(),
+    nameOverride: z.string().trim().min(1).max(200).optional(),
+  })
+  .strict()
+  .refine(
+    (input) =>
+      input.resourceKey !== undefined || input.externalReferenceId !== undefined,
+    {
+      message: "resourceKey or externalReferenceId must be provided",
+    },
+  );
+
+export type ImportOpen5eMonsterRequestBody = z.infer<
+  typeof importOpen5eMonsterSchema
+>;
+
 const createOrUpdateLocationSchemaShape = {
   parentLocationId: nullableUuidSchema.optional(),
   name: z.string().trim().min(1).max(120).optional(),

@@ -24,6 +24,7 @@ import {
   createNoteSchema,
   createNpcSchema,
   createSessionSchema,
+  importOpen5eMonsterSchema,
   inviteCampaignMemberSchema,
   updateCharacterSchema,
   transferInventoryItemSchema,
@@ -115,6 +116,14 @@ export function createCampaignsRouter(
   router.get("/:campaignId/monsters", authMiddleware, async (req, res) => {
     await campaignMonstersController.listCampaignMonsters(req, res);
   });
+  router.post(
+    "/:campaignId/monsters/import-open5e",
+    authMiddleware,
+    createValidateBodyMiddleware(importOpen5eMonsterSchema),
+    async (req, res) => {
+      await campaignMonstersController.importOpen5eMonster(req, res);
+    },
+  );
   router.post(
     "/:campaignId/monsters",
     authMiddleware,

@@ -7,6 +7,9 @@ export const MONSTERS_TYPES = {
   UpdateMonsterHandler: Symbol.for("monsters.UpdateMonsterHandler"),
   ArchiveMonsterHandler: Symbol.for("monsters.ArchiveMonsterHandler"),
   CopyMonsterToCampaignHandler: Symbol.for("monsters.CopyMonsterToCampaignHandler"),
+  ImportOpen5eCreatureAsMonsterHandler: Symbol.for(
+    "monsters.ImportOpen5eCreatureAsMonsterHandler",
+  ),
   ListCampaignMonstersHandler: Symbol.for("monsters.ListCampaignMonstersHandler"),
   GetMonsterDetailsHandler: Symbol.for("monsters.GetMonsterDetailsHandler"),
 } as const;

@@ -14,6 +14,8 @@ postman/
     users.collection.json
     campaigns.collection.json
     campaign-members.collection.json
+    monsters.collection.json
+    external-open5e.collection.json
 
   flows/
     auth-flow.collection.json
@@ -34,6 +36,8 @@ postman/
 
 - `modules/campaigns.collection.json` covers campaign CRUD, cover image upload and owner-only campaign actions.
 - `modules/campaign-members.collection.json` covers member listing, invitations, role changes, removal and ownership transfer.
+- `modules/monsters.collection.json` covers campaign monster listing, custom creation, Open5e import, details, updates and archiving.
+- `modules/external-open5e.collection.json` covers authenticated Open5e search and cached details lookup.
 - `flows/campaign-flow.collection.json` covers an owner-driven campaign lifecycle including soft deletion visibility.
 - `flows/campaign-members-flow.collection.json` covers invitation lifecycle, member removal, reinvitation and ownership transfer.
 

@@ -28,4 +28,8 @@ export class MonsterSource {
   public static custom(): MonsterSource {
     return new MonsterSource(MONSTER_SOURCE.CUSTOM);
   }
+
+  public static open5e(): MonsterSource {
+    return new MonsterSource(MONSTER_SOURCE.OPEN5E);
+  }
 }

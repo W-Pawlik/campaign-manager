@@ -12,6 +12,7 @@ import { CampaignNpcsController } from "@api/controllers/CampaignNpcsController"
 import { CampaignQuestsController } from "@api/controllers/CampaignQuestsController";
 import { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import { CampaignsController } from "@api/controllers/CampaignsController";
+import { ExternalOpen5eController } from "@api/controllers/ExternalOpen5eController";
 import { HealthController } from "@api/controllers/HealthController";
 import { UsersController } from "@api/controllers/users.controller";
 import { createAuthMiddleware } from "@api/middlewares/auth.middleware";
@@ -153,6 +154,14 @@ export function loadApiContainerModule(container: Container): void {
       const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
 
       return new CampaignSessionsController(commandBus, queryBus);
+    })
+    .inTransientScope();
+  container
+    .bind<ExternalOpen5eController>(API_TYPES.ExternalOpen5eController)
+    .toDynamicValue((context) => {
+      const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
+
+      return new ExternalOpen5eController(queryBus);
     })
     .inTransientScope();
 

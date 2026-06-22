@@ -21,6 +21,8 @@ export const envSchema = z.object({
   AUTH_REFRESH_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(604800),
   AWS_REGION: z.string().min(1),
   AWS_S3_BUCKET: z.string().min(1),
+  OPEN5E_API_BASE_URL: z.string().url().default("https://api.open5e.com"),
+  OPEN5E_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
 }).superRefine((env, context) => {
   const hasPreviousAccessKid = env.AUTH_ACCESS_TOKEN_PREVIOUS_KID !== undefined;
   const hasPreviousAccessSecret = env.AUTH_ACCESS_TOKEN_PREVIOUS_SECRET !== undefined;

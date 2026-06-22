@@ -8,10 +8,15 @@ import { CampaignRole } from "@modules/campaigns/domain/value-objects/CampaignRo
 import { CampaignStatus } from "@modules/campaigns/domain/value-objects/CampaignStatus";
 import { CampaignVisibility } from "@modules/campaigns/domain/value-objects/CampaignVisibility";
 import { MemberStatus } from "@modules/campaigns/domain/value-objects/MemberStatus";
+import { ExternalReference } from "@modules/external-references/domain/entities/ExternalReference";
+import { ExternalProvider } from "@modules/external-references/domain/value-objects/ExternalProvider";
+import { ExternalResourceType } from "@modules/external-references/domain/value-objects/ExternalResourceType";
 import { CopyMonsterToCampaignCommand } from "@modules/monsters/application/commands/CopyMonsterToCampaignCommand";
 import { CreateCustomMonsterCommand } from "@modules/monsters/application/commands/CreateCustomMonsterCommand";
+import { ImportOpen5eCreatureAsMonsterCommand } from "@modules/monsters/application/commands/ImportOpen5eCreatureAsMonsterCommand";
 import { CopyMonsterToCampaignHandler } from "@modules/monsters/application/handlers/CopyMonsterToCampaignHandler";
 import { CreateCustomMonsterHandler } from "@modules/monsters/application/handlers/CreateCustomMonsterHandler";
+import { ImportOpen5eCreatureAsMonsterHandler } from "@modules/monsters/application/handlers/ImportOpen5eCreatureAsMonsterHandler";
 import type { MonsterRepository } from "@modules/monsters/application/ports/MonsterRepository";
 import { Monster } from "@modules/monsters/domain/entities/Monster";
 import { MonsterSize } from "@modules/monsters/domain/value-objects/MonsterSize";
@@ -199,6 +204,69 @@ function createCampaignMonster(): Monster {
   });
 }
 
+function createExternalReference(): ExternalReference {
+  return ExternalReference.create({
+    id: "external-reference-1",
+    provider: ExternalProvider.open5e(),
+    resourceType: ExternalResourceType.create("CREATURE"),
+    externalId: null,
+    key: "a5e-mm_goblin",
+    slug: "a5e-mm_goblin",
+    url: "https://api.open5e.com/v2/creatures/a5e-mm_goblin/",
+    name: "Goblin",
+    sourceDocumentKey: "a5e-mm",
+    sourceDocumentName: "Monstrous Menagerie",
+    rawData: { key: "a5e-mm_goblin" },
+    normalizedData: {
+      key: "a5e-mm_goblin",
+      name: "Goblin",
+      slug: "a5e-mm_goblin",
+      size: "SMALL",
+      type: "Humanoid",
+      subtype: null,
+      alignment: "chaotic evil",
+      armorClass: 13,
+      armorClassDetails: null,
+      hitPoints: 10,
+      hitDice: "3d6",
+      speed: { walk: 30, unit: "feet" },
+      strength: 8,
+      dexterity: 12,
+      constitution: 10,
+      intelligence: 10,
+      wisdom: 10,
+      charisma: 10,
+      savingThrows: {},
+      skills: { stealth: 3 },
+      damageResistances: [],
+      damageImmunities: [],
+      conditionImmunities: [],
+      damageVulnerabilities: [],
+      senses: "darkvision 60 ft.",
+      languages: "Common, Goblin",
+      challengeRating: "1/4",
+      challengeRatingDecimal: 0.25,
+      proficiencyBonus: 2,
+      xp: 50,
+      traits: [],
+      actions: [{ name: "Shortsword" }],
+      bonusActions: [{ name: "Nimble Escape" }],
+      reactions: null,
+      legendaryActions: null,
+      lairActions: null,
+      regionalEffects: null,
+      spellcasting: null,
+      description: null,
+      sourceDocumentKey: "a5e-mm",
+      sourceDocumentName: "Monstrous Menagerie",
+    },
+    cachedAt: new Date("2026-06-22T10:00:00.000Z"),
+    expiresAt: new Date("2026-07-22T10:00:00.000Z"),
+    createdAt: new Date("2026-06-22T10:00:00.000Z"),
+    updatedAt: new Date("2026-06-22T10:00:00.000Z"),
+  });
+}
+
 describe("Monster handlers", () => {
   it("creates custom monster with campaign defaults", async () => {
     const repository = createMonsterRepository();
@@ -268,5 +336,38 @@ describe("Monster handlers", () => {
         }),
       ),
     ).rejects.toBeInstanceOf(ForbiddenError);
+  });
+
+  it("imports Open5e creature as campaign monster snapshot", async () => {
+    const repository = createMonsterRepository();
+    const externalReferenceResolver = {
+      getById: vi.fn(),
+      getOrRefresh: vi.fn().mockResolvedValue(createExternalReference()),
+    };
+    const handler = new ImportOpen5eCreatureAsMonsterHandler(
+      repository,
+      createAccessService(CampaignRole.create("GM"), "gm-1"),
+      externalReferenceResolver as never,
+    );
+
+    const result = await handler.execute(
+      new ImportOpen5eCreatureAsMonsterCommand({
+        campaignId: "campaign-1",
+        actorUserId: "gm-1",
+        resourceKey: "a5e-mm_goblin",
+        nameOverride: "Goblin ze Starego Lasu",
+      }),
+    );
+
+    expect(externalReferenceResolver.getOrRefresh).toHaveBeenCalledWith(
+      "CREATURE",
+      "a5e-mm_goblin",
+    );
+    expect(repository.create).toHaveBeenCalledTimes(1);
+    expect(result.source).toBe("OPEN5E");
+    expect(result.externalReferenceId).toBe("external-reference-1");
+    expect(result.visibility).toBe("GM_ONLY");
+    expect(result.name).toBe("Goblin ze Starego Lasu");
+    expect(result.slug).toBe("goblin-ze-starego-lasu");
   });
 });

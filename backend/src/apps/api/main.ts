@@ -15,6 +15,7 @@ import { loadAuthContainerModule } from "@modules/auth/auth.container-module";
 import { loadCampaignsContainerModule } from "@modules/campaigns/campaigns.container-module";
 import { loadCharactersContainerModule } from "@modules/characters/characters.container-module";
 import { loadChronicleContainerModule } from "@modules/chronicle/chronicle.container-module";
+import { loadExternalReferencesContainerModule } from "@modules/external-references/external-references.container-module";
 import { loadItemsContainerModule } from "@modules/items/items.container-module";
 import { loadLocationsContainerModule } from "@modules/locations/locations.container-module";
 import { loadMonstersContainerModule } from "@modules/monsters/monsters.container-module";
@@ -31,6 +32,7 @@ async function bootstrap(): Promise<void> {
     loadCampaignsContainerModule,
     loadCharactersContainerModule,
     loadChronicleContainerModule,
+    loadExternalReferencesContainerModule,
     loadItemsContainerModule,
     loadLocationsContainerModule,
     loadMonstersContainerModule,

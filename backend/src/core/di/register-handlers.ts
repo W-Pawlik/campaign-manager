@@ -3,6 +3,7 @@ import { registerAuthHandlers } from "@modules/auth/auth.handlers";
 import { registerCampaignsHandlers } from "@modules/campaigns/campaigns.handlers";
 import { registerCharactersHandlers } from "@modules/characters/characters.handlers";
 import { registerChronicleHandlers } from "@modules/chronicle/chronicle.handlers";
+import { registerExternalReferencesHandlers } from "@modules/external-references/external-references.handlers";
 import { registerItemsHandlers } from "@modules/items/items.handlers";
 import { registerLocationsHandlers } from "@modules/locations/locations.handlers";
 import { registerMonstersHandlers } from "@modules/monsters/monsters.handlers";
@@ -18,6 +19,7 @@ export function registerHandlers(container: Container): void {
   registerCampaignsHandlers(container);
   registerCharactersHandlers(container);
   registerChronicleHandlers(container);
+  registerExternalReferencesHandlers(container);
   registerItemsHandlers(container);
   registerLocationsHandlers(container);
   registerMonstersHandlers(container);

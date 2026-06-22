@@ -1,0 +1,343 @@
+{
+  "info": {
+    "name": "Campaign Manager - Monsters",
+    "_postman_id": "00000000-0000-4000-8000-0000a11ce001",
+    "description": "Module collection for campaign monster bestiary endpoints. Requires accessToken and campaignId. All requests are staff-only because monster management is protected by backend campaign permissions. Import from Open5e requires either resourceKey or externalReferenceId.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "List Campaign Monsters",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.expect(Array.isArray(pm.response.json())).to.eql(true);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/monsters?includeGlobal={{includeGlobal}}&search={{monsterSearch}}&type={{monsterTypeFilter}}&status={{monsterStatusFilter}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "monsters"
+          ],
+          "query": [
+            {
+              "key": "includeGlobal",
+              "value": "{{includeGlobal}}"
+            },
+            {
+              "key": "search",
+              "value": "{{monsterSearch}}"
+            },
+            {
+              "key": "type",
+              "value": "{{monsterTypeFilter}}"
+            },
+            {
+              "key": "status",
+              "value": "{{monsterStatusFilter}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Monster",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('monsterId', body.id);",
+              "pm.expect(body.source).to.eql('CUSTOM');",
+              "pm.expect(body.visibility).to.eql('GM_ONLY');",
+              "pm.expect(body.status).to.eql('ACTIVE');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/monsters",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "monsters"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{monsterName}}\",\n  \"size\": \"MEDIUM\",\n  \"type\": \"humanoid\",\n  \"alignment\": \"neutral evil\",\n  \"armorClass\": 15,\n  \"hitPoints\": 22,\n  \"hitDice\": \"4d8+4\",\n  \"strength\": 12,\n  \"dexterity\": 14,\n  \"constitution\": 12,\n  \"intelligence\": 8,\n  \"wisdom\": 10,\n  \"charisma\": 9,\n  \"challengeRating\": \"1\",\n  \"challengeRatingDecimal\": 1,\n  \"xp\": 200,\n  \"actions\": [{ \"name\": \"Scimitar\", \"desc\": \"Melee Weapon Attack\" }]\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Import Open5e Creature As Monster",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', function () { pm.response.to.have.status(201); });",
+              "const body = pm.response.json();",
+              "pm.collectionVariables.set('monsterId', body.id);",
+              "pm.expect(body.source).to.eql('OPEN5E');",
+              "if (body.externalReferenceId) { pm.collectionVariables.set('externalReferenceId', body.externalReferenceId); }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/monsters/import-open5e",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "monsters",
+            "import-open5e"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"resourceKey\": \"{{open5eCreatureKey}}\",\n  \"nameOverride\": \"{{importedMonsterName}}\"\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Monster Details",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.expect(body.id).to.eql(pm.collectionVariables.get('monsterId'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/monsters/{{monsterId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "monsters",
+            "{{monsterId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Monster",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', function () { pm.response.to.have.status(200); });",
+              "pm.expect(pm.response.json().name).to.eql(pm.collectionVariables.get('updatedMonsterName'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/monsters/{{monsterId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "monsters",
+            "{{monsterId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{updatedMonsterName}}\",\n  \"hitPoints\": 30,\n  \"visibility\": \"GM_ONLY\"\n}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Archive Monster",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 204', function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/campaigns/{{campaignId}}/monsters/{{monsterId}}/archive",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "campaigns",
+            "{{campaignId}}",
+            "monsters",
+            "{{monsterId}}",
+            "archive"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "campaignId",
+      "value": ""
+    },
+    {
+      "key": "monsterId",
+      "value": ""
+    },
+    {
+      "key": "externalReferenceId",
+      "value": ""
+    },
+    {
+      "key": "monsterName",
+      "value": "Ashen Raider"
+    },
+    {
+      "key": "updatedMonsterName",
+      "value": "Ashen Raider Veteran"
+    },
+    {
+      "key": "importedMonsterName",
+      "value": "Goblin ze Starego Lasu"
+    },
+    {
+      "key": "open5eCreatureKey",
+      "value": "a5e-mm_goblin"
+    },
+    {
+      "key": "includeGlobal",
+      "value": "false"
+    },
+    {
+      "key": "monsterSearch",
+      "value": ""
+    },
+    {
+      "key": "monsterTypeFilter",
+      "value": ""
+    },
+    {
+      "key": "monsterStatusFilter",
+      "value": "ACTIVE"
+    }
+  ]
+}

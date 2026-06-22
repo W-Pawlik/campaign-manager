@@ -3,10 +3,13 @@ import type { Container } from "inversify";
 import { CORE_TYPES } from "@core/di/core.types";
 import type { CampaignAccessApplicationService } from "@modules/campaigns/application/services/CampaignAccessApplicationService";
 import { CAMPAIGNS_TYPES } from "@modules/campaigns/campaigns.types";
+import type { Open5eExternalReferenceResolver } from "@modules/external-references/application/services/Open5eExternalReferenceResolver";
+import { EXTERNAL_REFERENCES_TYPES } from "@modules/external-references/external-references.types";
 import { ArchiveMonsterHandler } from "@modules/monsters/application/handlers/ArchiveMonsterHandler";
 import { CopyMonsterToCampaignHandler } from "@modules/monsters/application/handlers/CopyMonsterToCampaignHandler";
 import { CreateCustomMonsterHandler } from "@modules/monsters/application/handlers/CreateCustomMonsterHandler";
 import { GetMonsterDetailsHandler } from "@modules/monsters/application/handlers/GetMonsterDetailsHandler";
+import { ImportOpen5eCreatureAsMonsterHandler } from "@modules/monsters/application/handlers/ImportOpen5eCreatureAsMonsterHandler";
 import { ListCampaignMonstersHandler } from "@modules/monsters/application/handlers/ListCampaignMonstersHandler";
 import { UpdateMonsterHandler } from "@modules/monsters/application/handlers/UpdateMonsterHandler";
 import type { MonsterReadRepository } from "@modules/monsters/application/ports/MonsterReadRepository";
@@ -82,6 +85,29 @@ export function loadMonstersContainerModule(container: Container): void {
       const accessService = context.get<CampaignAccessApplicationService>(CAMPAIGNS_TYPES.CampaignAccessApplicationService);
 
       return new CopyMonsterToCampaignHandler(monsterRepository, accessService);
+    })
+    .inTransientScope();
+
+  container
+    .bind<ImportOpen5eCreatureAsMonsterHandler>(
+      MONSTERS_TYPES.ImportOpen5eCreatureAsMonsterHandler,
+    )
+    .toDynamicValue((context) => {
+      const monsterRepository = context.get<MonsterRepository>(
+        MONSTERS_TYPES.MonsterRepository,
+      );
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
+      const resolver = context.get<Open5eExternalReferenceResolver>(
+        EXTERNAL_REFERENCES_TYPES.Open5eExternalReferenceResolver,
+      );
+
+      return new ImportOpen5eCreatureAsMonsterHandler(
+        monsterRepository,
+        accessService,
+        resolver,
+      );
     })
     .inTransientScope();
 

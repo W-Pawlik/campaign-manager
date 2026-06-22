@@ -13,10 +13,12 @@ import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsContro
 import type { CampaignQuestsController } from "@api/controllers/CampaignQuestsController";
 import type { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
+import type { ExternalOpen5eController } from "@api/controllers/ExternalOpen5eController";
 import { createHealthRouter } from "@api/routes/health.route";
 import { createAuthRouter } from "@api/routes/auth.route";
 import { createUsersRouter } from "@api/routes/users.routes";
 import { createCampaignsRouter } from "@api/routes/campaigns.routes";
+import { createExternalOpen5eRouter } from "@api/routes/external-open5e.routes";
 
 export interface ApiRoutesOptions {
   healthController: HealthController;
@@ -33,6 +35,7 @@ export interface ApiRoutesOptions {
   campaignQuestsController: CampaignQuestsController;
   campaignNotesController: CampaignNotesController;
   campaignSessionsController: CampaignSessionsController;
+  externalOpen5eController: ExternalOpen5eController;
   authMiddleware: RequestHandler;
   registerAdditionalRoutes?: (router: Router) => void;
 }
@@ -57,6 +60,13 @@ export function createApiRouter(options: ApiRoutesOptions): RequestHandler {
       options.campaignQuestsController,
       options.campaignNotesController,
       options.campaignSessionsController,
+      options.authMiddleware,
+    ),
+  );
+  router.use(
+    "/api/v1/external/open5e",
+    createExternalOpen5eRouter(
+      options.externalOpen5eController,
       options.authMiddleware,
     ),
   );
