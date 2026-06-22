@@ -17,6 +17,7 @@ import { loadCharactersContainerModule } from "@modules/characters/characters.co
 import { loadChronicleContainerModule } from "@modules/chronicle/chronicle.container-module";
 import { loadItemsContainerModule } from "@modules/items/items.container-module";
 import { loadLocationsContainerModule } from "@modules/locations/locations.container-module";
+import { loadMonstersContainerModule } from "@modules/monsters/monsters.container-module";
 import { loadNotesContainerModule } from "@modules/notes/notes.container-module";
 import { loadNpcsContainerModule } from "@modules/npcs/npcs.container-module";
 import { loadQuestsContainerModule } from "@modules/quests/quests.container-module";
@@ -32,6 +33,7 @@ async function bootstrap(): Promise<void> {
     loadChronicleContainerModule,
     loadItemsContainerModule,
     loadLocationsContainerModule,
+    loadMonstersContainerModule,
     loadNotesContainerModule,
     loadNpcsContainerModule,
     loadQuestsContainerModule,

@@ -5,6 +5,7 @@ import { registerCharactersHandlers } from "@modules/characters/characters.handl
 import { registerChronicleHandlers } from "@modules/chronicle/chronicle.handlers";
 import { registerItemsHandlers } from "@modules/items/items.handlers";
 import { registerLocationsHandlers } from "@modules/locations/locations.handlers";
+import { registerMonstersHandlers } from "@modules/monsters/monsters.handlers";
 import { registerNotesHandlers } from "@modules/notes/notes.handlers";
 import { registerNpcsHandlers } from "@modules/npcs/npcs.handlers";
 import { registerQuestsHandlers } from "@modules/quests/quests.handlers";
@@ -19,6 +20,7 @@ export function registerHandlers(container: Container): void {
   registerChronicleHandlers(container);
   registerItemsHandlers(container);
   registerLocationsHandlers(container);
+  registerMonstersHandlers(container);
   registerNotesHandlers(container);
   registerNpcsHandlers(container);
   registerQuestsHandlers(container);

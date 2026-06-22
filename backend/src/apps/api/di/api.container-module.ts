@@ -6,6 +6,7 @@ import { CampaignChronicleController } from "@api/controllers/CampaignChronicleC
 import { CampaignInventoryController } from "@api/controllers/CampaignInventoryController";
 import { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import { CampaignMembersController } from "@api/controllers/CampaignMembersController";
+import { CampaignMonstersController } from "@api/controllers/CampaignMonstersController";
 import { CampaignNotesController } from "@api/controllers/CampaignNotesController";
 import { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
 import { CampaignQuestsController } from "@api/controllers/CampaignQuestsController";
@@ -98,6 +99,15 @@ export function loadApiContainerModule(container: Container): void {
       const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
 
       return new CampaignInventoryController(commandBus, queryBus);
+    })
+    .inTransientScope();
+  container
+    .bind<CampaignMonstersController>(API_TYPES.CampaignMonstersController)
+    .toDynamicValue((context) => {
+      const commandBus = context.get<CommandBus>(CORE_TYPES.CommandBus);
+      const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
+
+      return new CampaignMonstersController(commandBus, queryBus);
     })
     .inTransientScope();
   container

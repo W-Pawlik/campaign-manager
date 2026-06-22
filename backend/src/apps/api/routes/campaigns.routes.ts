@@ -4,6 +4,7 @@ import type { CampaignChronicleController } from "@api/controllers/CampaignChron
 import type { CampaignInventoryController } from "@api/controllers/CampaignInventoryController";
 import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
+import type { CampaignMonstersController } from "@api/controllers/CampaignMonstersController";
 import type { CampaignNotesController } from "@api/controllers/CampaignNotesController";
 import type { CampaignNpcsController } from "@api/controllers/CampaignNpcsController";
 import type { CampaignQuestsController } from "@api/controllers/CampaignQuestsController";
@@ -17,6 +18,7 @@ import {
   createChronicleEntrySchema,
   createInventoryItemSchema,
   createLocationSchema,
+  createMonsterSchema,
   createQuestObjectiveSchema,
   createQuestSchema,
   createNoteSchema,
@@ -29,6 +31,7 @@ import {
   updateCampaignSchema,
   updateInventoryItemSchema,
   updateLocationSchema,
+  updateMonsterSchema,
   updateQuestObjectiveSchema,
   updateQuestSchema,
   updateChronicleEntrySchema,
@@ -43,6 +46,7 @@ export function createCampaignsRouter(
   campaignCharactersController: CampaignCharactersController,
   campaignChronicleController: CampaignChronicleController,
   campaignInventoryController: CampaignInventoryController,
+  campaignMonstersController: CampaignMonstersController,
   campaignNpcsController: CampaignNpcsController,
   campaignLocationsController: CampaignLocationsController,
   campaignQuestsController: CampaignQuestsController,
@@ -107,6 +111,31 @@ export function createCampaignsRouter(
   });
   router.get("/:campaignId/inventory", authMiddleware, async (req, res) => {
     await campaignInventoryController.listCampaignInventory(req, res);
+  });
+  router.get("/:campaignId/monsters", authMiddleware, async (req, res) => {
+    await campaignMonstersController.listCampaignMonsters(req, res);
+  });
+  router.post(
+    "/:campaignId/monsters",
+    authMiddleware,
+    createValidateBodyMiddleware(createMonsterSchema),
+    async (req, res) => {
+      await campaignMonstersController.createMonster(req, res);
+    },
+  );
+  router.get("/:campaignId/monsters/:monsterId", authMiddleware, async (req, res) => {
+    await campaignMonstersController.getMonsterDetails(req, res);
+  });
+  router.patch(
+    "/:campaignId/monsters/:monsterId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateMonsterSchema),
+    async (req, res) => {
+      await campaignMonstersController.updateMonster(req, res);
+    },
+  );
+  router.post("/:campaignId/monsters/:monsterId/archive", authMiddleware, async (req, res) => {
+    await campaignMonstersController.archiveMonster(req, res);
   });
   router.post(
     "/:campaignId/inventory",

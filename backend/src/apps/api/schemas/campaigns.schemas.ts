@@ -14,6 +14,8 @@ const characterStatusSchema = z.enum([
 const npcAttitudeSchema = z.enum(["FRIENDLY", "NEUTRAL", "HOSTILE", "UNKNOWN"]);
 const npcImportanceSchema = z.enum(["MINOR", "SUPPORTING", "MAJOR", "BOSS"]);
 const npcStatusSchema = z.enum(["ALIVE", "DEAD", "MISSING", "UNKNOWN", "ARCHIVED"]);
+const monsterSizeSchema = z.enum(["TINY", "SMALL", "MEDIUM", "LARGE", "HUGE", "GARGANTUAN", "UNKNOWN"]);
+const monsterVisibilitySchema = z.enum(["PUBLIC", "GM_ONLY"]);
 const locationTypeSchema = z.enum([
   "WORLD",
   "CONTINENT",
@@ -239,6 +241,68 @@ export const updateNpcSchema = z
 
 export type CreateNpcRequestBody = z.infer<typeof createNpcSchema>;
 export type UpdateNpcRequestBody = z.infer<typeof updateNpcSchema>;
+
+const createOrUpdateMonsterSchemaShape = {
+  gameSystemId: nullableUuidSchema.optional(),
+  name: z.string().trim().min(1).max(200).optional(),
+  size: monsterSizeSchema.nullable().optional(),
+  type: z.string().trim().min(1).max(120).nullable().optional(),
+  subtype: z.string().trim().min(1).max(120).nullable().optional(),
+  alignment: z.string().trim().min(1).max(120).nullable().optional(),
+  armorClass: z.number().int().min(1).max(99).nullable().optional(),
+  armorClassDetails: z.string().trim().min(1).max(255).nullable().optional(),
+  hitPoints: z.number().int().min(0).max(9999).nullable().optional(),
+  hitDice: z.string().trim().min(1).max(120).nullable().optional(),
+  speed: nullableJsonSchema.optional(),
+  strength: optionalAbilityScoreSchema,
+  dexterity: optionalAbilityScoreSchema,
+  constitution: optionalAbilityScoreSchema,
+  intelligence: optionalAbilityScoreSchema,
+  wisdom: optionalAbilityScoreSchema,
+  charisma: optionalAbilityScoreSchema,
+  savingThrows: nullableJsonSchema.optional(),
+  skills: nullableJsonSchema.optional(),
+  damageResistances: nullableJsonSchema.optional(),
+  damageImmunities: nullableJsonSchema.optional(),
+  conditionImmunities: nullableJsonSchema.optional(),
+  damageVulnerabilities: nullableJsonSchema.optional(),
+  senses: z.string().trim().min(1).max(255).nullable().optional(),
+  languages: z.string().trim().min(1).max(255).nullable().optional(),
+  challengeRating: z.string().trim().min(1).max(32).nullable().optional(),
+  challengeRatingDecimal: z.number().min(0).max(100).nullable().optional(),
+  proficiencyBonus: z.number().int().min(0).max(20).nullable().optional(),
+  xp: z.number().int().min(0).max(10000000).nullable().optional(),
+  traits: nullableJsonSchema.optional(),
+  actions: nullableJsonSchema.optional(),
+  bonusActions: nullableJsonSchema.optional(),
+  reactions: nullableJsonSchema.optional(),
+  legendaryActions: nullableJsonSchema.optional(),
+  lairActions: nullableJsonSchema.optional(),
+  regionalEffects: nullableJsonSchema.optional(),
+  spellcasting: nullableJsonSchema.optional(),
+  description: nullableLongTextSchema.optional(),
+  sourceBook: z.string().trim().min(1).max(255).nullable().optional(),
+  pageNumber: z.string().trim().min(1).max(64).nullable().optional(),
+  visibility: monsterVisibilitySchema.optional(),
+  customData: nullableJsonSchema.optional(),
+} satisfies Record<string, z.ZodType>;
+
+export const createMonsterSchema = z
+  .object({
+    ...createOrUpdateMonsterSchemaShape,
+    name: z.string().trim().min(1).max(200),
+  })
+  .strict();
+
+export const updateMonsterSchema = z
+  .object(createOrUpdateMonsterSchemaShape)
+  .strict()
+  .refine((input) => Object.values(input).some((value) => value !== undefined), {
+    message: "At least one field must be provided",
+  });
+
+export type CreateMonsterRequestBody = z.infer<typeof createMonsterSchema>;
+export type UpdateMonsterRequestBody = z.infer<typeof updateMonsterSchema>;
 
 const createOrUpdateLocationSchemaShape = {
   parentLocationId: nullableUuidSchema.optional(),

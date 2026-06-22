@@ -1,0 +1,77 @@
+import type { MonsterDetailsDTO } from "@modules/monsters/application/dto/MonsterDetailsDTO";
+import type { MonsterListItemDTO } from "@modules/monsters/application/dto/MonsterListItemDTO";
+import type { Monster } from "@modules/monsters/domain/entities/Monster";
+
+export function mapMonsterListItemFromDomain(monster: Monster): MonsterListItemDTO {
+  return {
+    id: monster.id,
+    campaignId: monster.campaignId,
+    name: monster.name,
+    slug: monster.slug,
+    source: monster.source.value,
+    size: monster.size?.value ?? null,
+    type: monster.type,
+    armorClass: monster.armorClass,
+    hitPoints: monster.hitPoints,
+    challengeRating: monster.challengeRating,
+    challengeRatingDecimal: monster.challengeRatingDecimal,
+    visibility: monster.visibility.value,
+    status: monster.status.value,
+  };
+}
+
+export function mapMonsterDetailsFromDomain(monster: Monster): MonsterDetailsDTO {
+  return {
+    id: monster.id,
+    campaignId: monster.campaignId,
+    name: monster.name,
+    slug: monster.slug,
+    source: monster.source.value,
+    externalReferenceId: monster.externalReferenceId,
+    size: monster.size?.value ?? null,
+    type: monster.type,
+    subtype: monster.subtype,
+    alignment: monster.alignment,
+    armorClass: monster.armorClass,
+    armorClassDetails: monster.armorClassDetails,
+    hitPoints: monster.hitPoints,
+    hitDice: monster.hitDice,
+    speed: monster.speed,
+    abilities: {
+      strength: monster.strength,
+      dexterity: monster.dexterity,
+      constitution: monster.constitution,
+      intelligence: monster.intelligence,
+      wisdom: monster.wisdom,
+      charisma: monster.charisma,
+    },
+    savingThrows: monster.savingThrows,
+    skills: monster.skills,
+    damageResistances: monster.damageResistances,
+    damageImmunities: monster.damageImmunities,
+    conditionImmunities: monster.conditionImmunities,
+    damageVulnerabilities: monster.damageVulnerabilities,
+    senses: monster.senses,
+    languages: monster.languages,
+    challengeRating: monster.challengeRating,
+    challengeRatingDecimal: monster.challengeRatingDecimal,
+    proficiencyBonus: monster.proficiencyBonus,
+    xp: monster.xp,
+    traits: monster.traits,
+    actions: monster.actions,
+    bonusActions: monster.bonusActions,
+    reactions: monster.reactions,
+    legendaryActions: monster.legendaryActions,
+    lairActions: monster.lairActions,
+    regionalEffects: monster.regionalEffects,
+    spellcasting: monster.spellcasting,
+    description: monster.description,
+    sourceBook: monster.sourceBook,
+    pageNumber: monster.pageNumber,
+    visibility: monster.visibility.value,
+    status: monster.status.value,
+    customData: monster.customData,
+    createdAt: monster.createdAt.toISOString(),
+    updatedAt: monster.updatedAt.toISOString(),
+  };
+}

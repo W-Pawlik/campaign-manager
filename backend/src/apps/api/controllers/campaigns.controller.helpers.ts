@@ -31,6 +31,10 @@ export function getNpcId(req: Request): string {
   return getRequiredRouteParam(req, "npcId", "NPC id is required");
 }
 
+export function getMonsterId(req: Request): string {
+  return getRequiredRouteParam(req, "monsterId", "Monster id is required");
+}
+
 export function getLocationId(req: Request): string {
   return getRequiredRouteParam(req, "locationId", "Location id is required");
 }

@@ -37,6 +37,7 @@ model User {
   campaignMemberships CampaignMember[]
   ownedCampaigns      Campaign[]
   ownedCharacters     Character[]         @relation("CharacterOwner")
+  createdMonsters     Monster[]           @relation("MonsterCreator")
   createdNpcs         Npc[]               @relation("NpcCreator")
   createdLocations    Location[]          @relation("LocationCreator")
   authoredNotes       Note[]              @relation("NoteAuthor")
@@ -110,6 +111,7 @@ model Campaign {
   chronicleEntries   ChronicleEntry[]
   quests             Quest[]
   inventoryItems     InventoryItem[]
+  monsters           Monster[]
 
   @@index([ownerId])
   @@index([status])
@@ -254,6 +256,74 @@ model Npc {
   @@index([importance])
   @@index([deletedAt])
   @@map("npcs")
+}
+
+model Monster {
+  id                    String    @id
+  campaignId            String?
+  gameSystemId          String?
+  source                String
+  externalReferenceId   String?
+  name                  String
+  slug                  String
+  size                  String?
+  type                  String?
+  subtype               String?
+  alignment             String?
+  armorClass            Int?
+  armorClassDetails     String?
+  hitPoints             Int?
+  hitDice               String?
+  speed                 Json?
+  strength              Int?
+  dexterity             Int?
+  constitution          Int?
+  intelligence          Int?
+  wisdom                Int?
+  charisma              Int?
+  savingThrows          Json?
+  skills                Json?
+  damageResistances     Json?
+  damageImmunities      Json?
+  conditionImmunities   Json?
+  damageVulnerabilities Json?
+  senses                String?
+  languages             String?
+  challengeRating       String?
+  challengeRatingDecimal Float?
+  proficiencyBonus      Int?
+  xp                    Int?
+  traits                Json?
+  actions               Json?
+  bonusActions          Json?
+  reactions             Json?
+  legendaryActions      Json?
+  lairActions           Json?
+  regionalEffects       Json?
+  spellcasting          Json?
+  description           String?
+  sourceBook            String?
+  pageNumber            String?
+  visibility            String
+  status                String
+  rawData               Json?
+  customData            Json?
+  createdById           String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  deletedAt             DateTime?
+  campaign              Campaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  createdBy             User?     @relation("MonsterCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([campaignId, slug])
+  @@index([campaignId])
+  @@index([source])
+  @@index([externalReferenceId])
+  @@index([name])
+  @@index([challengeRatingDecimal])
+  @@index([type])
+  @@index([deletedAt])
+  @@map("monsters")
 }
 
 model Location {
