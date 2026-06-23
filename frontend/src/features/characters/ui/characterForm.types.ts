@@ -1,0 +1,30 @@
+import type { CharacterStatus, CharacterType } from "@/features/characters/model/character.types";
+
+export type CharacterFormValues = {
+  ownerUserId?: string;
+  name: string;
+  avatarUrl?: string;
+  type: CharacterType;
+  status: CharacterStatus;
+  race?: string;
+  characterClass?: string;
+  subclass?: string;
+  level?: number | null;
+  background?: string;
+  alignment?: string;
+  armorClass?: number | null;
+  maxHitPoints?: number | null;
+  currentHitPoints?: number | null;
+  strength?: number | null;
+  dexterity?: number | null;
+  constitution?: number | null;
+  intelligence?: number | null;
+  wisdom?: number | null;
+  charisma?: number | null;
+  backstory?: string;
+  appearance?: string;
+  personalityTraits?: string;
+  ideals?: string;
+  bonds?: string;
+  flaws?: string;
+};

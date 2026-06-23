@@ -1,17 +1,14 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { appPaths } from "@/app/router/paths";
+import { useAppSelector } from "@/app/store/hooks";
 
-type ProtectedRouteProps = {
-  isAllowed: boolean;
-  redirectTo?: string;
-};
-
-export function ProtectedRoute({ isAllowed, redirectTo = appPaths.home }: ProtectedRouteProps) {
+export function ProtectedRoute() {
   const location = useLocation();
+  const authStatus = useAppSelector((state) => state.auth.status);
 
-  if (!isAllowed) {
-    return <Navigate to={redirectTo} replace state={{ from: location }} />;
+  if (authStatus !== "authenticated") {
+    return <Navigate to={appPaths.login} replace state={{ from: location }} />;
   }
 
   return <Outlet />;

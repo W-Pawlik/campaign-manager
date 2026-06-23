@@ -1,60 +1,77 @@
-import { AppBar, Box, Drawer, Toolbar, Typography } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Box } from "@mui/material";
+import { Outlet, useLocation, useMatch } from "react-router-dom";
+import { useEffect } from "react";
 
-import { useAppSelector } from "@/app/store/hooks";
-import { appConstants } from "@/app/config/constants";
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import {
+  hydrateLastActiveCampaignId,
+  setLastActiveCampaignId,
+} from "@/app/store/slices/workspaceSlice";
+import { CampaignSidebar } from "@/layouts/components/CampaignSidebar";
+import { AppTopbar } from "@/layouts/components/AppTopbar";
+import { readLocalStorage, writeLocalStorage } from "@/core/storage/localStorage";
 import { fantasyTokens } from "@/shared/theme";
 
+const lastActiveCampaignStorageKey = "workspace:last-active-campaign-id";
+
 export function AppLayout() {
+  const dispatch = useAppDispatch();
+  const location = useLocation();
+  const campaignOverviewMatch = useMatch("/campaigns/:campaignId");
+  const campaignNestedMatch = useMatch("/campaigns/:campaignId/*");
   const sidebarOpen = useAppSelector((state) => state.ui.sidebarOpen);
-  const sidebarWidth = sidebarOpen ? fantasyTokens.layout.sidebarWidth : 0;
+  const lastActiveCampaignId = useAppSelector((state) => state.workspace.lastActiveCampaignId);
+  const activeCampaignId =
+    campaignNestedMatch?.params.campaignId ?? campaignOverviewMatch?.params.campaignId ?? null;
+  const sidebarWidth = activeCampaignId
+    ? sidebarOpen
+      ? fantasyTokens.layout.sidebarWidth
+      : fantasyTokens.layout.sidebarCollapsedWidth
+    : 0;
+
+  useEffect(() => {
+    if (lastActiveCampaignId !== null) {
+      return;
+    }
+
+    const storedCampaignId = readLocalStorage<string>(lastActiveCampaignStorageKey);
+
+    dispatch(hydrateLastActiveCampaignId(storedCampaignId));
+  }, [dispatch, lastActiveCampaignId]);
+
+  useEffect(() => {
+    if (!activeCampaignId) {
+      return;
+    }
+
+    dispatch(setLastActiveCampaignId(activeCampaignId));
+    writeLocalStorage(lastActiveCampaignStorageKey, activeCampaignId);
+  }, [activeCampaignId, dispatch]);
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <AppBar
-        elevation={0}
-        position="fixed"
-        sx={{ ml: `${sidebarWidth}px`, width: `calc(100% - ${sidebarWidth}px)` }}
-      >
-        <Toolbar>
-          <Typography component="span" variant="h6">
-            {appConstants.appName}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <AppTopbar />
 
-      <Drawer
-        open={sidebarOpen}
-        variant="persistent"
-        sx={{
-          flexShrink: 0,
-          width: sidebarWidth,
-          "& .MuiDrawer-paper": {
-            width: fantasyTokens.layout.sidebarWidth,
-          },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ p: 2 }}>
-          <Typography color="text.secondary" variant="body2">
-            Navigation
-          </Typography>
-        </Box>
-      </Drawer>
+      <CampaignSidebar campaignId={activeCampaignId} sidebarOpen={sidebarOpen} />
 
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           minWidth: 0,
-          p: { xs: 2, md: 3 },
+          minHeight: "100vh",
+          ml: { md: `${sidebarWidth}px` },
+          px: activeCampaignId ? { xs: 2, md: 2 } : { xs: 2, md: 3 },
+          pb: { xs: 2, md: 3 },
           pt: {
             xs: `calc(${fantasyTokens.layout.topbarHeight}px + 16px)`,
-            md: `calc(${fantasyTokens.layout.topbarHeight}px + 24px)`,
+            md: `calc(${fantasyTokens.layout.topbarHeight}px + 20px)`,
           },
         }}
       >
-        <Outlet />
+        <Box key={location.pathname} sx={{ animation: "main-shell-enter 220ms ease" }}>
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );

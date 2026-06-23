@@ -18,10 +18,17 @@ export const components: ThemeOptions["components"] = {
       disableElevation: true,
     },
     styleOverrides: {
-      root: {
+      root: ({ theme }) => ({
         borderRadius: fantasyTokens.radius.sm,
         minHeight: 40,
-      },
+        ...(theme.palette.mode === "light"
+          ? {}
+          : {
+              "&.MuiButton-outlined": {
+                borderColor: "rgba(255, 255, 255, 0.14)",
+              },
+            }),
+      }),
     },
   },
   MuiCard: {
@@ -75,6 +82,21 @@ export const components: ThemeOptions["components"] = {
   MuiTextField: {
     defaultProps: {
       variant: "outlined",
+    },
+  },
+  MuiOutlinedInput: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: theme.palette.divider,
+        },
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: theme.palette.primary.main,
+        },
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+          borderColor: theme.palette.primary.main,
+        },
+      }),
     },
   },
   MuiTooltip: {

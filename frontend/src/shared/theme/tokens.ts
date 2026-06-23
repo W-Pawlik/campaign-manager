@@ -1,5 +1,6 @@
 export const fantasyTokens = {
   layout: {
+    sidebarCollapsedWidth: 84,
     sidebarWidth: 288,
     topbarHeight: 64,
     contentMaxWidth: 1320,
@@ -10,8 +11,8 @@ export const fantasyTokens = {
     lg: 12,
   },
   shadows: {
-    card: "0 18px 48px rgba(0, 0, 0, 0.24)",
-    focus: "0 0 0 3px rgba(201, 162, 77, 0.28)",
+    card: "0 24px 60px rgba(6, 8, 12, 0.22)",
+    focus: "0 0 0 3px rgba(230, 22, 26, 0.26)",
   },
 } as const;
 

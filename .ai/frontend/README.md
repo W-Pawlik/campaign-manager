@@ -6,6 +6,15 @@ The application should be built with React, TypeScript, Redux Toolkit, TanStack 
 
 The project follows a feature-based architecture. Business logic should be grouped by domain features instead of being grouped only by technical file types.
 
+Read these files before making larger frontend changes:
+
+- `architecture.md`
+- `data-management.md`
+- `styling.md`
+- `component-design-rules.md`
+- `app-shell-and-navigation.md`
+- `implementation-roadmap.md`
+
 ## Main Goals
 
 The frontend should be:
@@ -319,6 +328,8 @@ When generating frontend code, AI should:
 - use Redux Toolkit for global client state
 - use Axios through the shared `httpClient`
 - keep components small
+- split large components into smaller reusable pieces
+- prefer feature-local reusable components before creating giant page files
 - avoid unnecessary abstractions
 - avoid business logic inside `shared`
 - avoid deep imports from other features

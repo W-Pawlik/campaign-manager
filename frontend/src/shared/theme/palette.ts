@@ -6,37 +6,37 @@ export function createPalette(mode: PaletteMode): ThemeOptions["palette"] {
   return {
     mode,
     background: {
-      default: dark ? "#16110d" : "#f5efe2",
-      paper: dark ? "#241a14" : "#fffaf0",
+      default: dark ? "#111216" : "#ffffff",
+      paper: dark ? "#1a1c22" : "#ffffff",
     },
-    divider: dark ? "rgba(214, 184, 115, 0.18)" : "rgba(96, 67, 36, 0.18)",
+    divider: dark ? "rgba(255, 255, 255, 0.08)" : "rgba(17, 18, 22, 0.08)",
     primary: {
-      main: "#c9a24d",
-      light: "#e4c878",
-      dark: "#8f6a23",
-      contrastText: "#1b130c",
+      main: "#e6161a",
+      light: "#ff5a5d",
+      dark: "#b60f14",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: "#7f5539",
-      light: "#a9774d",
-      dark: "#513522",
-      contrastText: "#fff8e8",
+      main: dark ? "#3d4049" : "#e8eaef",
+      light: dark ? "#50545f" : "#f3f4f7",
+      dark: dark ? "#2a2d34" : "#d3d7df",
+      contrastText: dark ? "#f5f7fb" : "#17181c",
     },
     success: {
-      main: "#6f9d55",
+      main: "#2eae67",
     },
     warning: {
-      main: "#d99a36",
+      main: "#e0a100",
     },
     error: {
-      main: "#c95c4d",
+      main: "#e6161a",
     },
     info: {
-      main: "#5f9ea0",
+      main: "#3f8cff",
     },
     text: {
-      primary: dark ? "#f5ead7" : "#2c2118",
-      secondary: dark ? "#c9b99a" : "#6e5b42",
+      primary: dark ? "#f5f7fb" : "#17181c",
+      secondary: dark ? "#a4acb9" : "#5f6775",
     },
   };
 }

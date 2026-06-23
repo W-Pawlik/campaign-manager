@@ -9,8 +9,12 @@ export type ApiError = {
 
 type ApiErrorResponse = {
   code?: string;
+  detail?: string;
   message?: string;
   details?: unknown;
+  status?: number;
+  title?: string;
+  type?: string;
 };
 
 export function normalizeApiError(error: unknown): ApiError {
@@ -18,9 +22,9 @@ export function normalizeApiError(error: unknown): ApiError {
     const data = error.response?.data as ApiErrorResponse | undefined;
 
     return {
-      status: error.response?.status,
-      code: data?.code,
-      message: data?.message ?? error.message,
+      status: error.response?.status ?? data?.status,
+      code: data?.code ?? data?.type,
+      message: data?.message ?? data?.detail ?? data?.title ?? error.message,
       details: data?.details,
     };
   }

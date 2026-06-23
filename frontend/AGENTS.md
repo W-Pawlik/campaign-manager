@@ -32,6 +32,21 @@ Before introducing major frontend architecture decisions, update the frontend in
 
 If `.ai/frontend/` does not exist yet, do not invent a large architecture without project-level approval.
 
+When working on frontend implementation, also read the relevant files in:
+
+```txt
+.ai/frontend/
+```
+
+In particular, follow:
+
+- `architecture.md`
+- `data-management.md`
+- `styling.md`
+- `component-design-rules.md`
+- `app-shell-and-navigation.md`
+- `implementation-roadmap.md`
+
 ## Typical commands
 
 Check `package.json` before running commands.

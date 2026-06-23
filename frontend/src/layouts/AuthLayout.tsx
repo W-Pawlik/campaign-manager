@@ -1,20 +1,18 @@
-import { Box, Paper } from "@mui/material";
+import { Box } from "@mui/material";
 import { Outlet } from "react-router-dom";
 
 export function AuthLayout() {
   return (
     <Box
       sx={{
-        alignItems: "center",
-        display: "flex",
-        justifyContent: "center",
+        bgcolor: "background.default",
         minHeight: "100vh",
-        p: 2,
+        width: "100%",
       }}
     >
-      <Paper sx={{ maxWidth: 460, p: { xs: 3, md: 4 }, width: "100%" }}>
+      <Box sx={{ minHeight: "100vh", width: "100%" }}>
         <Outlet />
-      </Paper>
+      </Box>
     </Box>
   );
 }
