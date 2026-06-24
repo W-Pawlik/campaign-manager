@@ -8,8 +8,11 @@ import {
   useChronicleEntryDetailsQuery,
   useCreateChronicleEntryMutation,
   useDeleteChronicleEntryMutation,
+  useResolveChronicleConflictWithLocalMutation,
+  useResolveChronicleConflictWithServerMutation,
   useUpdateChronicleEntryMutation,
 } from "@/features/chronicle/api/chronicleQueries";
+import { useOnlineStatus } from "@/core/offline/useOnlineStatus";
 import { CampaignChronicleList } from "@/features/chronicle/ui/CampaignChronicleList";
 import { ChronicleListControls } from "@/features/chronicle/ui/ChronicleListControls";
 import { ChronicleEntryFormDialog } from "@/features/chronicle/ui/ChronicleEntryFormDialog";
@@ -48,12 +51,15 @@ export function CampaignChroniclePage() {
   const createEntryMutation = useCreateChronicleEntryMutation(campaignId);
   const updateEntryMutation = useUpdateChronicleEntryMutation(campaignId);
   const deleteEntryMutation = useDeleteChronicleEntryMutation(campaignId);
+  const resolveConflictWithLocalMutation = useResolveChronicleConflictWithLocalMutation(campaignId);
+  const resolveConflictWithServerMutation = useResolveChronicleConflictWithServerMutation(campaignId);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [highlightedEntryId, setHighlightedEntryId] = useState<string | null>(null);
   const [listFilters, setListFilters] = useState<ChronicleListFilters>(defaultChronicleListFilters);
   const entryDetailsQuery = useChronicleEntryDetailsQuery(campaignId, selectedEntryId ?? editingEntryId);
+  const isOnline = useOnlineStatus();
 
   const pageError = useMemo(() => {
     if (campaignDetailsQuery.isError) {
@@ -66,34 +72,22 @@ export function CampaignChroniclePage() {
 
     return null;
   }, [campaignDetailsQuery.error, campaignDetailsQuery.isError, chronicleQuery.error, chronicleQuery.isError]);
-
-  if (campaignDetailsQuery.isLoading || chronicleQuery.isLoading) {
-    return <LoadingScreen minHeight="60vh" />;
-  }
-
-  if (!campaignId || !campaignDetailsQuery.data || pageError) {
-    return (
-      <ErrorState
-        message={pageError ?? "Chronicle could not be loaded."}
-        onRetry={() => {
-          void campaignDetailsQuery.refetch();
-          void chronicleQuery.refetch();
-        }}
-        title="Unable to load chronicle"
-      />
-    );
-  }
-
   const canManageEntries =
-    campaignDetailsQuery.data.role === "OWNER" ||
-    campaignDetailsQuery.data.role === "GM" ||
-    campaignDetailsQuery.data.role === "CO_GM";
+    campaignDetailsQuery.data?.role === "OWNER" ||
+    campaignDetailsQuery.data?.role === "GM" ||
+    campaignDetailsQuery.data?.role === "CO_GM";
   const isMutating =
-    createEntryMutation.isPending || updateEntryMutation.isPending || deleteEntryMutation.isPending;
+    createEntryMutation.isPending ||
+    updateEntryMutation.isPending ||
+    deleteEntryMutation.isPending ||
+    resolveConflictWithLocalMutation.isPending ||
+    resolveConflictWithServerMutation.isPending;
   const mutationError =
     createEntryMutation.error?.message ??
     updateEntryMutation.error?.message ??
     deleteEntryMutation.error?.message ??
+    resolveConflictWithLocalMutation.error?.message ??
+    resolveConflictWithServerMutation.error?.message ??
     null;
   const visibleEntries = useMemo(
     () =>
@@ -112,6 +106,14 @@ export function CampaignChroniclePage() {
     () => buildChronicleTimelineEntries(visibleEntries, "OCCURRED_AT"),
     [visibleEntries],
   );
+  const pendingEntriesCount = visibleEntries.filter(
+    (entry) =>
+      entry.offlineMeta?.syncState === "PENDING_CREATE" ||
+      entry.offlineMeta?.syncState === "PENDING_UPDATE",
+  ).length;
+  const conflictEntriesCount = visibleEntries.filter(
+    (entry) => entry.offlineMeta?.syncState === "CONFLICT",
+  ).length;
 
   useEffect(() => {
     if (!highlightedEntryId) {
@@ -134,6 +136,23 @@ export function CampaignChroniclePage() {
     }, 10);
   };
 
+  if (campaignDetailsQuery.isLoading || chronicleQuery.isLoading) {
+    return <LoadingScreen minHeight="60vh" />;
+  }
+
+  if (!campaignId || !campaignDetailsQuery.data || pageError) {
+    return (
+      <ErrorState
+        message={pageError ?? "Chronicle could not be loaded."}
+        onRetry={() => {
+          void campaignDetailsQuery.refetch();
+          void chronicleQuery.refetch();
+        }}
+        title="Unable to load chronicle"
+      />
+    );
+  }
+
   return (
     <>
       <Stack spacing={3.5}>
@@ -149,6 +168,21 @@ export function CampaignChroniclePage() {
           title="Chronicle"
         />
 
+        {!isOnline ? (
+          <Alert severity="warning">
+            Offline mode is active for chronicle. You can read and edit local entries, and changes will sync when the connection returns.
+          </Alert>
+        ) : null}
+        {pendingEntriesCount > 0 ? (
+          <Alert severity="info">
+            {pendingEntriesCount} chronicle {pendingEntriesCount === 1 ? "entry is" : "entries are"} waiting to sync.
+          </Alert>
+        ) : null}
+        {conflictEntriesCount > 0 ? (
+          <Alert severity="error">
+            {conflictEntriesCount} chronicle {conflictEntriesCount === 1 ? "entry has" : "entries have"} a sync conflict. Choose whether to keep the local version or use the server version.
+          </Alert>
+        ) : null}
         {mutationError ? <Alert severity="error">{mutationError}</Alert> : null}
 
         <SectionCard>
@@ -178,9 +212,11 @@ export function CampaignChroniclePage() {
               entries={visibleEntries}
               highlightedEntryId={highlightedEntryId}
               isSubmitting={isMutating}
+              onKeepLocalConflict={(entryId) => resolveConflictWithLocalMutation.mutate(entryId)}
               onDeleteEntry={(entryId) => deleteEntryMutation.mutate(entryId)}
               onEditEntry={(entryId) => setEditingEntryId(entryId)}
               onOpenDetails={(entryId) => setSelectedEntryId(entryId)}
+              onUseServerConflict={(entryId) => resolveConflictWithServerMutation.mutate(entryId)}
             />
           </Stack>
         </SectionCard>

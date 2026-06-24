@@ -73,32 +73,13 @@ export function CampaignSessionsPage() {
 
     return null;
   }, [campaignDetailsQuery.error, campaignDetailsQuery.isError, sessionsQuery.error, sessionsQuery.isError]);
-
-  if (campaignDetailsQuery.isLoading || sessionsQuery.isLoading) {
-    return <LoadingScreen minHeight="60vh" />;
-  }
-
-  if (!campaignId || !campaignDetailsQuery.data || pageError) {
-    return (
-      <ErrorState
-        message={pageError ?? "Campaign sessions could not be loaded."}
-        onRetry={() => {
-          void campaignDetailsQuery.refetch();
-          void sessionsQuery.refetch();
-        }}
-        title="Unable to load sessions"
-      />
-    );
-  }
-
-  const canManage = canManageSessions(campaignDetailsQuery.data.role);
+  const canManage = canManageSessions(campaignDetailsQuery.data?.role);
   const actionMutationError =
     cancelSessionMutation.error?.message ??
     completeSessionMutation.error?.message ??
     confirmSessionAttendanceMutation.error?.message ??
     declineSessionAttendanceMutation.error?.message ??
     null;
-
   const filteredSessions = (sessionsQuery.data ?? []).filter((session) =>
     isSessionFilterMatch(session.status, statusFilter),
   );
@@ -144,6 +125,23 @@ export function CampaignSessionsPage() {
 
     navigate(location.pathname, { replace: true, state: null });
   }, [location.pathname, navigate, routedHighlightedSessionId]);
+
+  if (campaignDetailsQuery.isLoading || sessionsQuery.isLoading) {
+    return <LoadingScreen minHeight="60vh" />;
+  }
+
+  if (!campaignId || !campaignDetailsQuery.data || pageError) {
+    return (
+      <ErrorState
+        message={pageError ?? "Campaign sessions could not be loaded."}
+        onRetry={() => {
+          void campaignDetailsQuery.refetch();
+          void sessionsQuery.refetch();
+        }}
+        title="Unable to load sessions"
+      />
+    );
+  }
 
   return (
     <>

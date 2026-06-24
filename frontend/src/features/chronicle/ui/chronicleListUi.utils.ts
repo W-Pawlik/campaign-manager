@@ -1,6 +1,5 @@
-import type { CampaignChronicleEntry } from "@/features/campaigns";
-
 import { chronicleVisibilityOptions } from "@/features/chronicle/model/chronicle.types";
+import type { ChronicleEntryView } from "@/features/chronicle/model/chronicle.types";
 
 export const chronicleSortFieldOptions = [
   "UPDATED_AT",
@@ -95,7 +94,7 @@ export function formatChronicleDatePresenceLabel(value: ChronicleDatePresenceFil
 }
 
 export function matchesChronicleListFilters(
-  entry: CampaignChronicleEntry,
+  entry: ChronicleEntryView,
   filters: ChronicleListFilters,
 ): boolean {
   if (filters.visibility !== "ALL" && entry.visibility !== filters.visibility) {
@@ -117,10 +116,10 @@ export function matchesChronicleListFilters(
 }
 
 export function sortChronicleEntries(
-  entries: CampaignChronicleEntry[],
+  entries: ChronicleEntryView[],
   sortField: ChronicleSortField,
   sortDirection: ChronicleSortDirection,
-): CampaignChronicleEntry[] {
+): ChronicleEntryView[] {
   return entries.slice().sort((left, right) => {
     switch (sortField) {
       case "CREATED_AT":
@@ -141,9 +140,9 @@ export function sortChronicleEntries(
 }
 
 export function buildChronicleTimelineEntries(
-  entries: CampaignChronicleEntry[],
+  entries: ChronicleEntryView[],
   mode: ChronicleTimelineMode,
-): CampaignChronicleEntry[] {
+): ChronicleEntryView[] {
   const keyed = entries.filter((entry) => (mode === "IN_WORLD_DATE" ? entry.inWorldDate : entry.occurredAt));
   return sortChronicleEntries(keyed, mode === "IN_WORLD_DATE" ? "IN_WORLD_DATE" : "OCCURRED_AT", "ASC");
 }

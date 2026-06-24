@@ -1,18 +1,20 @@
 import { Button, Chip, Paper, Stack, Typography } from "@mui/material";
 
-import type { CampaignChronicleEntry } from "@/features/campaigns";
 import { CampaignEntityReferenceChip, useCampaignReferenceIndex } from "@/features/campaigns";
+import type { ChronicleEntryView } from "@/features/chronicle/model/chronicle.types";
 import { EmptyState } from "@/shared/components";
 
 type CampaignChronicleListProps = {
   campaignId: string;
   canManageEntries: boolean;
-  entries: CampaignChronicleEntry[];
+  entries: ChronicleEntryView[];
   highlightedEntryId?: string | null;
   isSubmitting: boolean;
+  onKeepLocalConflict: (entryId: string) => void;
   onDeleteEntry: (entryId: string) => void;
   onEditEntry: (entryId: string) => void;
   onOpenDetails: (entryId: string) => void;
+  onUseServerConflict: (entryId: string) => void;
 };
 
 export function CampaignChronicleList({
@@ -21,9 +23,11 @@ export function CampaignChronicleList({
   entries,
   highlightedEntryId = null,
   isSubmitting,
+  onKeepLocalConflict,
   onDeleteEntry,
   onEditEntry,
   onOpenDetails,
+  onUseServerConflict,
 }: CampaignChronicleListProps) {
   const references = useCampaignReferenceIndex(campaignId, ["SESSION"]);
 
@@ -68,6 +72,15 @@ export function CampaignChronicleList({
               </Stack>
               <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
                 <Chip label={entry.visibility.replace("_", " ")} size="small" variant="outlined" />
+                {entry.offlineMeta?.syncState === "PENDING_CREATE" ? (
+                  <Chip color="warning" label="Offline create pending" size="small" variant="outlined" />
+                ) : null}
+                {entry.offlineMeta?.syncState === "PENDING_UPDATE" ? (
+                  <Chip color="warning" label="Offline update pending" size="small" variant="outlined" />
+                ) : null}
+                {entry.offlineMeta?.syncState === "CONFLICT" ? (
+                  <Chip color="error" label="Sync conflict" size="small" variant="outlined" />
+                ) : null}
                 {entry.inWorldDate ? <Chip label={`In-world: ${entry.inWorldDate}`} size="small" variant="outlined" /> : null}
                 {entry.occurredAt ? <Chip label="Occurred at set" size="small" variant="outlined" /> : null}
               </Stack>
@@ -84,6 +97,16 @@ export function CampaignChronicleList({
               <Button onClick={() => onOpenDetails(entry.id)} variant="outlined">
                 View details
               </Button>
+              {entry.offlineMeta?.syncState === "CONFLICT" ? (
+                <>
+                  <Button color="warning" onClick={() => onKeepLocalConflict(entry.id)} variant="text">
+                    Keep local
+                  </Button>
+                  <Button color="error" onClick={() => onUseServerConflict(entry.id)} variant="text">
+                    Use server
+                  </Button>
+                </>
+              ) : null}
               {canManageEntries ? (
                 <>
                   <Button onClick={() => onEditEntry(entry.id)} variant="text">
@@ -91,7 +114,7 @@ export function CampaignChronicleList({
                   </Button>
                   <Button
                     color="error"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || entry.offlineMeta?.syncState === "CONFLICT"}
                     onClick={() => onDeleteEntry(entry.id)}
                     variant="outlined"
                   >

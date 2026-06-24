@@ -1,12 +1,12 @@
 import { alpha, ButtonBase, Paper, Stack, Typography } from "@mui/material";
 
 import { useCampaignReferenceIndex } from "@/features/campaigns";
-import type { CampaignChronicleEntry } from "@/features/campaigns";
+import type { ChronicleEntryView } from "@/features/chronicle/model/chronicle.types";
 import { formatChronicleTimelineModeLabel, type ChronicleTimelineMode } from "@/features/chronicle/ui/chronicleListUi.utils";
 
 type ChronicleTimelinePanelProps = {
   campaignId: string;
-  entries: CampaignChronicleEntry[];
+  entries: ChronicleEntryView[];
   mode: ChronicleTimelineMode;
   onSelectEntry: (entryId: string) => void;
 };

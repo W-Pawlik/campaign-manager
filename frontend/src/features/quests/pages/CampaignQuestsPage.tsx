@@ -78,25 +78,7 @@ export function CampaignQuestsPage() {
 
     return null;
   }, [campaignDetailsQuery.error, campaignDetailsQuery.isError, questsQuery.error, questsQuery.isError]);
-
-  if (campaignDetailsQuery.isLoading || questsQuery.isLoading) {
-    return <LoadingScreen minHeight="60vh" />;
-  }
-
-  if (!campaignId || !campaignDetailsQuery.data || pageError) {
-    return (
-      <ErrorState
-        message={pageError ?? "Quests could not be loaded."}
-        onRetry={() => {
-          void campaignDetailsQuery.refetch();
-          void questsQuery.refetch();
-        }}
-        title="Unable to load quests"
-      />
-    );
-  }
-
-  const canManage = canManageQuests(campaignDetailsQuery.data.role);
+  const canManage = canManageQuests(campaignDetailsQuery.data?.role);
   const isMutating =
     createQuestMutation.isPending ||
     updateQuestMutation.isPending ||
@@ -121,6 +103,23 @@ export function CampaignQuestsPage() {
       ),
     [listFilters, questsQuery.data],
   );
+
+  if (campaignDetailsQuery.isLoading || questsQuery.isLoading) {
+    return <LoadingScreen minHeight="60vh" />;
+  }
+
+  if (!campaignId || !campaignDetailsQuery.data || pageError) {
+    return (
+      <ErrorState
+        message={pageError ?? "Quests could not be loaded."}
+        onRetry={() => {
+          void campaignDetailsQuery.refetch();
+          void questsQuery.refetch();
+        }}
+        title="Unable to load quests"
+      />
+    );
+  }
 
   return (
     <>
