@@ -16,6 +16,9 @@ import {
 import { CampaignSessionsList } from "@/features/sessions/ui/CampaignSessionsList";
 import { SessionDetailsDialog } from "@/features/sessions/ui/SessionDetailsDialog";
 import { SessionFormDialog } from "@/features/sessions/ui/SessionFormDialog";
+import { SessionStatusFilterBar } from "@/features/sessions/ui/SessionStatusFilterBar";
+import type { SessionFilterValue } from "@/features/sessions/ui/sessionUi.utils";
+import { isSessionFilterMatch } from "@/features/sessions/ui/sessionUi.utils";
 import { ErrorState, LoadingScreen, PageHeader, SectionCard } from "@/shared/components";
 
 function canManageSessions(role: string | undefined): boolean {
@@ -53,6 +56,7 @@ export function CampaignSessionsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<SessionFilterValue>("ALL");
   const sessionDetailsQuery = useSessionDetailsQuery(campaignId, selectedSessionId ?? editingSessionId);
 
   const pageError = useMemo(() => {
@@ -85,14 +89,16 @@ export function CampaignSessionsPage() {
   }
 
   const canManage = canManageSessions(campaignDetailsQuery.data.role);
-  const activeMutationError =
-    createSessionMutation.error?.message ??
-    updateSessionMutation.error?.message ??
+  const actionMutationError =
     cancelSessionMutation.error?.message ??
     completeSessionMutation.error?.message ??
     confirmSessionAttendanceMutation.error?.message ??
     declineSessionAttendanceMutation.error?.message ??
     null;
+
+  const filteredSessions = (sessionsQuery.data ?? []).filter((session) =>
+    isSessionFilterMatch(session.status, statusFilter),
+  );
 
   const isMutating =
     createSessionMutation.isPending ||
@@ -117,24 +123,30 @@ export function CampaignSessionsPage() {
           title="Sessions"
         />
 
-        {activeMutationError ? <Alert severity="error">{activeMutationError}</Alert> : null}
+        {actionMutationError ? <Alert severity="error">{actionMutationError}</Alert> : null}
 
         <SectionCard>
-          <CampaignSessionsList
-            canManageSessions={canManage}
-            isSubmitting={isMutating}
-            onCancelSession={(sessionId) => cancelSessionMutation.mutate(sessionId)}
-            onCompleteSession={(sessionId) => completeSessionMutation.mutate(sessionId)}
-            onEditSession={(sessionId) => setEditingSessionId(sessionId)}
-            onOpenDetails={(sessionId) => setSelectedSessionId(sessionId)}
-            sessions={sessionsQuery.data ?? []}
-          />
+          <Stack spacing={2.5}>
+            <SessionStatusFilterBar onChange={setStatusFilter} value={statusFilter} />
+            <CampaignSessionsList
+              canManageSessions={canManage}
+              isSubmitting={isMutating}
+              onCancelSession={(sessionId) => cancelSessionMutation.mutate(sessionId)}
+              onCompleteSession={(sessionId) => completeSessionMutation.mutate(sessionId)}
+              onEditSession={(sessionId) => setEditingSessionId(sessionId)}
+              onOpenDetails={(sessionId) => setSelectedSessionId(sessionId)}
+              sessions={filteredSessions}
+            />
+          </Stack>
         </SectionCard>
       </Stack>
 
       <SessionFormDialog
         isSubmitting={createSessionMutation.isPending}
-        onClose={() => setIsCreateDialogOpen(false)}
+        onClose={() => {
+          createSessionMutation.reset();
+          setIsCreateDialogOpen(false);
+        }}
         onSubmit={async (values) => {
           await createSessionMutation.mutateAsync({
             description: toNullableString(values.description),
@@ -148,15 +160,27 @@ export function CampaignSessionsPage() {
             summaryPublic: toNullableString(values.summaryPublic),
             title: values.title.trim(),
           });
+          createSessionMutation.reset();
           setIsCreateDialogOpen(false);
         }}
         open={isCreateDialogOpen}
+        submitError={createSessionMutation.error?.message ?? null}
       />
 
       <SessionFormDialog
+        disableSubmitReason={
+          sessionDetailsQuery.data?.status === "COMPLETED"
+            ? "Completed sessions are read-only in the current backend."
+            : sessionDetailsQuery.data?.status === "CANCELLED"
+              ? "Cancelled sessions are read-only in the current backend. Restoring them requires backend support."
+              : null
+        }
         initialSession={editingSessionId ? sessionDetailsQuery.data ?? null : null}
         isSubmitting={updateSessionMutation.isPending || sessionDetailsQuery.isLoading}
-        onClose={() => setEditingSessionId(null)}
+        onClose={() => {
+          updateSessionMutation.reset();
+          setEditingSessionId(null);
+        }}
         onSubmit={async (values) => {
           if (!editingSessionId) {
             return;
@@ -177,9 +201,11 @@ export function CampaignSessionsPage() {
             },
             sessionId: editingSessionId,
           });
+          updateSessionMutation.reset();
           setEditingSessionId(null);
         }}
         open={Boolean(editingSessionId)}
+        submitError={updateSessionMutation.error?.message ?? null}
       />
 
       <SessionDetailsDialog

@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 
 import type { CampaignSessionDetails } from "@/features/sessions/model/session.types";
+import { SessionStatusChip } from "@/features/sessions/ui/SessionStatusChip";
+import { formatDateTime } from "@/features/sessions/ui/sessionUi.utils";
 
 type SessionDetailsDialogProps = {
   canManageSessions: boolean;
@@ -21,17 +23,6 @@ type SessionDetailsDialogProps = {
   open: boolean;
   session: CampaignSessionDetails | null;
 };
-
-function formatDateTime(value: string | null): string {
-  if (!value) {
-    return "Not scheduled";
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
 
 export function SessionDetailsDialog({
   canManageSessions,
@@ -49,7 +40,7 @@ export function SessionDetailsDialog({
         {session ? (
           <Stack spacing={2.5}>
             <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-              <Chip label={session.status.replace("_", " ")} size="small" />
+              <SessionStatusChip status={session.status} />
               {session.locationType ? (
                 <Chip label={session.locationType.replace("_", " ")} size="small" variant="outlined" />
               ) : null}

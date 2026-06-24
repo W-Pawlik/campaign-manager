@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -38,7 +39,12 @@ const characterFormSchema = z.object({
   level: z.number().min(1).max(30).nullable().optional(),
   maxHitPoints: z.number().min(0).max(999).nullable().optional(),
   name: z.string().trim().min(1, "Character name is required.").max(120),
-  ownerUserId: z.string().optional(),
+  ownerUserId: z
+    .string()
+    .trim()
+    .uuid("Owner must currently be provided as a valid user ID.")
+    .or(z.literal(""))
+    .optional(),
   personalityTraits: z.string().max(10000).optional(),
   race: z.string().max(120).optional(),
   status: z.enum(["DRAFT", "ACTIVE", "INACTIVE", "DEAD", "RETIRED", "ARCHIVED"]),
@@ -55,6 +61,7 @@ type CharacterFormDialogProps = {
   onClose: () => void;
   onSubmit: (values: CharacterFormValues) => Promise<void>;
   open: boolean;
+  submitError?: string | null;
 };
 
 function toOptionalValue(value?: string | null): string {
@@ -72,8 +79,10 @@ export function CharacterFormDialog({
   onClose,
   onSubmit,
   open,
+  submitError = null,
 }: CharacterFormDialogProps) {
   const {
+    formState: { errors },
     handleSubmit,
     register,
     reset,
@@ -149,9 +158,14 @@ export function CharacterFormDialog({
       <DialogTitle>{initialCharacter ? "Edit character" : "Create character"}</DialogTitle>
       <DialogContent dividers>
         <Stack component="form" noValidate onSubmit={handleValidSubmit} spacing={3}>
+          {submitError ? <Alert severity="error">{submitError}</Alert> : null}
           <Stack spacing={1}>
             <Typography variant="subtitle1">Identity</Typography>
-            <CharacterIdentityFields canAssignOwner={canAssignOwner} register={register} />
+            <CharacterIdentityFields
+              canAssignOwner={canAssignOwner}
+              ownerErrorMessage={errors.ownerUserId?.message}
+              register={register}
+            />
           </Stack>
           <Stack spacing={1}>
             <Typography variant="subtitle1">Core stats</Typography>

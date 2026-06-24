@@ -32,6 +32,68 @@ function toNullableString(value?: string): string | null {
   return trimmed.length === 0 ? null : trimmed;
 }
 
+function buildCreateCharacterPayload(values: CharacterFormValues, canManageAll: boolean) {
+  return {
+    alignment: toNullableString(values.alignment),
+    appearance: toNullableString(values.appearance),
+    armorClass: values.armorClass ?? null,
+    avatarUrl: toNullableString(values.avatarUrl),
+    background: toNullableString(values.background),
+    backstory: toNullableString(values.backstory),
+    bonds: toNullableString(values.bonds),
+    characterClass: toNullableString(values.characterClass),
+    charisma: values.charisma ?? null,
+    constitution: values.constitution ?? null,
+    currentHitPoints: values.currentHitPoints ?? null,
+    dexterity: values.dexterity ?? null,
+    flaws: toNullableString(values.flaws),
+    ideals: toNullableString(values.ideals),
+    intelligence: values.intelligence ?? null,
+    level: values.level ?? null,
+    maxHitPoints: values.maxHitPoints ?? null,
+    name: values.name.trim(),
+    ...(canManageAll ? { ownerUserId: toNullableString(values.ownerUserId) } : {}),
+    personalityTraits: toNullableString(values.personalityTraits),
+    race: toNullableString(values.race),
+    status: values.status,
+    strength: values.strength ?? null,
+    subclass: toNullableString(values.subclass),
+    type: values.type,
+    wisdom: values.wisdom ?? null,
+  };
+}
+
+function buildUpdateCharacterPayload(values: CharacterFormValues, canManageAll: boolean) {
+  return {
+    alignment: toNullableString(values.alignment),
+    appearance: toNullableString(values.appearance),
+    armorClass: values.armorClass ?? null,
+    avatarUrl: toNullableString(values.avatarUrl),
+    background: toNullableString(values.background),
+    backstory: toNullableString(values.backstory),
+    bonds: toNullableString(values.bonds),
+    characterClass: toNullableString(values.characterClass),
+    charisma: values.charisma ?? null,
+    constitution: values.constitution ?? null,
+    currentHitPoints: values.currentHitPoints ?? null,
+    dexterity: values.dexterity ?? null,
+    flaws: toNullableString(values.flaws),
+    ideals: toNullableString(values.ideals),
+    intelligence: values.intelligence ?? null,
+    level: values.level ?? null,
+    maxHitPoints: values.maxHitPoints ?? null,
+    name: values.name.trim(),
+    ...(canManageAll ? { ownerUserId: toNullableString(values.ownerUserId) } : {}),
+    personalityTraits: toNullableString(values.personalityTraits),
+    race: toNullableString(values.race),
+    status: values.status,
+    strength: values.strength ?? null,
+    subclass: toNullableString(values.subclass),
+    type: values.type,
+    wisdom: values.wisdom ?? null,
+  };
+}
+
 export function CampaignCharactersPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
   const currentUserId = useAppSelector((state) => state.auth.currentUser?.id ?? null);
@@ -91,35 +153,6 @@ export function CampaignCharactersPage() {
     deleteCharacterMutation.error?.message ??
     null;
 
-  const mapPayload = (values: CharacterFormValues) => ({
-    alignment: toNullableString(values.alignment),
-    appearance: toNullableString(values.appearance),
-    armorClass: values.armorClass ?? null,
-    avatarUrl: toNullableString(values.avatarUrl),
-    background: toNullableString(values.background),
-    backstory: toNullableString(values.backstory),
-    bonds: toNullableString(values.bonds),
-    characterClass: toNullableString(values.characterClass),
-    charisma: values.charisma ?? null,
-    constitution: values.constitution ?? null,
-    currentHitPoints: values.currentHitPoints ?? null,
-    dexterity: values.dexterity ?? null,
-    flaws: toNullableString(values.flaws),
-    ideals: toNullableString(values.ideals),
-    intelligence: values.intelligence ?? null,
-    level: values.level ?? null,
-    maxHitPoints: values.maxHitPoints ?? null,
-    name: values.name.trim(),
-    ownerUserId: canManageAll ? toNullableString(values.ownerUserId) : currentUserId,
-    personalityTraits: toNullableString(values.personalityTraits),
-    race: toNullableString(values.race),
-    status: values.status,
-    strength: values.strength ?? null,
-    subclass: toNullableString(values.subclass),
-    type: values.type,
-    wisdom: values.wisdom ?? null,
-  });
-
   return (
     <>
       <Stack spacing={3.5}>
@@ -152,19 +185,27 @@ export function CampaignCharactersPage() {
       <CharacterFormDialog
         canAssignOwner={canManageAll}
         isSubmitting={createCharacterMutation.isPending}
-        onClose={() => setIsCreateDialogOpen(false)}
+        onClose={() => {
+          createCharacterMutation.reset();
+          setIsCreateDialogOpen(false);
+        }}
         onSubmit={async (values) => {
-          await createCharacterMutation.mutateAsync(mapPayload(values));
+          await createCharacterMutation.mutateAsync(buildCreateCharacterPayload(values, canManageAll));
+          createCharacterMutation.reset();
           setIsCreateDialogOpen(false);
         }}
         open={isCreateDialogOpen}
+        submitError={createCharacterMutation.error?.message ?? null}
       />
 
       <CharacterFormDialog
         canAssignOwner={canManageAll}
         initialCharacter={editingCharacterId ? characterDetailsQuery.data ?? null : null}
         isSubmitting={updateCharacterMutation.isPending || characterDetailsQuery.isLoading}
-        onClose={() => setEditingCharacterId(null)}
+        onClose={() => {
+          updateCharacterMutation.reset();
+          setEditingCharacterId(null);
+        }}
         onSubmit={async (values) => {
           if (!editingCharacterId) {
             return;
@@ -172,11 +213,13 @@ export function CampaignCharactersPage() {
 
           await updateCharacterMutation.mutateAsync({
             characterId: editingCharacterId,
-            payload: mapPayload(values),
+            payload: buildUpdateCharacterPayload(values, canManageAll),
           });
+          updateCharacterMutation.reset();
           setEditingCharacterId(null);
         }}
         open={Boolean(editingCharacterId)}
+        submitError={updateCharacterMutation.error?.message ?? null}
       />
 
       <CharacterDetailsDialog

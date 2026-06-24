@@ -1,6 +1,8 @@
 import { Button, Chip, Paper, Stack, Typography } from "@mui/material";
 
 import type { CampaignSessionListItem } from "@/features/campaigns";
+import { SessionStatusChip } from "@/features/sessions/ui/SessionStatusChip";
+import { formatDateTime } from "@/features/sessions/ui/sessionUi.utils";
 import { EmptyState } from "@/shared/components";
 
 type CampaignSessionsListProps = {
@@ -12,17 +14,6 @@ type CampaignSessionsListProps = {
   onOpenDetails: (sessionId: string) => void;
   sessions: CampaignSessionListItem[];
 };
-
-function formatDateTime(value: string | null): string {
-  if (!value) {
-    return "Not scheduled";
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
 
 export function CampaignSessionsList({
   canManageSessions,
@@ -45,8 +36,15 @@ export function CampaignSessionsList({
   return (
     <Stack spacing={1.5}>
       {sessions.map((session) => {
-        const canComplete = canManageSessions && session.status !== "COMPLETED" && session.status !== "CANCELLED";
-        const canCancel = canManageSessions && session.status !== "CANCELLED";
+        const canEdit = canManageSessions;
+        const canComplete =
+          canManageSessions &&
+          session.status !== "COMPLETED" &&
+          session.status !== "CANCELLED";
+        const canCancel =
+          canManageSessions &&
+          session.status !== "COMPLETED" &&
+          session.status !== "CANCELLED";
 
         return (
           <Paper key={session.id} sx={{ p: 2.25 }} variant="outlined">
@@ -61,7 +59,7 @@ export function CampaignSessionsList({
                   <Typography color="text.secondary">{session.description ?? "No description yet."}</Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-                  <Chip label={session.status.replace("_", " ")} size="small" />
+                  <SessionStatusChip status={session.status} />
                   {session.locationType ? (
                     <Chip label={session.locationType.replace("_", " ")} size="small" variant="outlined" />
                   ) : null}
@@ -78,11 +76,11 @@ export function CampaignSessionsList({
               </Stack>
 
               <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
-                <Button onClick={() => onOpenDetails(session.id)} variant="outlined">
+                <Button color="inherit" onClick={() => onOpenDetails(session.id)} variant="outlined">
                   View details
                 </Button>
-                {canManageSessions ? (
-                  <Button onClick={() => onEditSession(session.id)} variant="text">
+                {canEdit ? (
+                  <Button color="inherit" onClick={() => onEditSession(session.id)} variant="text">
                     Edit
                   </Button>
                 ) : null}

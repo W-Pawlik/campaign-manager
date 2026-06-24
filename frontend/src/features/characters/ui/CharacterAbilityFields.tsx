@@ -14,6 +14,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="Armor class"
+          placeholder="0-99"
           type="number"
           {...register("armorClass", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />
@@ -22,6 +23,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="Max HP"
+          placeholder="0-999"
           type="number"
           {...register("maxHitPoints", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />
@@ -30,6 +32,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="Current HP"
+          placeholder="0-999"
           type="number"
           {...register("currentHitPoints", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />
@@ -38,6 +41,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="STR"
+          placeholder="1-30"
           type="number"
           {...register("strength", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />
@@ -46,6 +50,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="DEX"
+          placeholder="1-30"
           type="number"
           {...register("dexterity", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />
@@ -54,6 +59,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="CON"
+          placeholder="1-30"
           type="number"
           {...register("constitution", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />
@@ -62,6 +68,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="INT"
+          placeholder="1-30"
           type="number"
           {...register("intelligence", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />
@@ -70,6 +77,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="WIS"
+          placeholder="1-30"
           type="number"
           {...register("wisdom", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />
@@ -78,6 +86,7 @@ export function CharacterAbilityFields({ register }: CharacterAbilityFieldsProps
         <TextField
           fullWidth
           label="CHA"
+          placeholder="1-30"
           type="number"
           {...register("charisma", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
         />

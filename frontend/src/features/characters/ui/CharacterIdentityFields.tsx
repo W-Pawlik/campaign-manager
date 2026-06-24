@@ -9,18 +9,30 @@ import type { CharacterFormValues } from "@/features/characters/ui/characterForm
 
 type CharacterIdentityFieldsProps = {
   canAssignOwner: boolean;
+  ownerErrorMessage?: string;
   register: UseFormRegister<CharacterFormValues>;
 };
 
 export function CharacterIdentityFields({
   canAssignOwner,
+  ownerErrorMessage,
   register,
 }: CharacterIdentityFieldsProps) {
   return (
     <Grid container spacing={2}>
       {canAssignOwner ? (
         <Grid size={{ xs: 12, md: 6 }}>
-          <TextField fullWidth label="Owner user ID" {...register("ownerUserId")} />
+          <TextField
+            error={Boolean(ownerErrorMessage)}
+            fullWidth
+            helperText={
+              ownerErrorMessage ??
+              "Current API accepts only owner user ID as UUID. Assigning by email or username requires backend support."
+            }
+            label="Owner user ID"
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            {...register("ownerUserId")}
+          />
         </Grid>
       ) : null}
       <Grid size={{ xs: 12, md: canAssignOwner ? 6 : 12 }}>
