@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { campaignsApi, campaignsQueryKeys } from "@/features/campaigns";
-import { chronicleApi } from "@/features/chronicle/api/chronicleApi";
+import { campaignsQueryKeys } from "@/features/campaigns";
+import { chronicleOfflineService } from "@/features/chronicle/offline/chronicleOfflineService";
 import type {
   CreateChronicleEntryPayload,
   UpdateChronicleEntryPayload,
@@ -29,7 +29,7 @@ function invalidateChronicleQueries(
 export function useCampaignChronicleQuery(campaignId: string | undefined) {
   return useQuery({
     enabled: Boolean(campaignId),
-    queryFn: () => campaignsApi.listCampaignChronicle(campaignId!),
+    queryFn: () => chronicleOfflineService.listEntries(campaignId!),
     queryKey: chronicleQueryKeys.list(campaignId ?? "missing"),
   });
 }
@@ -37,7 +37,7 @@ export function useCampaignChronicleQuery(campaignId: string | undefined) {
 export function useChronicleEntryDetailsQuery(campaignId: string | undefined, entryId: string | null) {
   return useQuery({
     enabled: Boolean(campaignId && entryId),
-    queryFn: () => chronicleApi.getChronicleEntryDetails(campaignId!, entryId!),
+    queryFn: () => chronicleOfflineService.getEntryDetails(campaignId!, entryId!),
     queryKey: chronicleQueryKeys.details(campaignId ?? "missing", entryId ?? "missing"),
   });
 }
@@ -46,10 +46,11 @@ export function useCreateChronicleEntryMutation(campaignId: string | undefined) 
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateChronicleEntryPayload) => chronicleApi.createChronicleEntry(campaignId!, payload),
+    mutationFn: (payload: CreateChronicleEntryPayload) => chronicleOfflineService.createEntry(campaignId!, payload),
     onSuccess: (entry) => {
       if (campaignId) {
         invalidateChronicleQueries(queryClient, campaignId, entry.id);
+        queryClient.setQueryData(chronicleQueryKeys.details(campaignId, entry.id), entry);
       }
     },
   });
@@ -60,10 +61,11 @@ export function useUpdateChronicleEntryMutation(campaignId: string | undefined) 
 
   return useMutation({
     mutationFn: (input: { entryId: string; payload: UpdateChronicleEntryPayload }) =>
-      chronicleApi.updateChronicleEntry(campaignId!, input.entryId, input.payload),
+      chronicleOfflineService.updateEntry(campaignId!, input.entryId, input.payload),
     onSuccess: (entry) => {
       if (campaignId) {
         invalidateChronicleQueries(queryClient, campaignId, entry.id);
+        queryClient.setQueryData(chronicleQueryKeys.details(campaignId, entry.id), entry);
       }
     },
   });
@@ -73,10 +75,44 @@ export function useDeleteChronicleEntryMutation(campaignId: string | undefined) 
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (entryId: string) => chronicleApi.deleteChronicleEntry(campaignId!, entryId),
+    mutationFn: (entryId: string) => chronicleOfflineService.deleteEntry(campaignId!, entryId),
     onSuccess: (_data, entryId) => {
       if (campaignId) {
         invalidateChronicleQueries(queryClient, campaignId, entryId);
+      }
+    },
+  });
+}
+
+export function useResolveChronicleConflictWithLocalMutation(campaignId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (entryId: string) => chronicleOfflineService.resolveConflictWithLocal(campaignId!, entryId),
+    onSuccess: (entry, entryId) => {
+      if (campaignId) {
+        invalidateChronicleQueries(queryClient, campaignId, entryId);
+
+        if (entry) {
+          queryClient.setQueryData(chronicleQueryKeys.details(campaignId, entry.id), entry);
+        }
+      }
+    },
+  });
+}
+
+export function useResolveChronicleConflictWithServerMutation(campaignId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (entryId: string) => chronicleOfflineService.resolveConflictWithServer(campaignId!, entryId),
+    onSuccess: (entry, entryId) => {
+      if (campaignId) {
+        invalidateChronicleQueries(queryClient, campaignId, entryId);
+
+        if (entry) {
+          queryClient.setQueryData(chronicleQueryKeys.details(campaignId, entry.id), entry);
+        }
       }
     },
   });

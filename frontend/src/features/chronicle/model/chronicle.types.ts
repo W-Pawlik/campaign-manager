@@ -2,7 +2,26 @@ import type { CampaignChronicleEntry } from "@/features/campaigns";
 
 export type ChronicleVisibility = "PUBLIC" | "GM_ONLY" | "DRAFT";
 
-export type ChronicleEntryDetails = CampaignChronicleEntry;
+export type ChronicleSyncState =
+  | "SYNCED"
+  | "PENDING_CREATE"
+  | "PENDING_UPDATE"
+  | "PENDING_DELETE"
+  | "CONFLICT";
+
+export type ChronicleConflictReason = "REMOTE_UPDATED" | "SYNC_FAILED";
+
+export type ChronicleOfflineMeta = {
+  conflictReason: ChronicleConflictReason | null;
+  hasServerVersion: boolean;
+  syncState: ChronicleSyncState;
+};
+
+export type ChronicleEntryView = CampaignChronicleEntry & {
+  offlineMeta?: ChronicleOfflineMeta;
+};
+
+export type ChronicleEntryDetails = ChronicleEntryView;
 
 export type CreateChronicleEntryPayload = {
   sessionId?: string | null;

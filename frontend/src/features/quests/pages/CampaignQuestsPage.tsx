@@ -16,8 +16,15 @@ import {
 import { CampaignQuestsList } from "@/features/quests/ui/CampaignQuestsList";
 import { QuestDetailsDialog } from "@/features/quests/ui/QuestDetailsDialog";
 import { QuestFormDialog } from "@/features/quests/ui/QuestFormDialog";
+import { QuestListControls } from "@/features/quests/ui/QuestListControls";
 import { QuestObjectiveDialog } from "@/features/quests/ui/QuestObjectiveDialog";
 import type { QuestObjective } from "@/features/quests/model/quest.types";
+import {
+  defaultQuestListFilters,
+  matchesQuestListFilters,
+  sortQuests,
+  type QuestListFilters,
+} from "@/features/quests/ui/questListUi.utils";
 import { ErrorState, LoadingScreen, PageHeader, SectionCard } from "@/shared/components";
 
 function canManageQuests(role: string | undefined): boolean {
@@ -57,6 +64,7 @@ export function CampaignQuestsPage() {
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null);
   const [editingObjective, setEditingObjective] = useState<QuestObjective | null>(null);
   const [isObjectiveDialogOpen, setIsObjectiveDialogOpen] = useState(false);
+  const [listFilters, setListFilters] = useState<QuestListFilters>(defaultQuestListFilters);
   const questDetailsQuery = useQuestDetailsQuery(campaignId, selectedQuestId ?? editingQuestId);
 
   const pageError = useMemo(() => {
@@ -70,6 +78,31 @@ export function CampaignQuestsPage() {
 
     return null;
   }, [campaignDetailsQuery.error, campaignDetailsQuery.isError, questsQuery.error, questsQuery.isError]);
+  const canManage = canManageQuests(campaignDetailsQuery.data?.role);
+  const isMutating =
+    createQuestMutation.isPending ||
+    updateQuestMutation.isPending ||
+    deleteQuestMutation.isPending ||
+    addObjectiveMutation.isPending ||
+    updateObjectiveMutation.isPending ||
+    deleteObjectiveMutation.isPending;
+  const mutationError =
+    createQuestMutation.error?.message ??
+    updateQuestMutation.error?.message ??
+    deleteQuestMutation.error?.message ??
+    addObjectiveMutation.error?.message ??
+    updateObjectiveMutation.error?.message ??
+    deleteObjectiveMutation.error?.message ??
+    null;
+  const visibleQuests = useMemo(
+    () =>
+      sortQuests(
+        (questsQuery.data ?? []).filter((quest) => matchesQuestListFilters(quest, listFilters)),
+        listFilters.sortField,
+        listFilters.sortDirection,
+      ),
+    [listFilters, questsQuery.data],
+  );
 
   if (campaignDetailsQuery.isLoading || questsQuery.isLoading) {
     return <LoadingScreen minHeight="60vh" />;
@@ -87,23 +120,6 @@ export function CampaignQuestsPage() {
       />
     );
   }
-
-  const canManage = canManageQuests(campaignDetailsQuery.data.role);
-  const isMutating =
-    createQuestMutation.isPending ||
-    updateQuestMutation.isPending ||
-    deleteQuestMutation.isPending ||
-    addObjectiveMutation.isPending ||
-    updateObjectiveMutation.isPending ||
-    deleteObjectiveMutation.isPending;
-  const mutationError =
-    createQuestMutation.error?.message ??
-    updateQuestMutation.error?.message ??
-    deleteQuestMutation.error?.message ??
-    addObjectiveMutation.error?.message ??
-    updateObjectiveMutation.error?.message ??
-    deleteObjectiveMutation.error?.message ??
-    null;
 
   return (
     <>
@@ -123,22 +139,28 @@ export function CampaignQuestsPage() {
         {mutationError ? <Alert severity="error">{mutationError}</Alert> : null}
 
         <SectionCard>
-          <CampaignQuestsList
-            campaignId={campaignId}
-            canManageQuests={canManage}
-            isSubmitting={isMutating}
-            onDeleteQuest={(questId) => deleteQuestMutation.mutate(questId)}
-            onEditQuest={(questId) => setEditingQuestId(questId)}
-            onOpenDetails={(questId) => setSelectedQuestId(questId)}
-            quests={questsQuery.data ?? []}
-          />
+          <Stack spacing={2.5}>
+            <QuestListControls onChange={setListFilters} value={listFilters} />
+            <CampaignQuestsList
+              campaignId={campaignId}
+              canManageQuests={canManage}
+              isSubmitting={isMutating}
+              onDeleteQuest={(questId) => deleteQuestMutation.mutate(questId)}
+              onEditQuest={(questId) => setEditingQuestId(questId)}
+              onOpenDetails={(questId) => setSelectedQuestId(questId)}
+              quests={visibleQuests}
+            />
+          </Stack>
         </SectionCard>
       </Stack>
 
       <QuestFormDialog
         campaignId={campaignId}
         isSubmitting={createQuestMutation.isPending}
-        onClose={() => setIsCreateDialogOpen(false)}
+        onClose={() => {
+          createQuestMutation.reset();
+          setIsCreateDialogOpen(false);
+        }}
         onSubmit={async (values) => {
           await createQuestMutation.mutateAsync({
             completedAt: toNullableIsoDateTime(values.completedAt),
@@ -155,16 +177,21 @@ export function CampaignQuestsPage() {
             type: values.type,
             visibility: values.visibility,
           });
+          createQuestMutation.reset();
           setIsCreateDialogOpen(false);
         }}
         open={isCreateDialogOpen}
+        submitError={createQuestMutation.error?.message ?? null}
       />
 
       <QuestFormDialog
         campaignId={campaignId}
         initialQuest={editingQuestId ? questDetailsQuery.data ?? null : null}
         isSubmitting={updateQuestMutation.isPending || questDetailsQuery.isLoading}
-        onClose={() => setEditingQuestId(null)}
+        onClose={() => {
+          updateQuestMutation.reset();
+          setEditingQuestId(null);
+        }}
         onSubmit={async (values) => {
           if (!editingQuestId) {
             return;
@@ -188,9 +215,11 @@ export function CampaignQuestsPage() {
             },
             questId: editingQuestId,
           });
+          updateQuestMutation.reset();
           setEditingQuestId(null);
         }}
         open={Boolean(editingQuestId)}
+        submitError={updateQuestMutation.error?.message ?? null}
       />
 
       <QuestDetailsDialog

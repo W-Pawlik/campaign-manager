@@ -1,5 +1,5 @@
 import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { useCampaignDetailsQuery } from "@/features/campaigns";
@@ -8,10 +8,22 @@ import {
   useChronicleEntryDetailsQuery,
   useCreateChronicleEntryMutation,
   useDeleteChronicleEntryMutation,
+  useResolveChronicleConflictWithLocalMutation,
+  useResolveChronicleConflictWithServerMutation,
   useUpdateChronicleEntryMutation,
 } from "@/features/chronicle/api/chronicleQueries";
+import { useOnlineStatus } from "@/core/offline/useOnlineStatus";
 import { CampaignChronicleList } from "@/features/chronicle/ui/CampaignChronicleList";
+import { ChronicleListControls } from "@/features/chronicle/ui/ChronicleListControls";
 import { ChronicleEntryFormDialog } from "@/features/chronicle/ui/ChronicleEntryFormDialog";
+import { ChronicleTimelinePanel } from "@/features/chronicle/ui/ChronicleTimelinePanel";
+import {
+  buildChronicleTimelineEntries,
+  defaultChronicleListFilters,
+  matchesChronicleListFilters,
+  sortChronicleEntries,
+  type ChronicleListFilters,
+} from "@/features/chronicle/ui/chronicleListUi.utils";
 import { ErrorState, LoadingScreen, PageHeader, SectionCard } from "@/shared/components";
 
 function toNullableString(value?: string): string | null {
@@ -39,10 +51,15 @@ export function CampaignChroniclePage() {
   const createEntryMutation = useCreateChronicleEntryMutation(campaignId);
   const updateEntryMutation = useUpdateChronicleEntryMutation(campaignId);
   const deleteEntryMutation = useDeleteChronicleEntryMutation(campaignId);
+  const resolveConflictWithLocalMutation = useResolveChronicleConflictWithLocalMutation(campaignId);
+  const resolveConflictWithServerMutation = useResolveChronicleConflictWithServerMutation(campaignId);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const [highlightedEntryId, setHighlightedEntryId] = useState<string | null>(null);
+  const [listFilters, setListFilters] = useState<ChronicleListFilters>(defaultChronicleListFilters);
   const entryDetailsQuery = useChronicleEntryDetailsQuery(campaignId, selectedEntryId ?? editingEntryId);
+  const isOnline = useOnlineStatus();
 
   const pageError = useMemo(() => {
     if (campaignDetailsQuery.isError) {
@@ -55,6 +72,69 @@ export function CampaignChroniclePage() {
 
     return null;
   }, [campaignDetailsQuery.error, campaignDetailsQuery.isError, chronicleQuery.error, chronicleQuery.isError]);
+  const canManageEntries =
+    campaignDetailsQuery.data?.role === "OWNER" ||
+    campaignDetailsQuery.data?.role === "GM" ||
+    campaignDetailsQuery.data?.role === "CO_GM";
+  const isMutating =
+    createEntryMutation.isPending ||
+    updateEntryMutation.isPending ||
+    deleteEntryMutation.isPending ||
+    resolveConflictWithLocalMutation.isPending ||
+    resolveConflictWithServerMutation.isPending;
+  const mutationError =
+    createEntryMutation.error?.message ??
+    updateEntryMutation.error?.message ??
+    deleteEntryMutation.error?.message ??
+    resolveConflictWithLocalMutation.error?.message ??
+    resolveConflictWithServerMutation.error?.message ??
+    null;
+  const visibleEntries = useMemo(
+    () =>
+      sortChronicleEntries(
+        (chronicleQuery.data ?? []).filter((entry) => matchesChronicleListFilters(entry, listFilters)),
+        listFilters.sortField,
+        listFilters.sortDirection,
+      ),
+    [chronicleQuery.data, listFilters],
+  );
+  const inWorldTimelineEntries = useMemo(
+    () => buildChronicleTimelineEntries(visibleEntries, "IN_WORLD_DATE"),
+    [visibleEntries],
+  );
+  const occurredAtTimelineEntries = useMemo(
+    () => buildChronicleTimelineEntries(visibleEntries, "OCCURRED_AT"),
+    [visibleEntries],
+  );
+  const pendingEntriesCount = visibleEntries.filter(
+    (entry) =>
+      entry.offlineMeta?.syncState === "PENDING_CREATE" ||
+      entry.offlineMeta?.syncState === "PENDING_UPDATE",
+  ).length;
+  const conflictEntriesCount = visibleEntries.filter(
+    (entry) => entry.offlineMeta?.syncState === "CONFLICT",
+  ).length;
+
+  useEffect(() => {
+    if (!highlightedEntryId) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setHighlightedEntryId(null);
+    }, 2200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [highlightedEntryId]);
+
+  const handleTimelineEntrySelect = (entryId: string) => {
+    setHighlightedEntryId(entryId);
+
+    window.setTimeout(() => {
+      const element = document.getElementById(`chronicle-entry-${entryId}`);
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 10);
+  };
 
   if (campaignDetailsQuery.isLoading || chronicleQuery.isLoading) {
     return <LoadingScreen minHeight="60vh" />;
@@ -73,18 +153,6 @@ export function CampaignChroniclePage() {
     );
   }
 
-  const canManageEntries =
-    campaignDetailsQuery.data.role === "OWNER" ||
-    campaignDetailsQuery.data.role === "GM" ||
-    campaignDetailsQuery.data.role === "CO_GM";
-  const isMutating =
-    createEntryMutation.isPending || updateEntryMutation.isPending || deleteEntryMutation.isPending;
-  const mutationError =
-    createEntryMutation.error?.message ??
-    updateEntryMutation.error?.message ??
-    deleteEntryMutation.error?.message ??
-    null;
-
   return (
     <>
       <Stack spacing={3.5}>
@@ -100,25 +168,67 @@ export function CampaignChroniclePage() {
           title="Chronicle"
         />
 
+        {!isOnline ? (
+          <Alert severity="warning">
+            Offline mode is active for chronicle. You can read and edit local entries, and changes will sync when the connection returns.
+          </Alert>
+        ) : null}
+        {pendingEntriesCount > 0 ? (
+          <Alert severity="info">
+            {pendingEntriesCount} chronicle {pendingEntriesCount === 1 ? "entry is" : "entries are"} waiting to sync.
+          </Alert>
+        ) : null}
+        {conflictEntriesCount > 0 ? (
+          <Alert severity="error">
+            {conflictEntriesCount} chronicle {conflictEntriesCount === 1 ? "entry has" : "entries have"} a sync conflict. Choose whether to keep the local version or use the server version.
+          </Alert>
+        ) : null}
         {mutationError ? <Alert severity="error">{mutationError}</Alert> : null}
 
         <SectionCard>
-          <CampaignChronicleList
-            campaignId={campaignId}
-            canManageEntries={canManageEntries}
-            entries={chronicleQuery.data ?? []}
-            isSubmitting={isMutating}
-            onDeleteEntry={(entryId) => deleteEntryMutation.mutate(entryId)}
-            onEditEntry={(entryId) => setEditingEntryId(entryId)}
-            onOpenDetails={(entryId) => setSelectedEntryId(entryId)}
-          />
+          <Stack spacing={2.5}>
+            <ChronicleListControls onChange={setListFilters} value={listFilters} />
+            <Stack direction={{ xs: "column", xl: "row" }} spacing={2}>
+              <Stack sx={{ flex: 1, minWidth: 0 }}>
+                <ChronicleTimelinePanel
+                  campaignId={campaignId}
+                  entries={inWorldTimelineEntries}
+                  mode="IN_WORLD_DATE"
+                  onSelectEntry={handleTimelineEntrySelect}
+                />
+              </Stack>
+              <Stack sx={{ flex: 1, minWidth: 0 }}>
+                <ChronicleTimelinePanel
+                  campaignId={campaignId}
+                  entries={occurredAtTimelineEntries}
+                  mode="OCCURRED_AT"
+                  onSelectEntry={handleTimelineEntrySelect}
+                />
+              </Stack>
+            </Stack>
+            <CampaignChronicleList
+              campaignId={campaignId}
+              canManageEntries={canManageEntries}
+              entries={visibleEntries}
+              highlightedEntryId={highlightedEntryId}
+              isSubmitting={isMutating}
+              onKeepLocalConflict={(entryId) => resolveConflictWithLocalMutation.mutate(entryId)}
+              onDeleteEntry={(entryId) => deleteEntryMutation.mutate(entryId)}
+              onEditEntry={(entryId) => setEditingEntryId(entryId)}
+              onOpenDetails={(entryId) => setSelectedEntryId(entryId)}
+              onUseServerConflict={(entryId) => resolveConflictWithServerMutation.mutate(entryId)}
+            />
+          </Stack>
         </SectionCard>
       </Stack>
 
       <ChronicleEntryFormDialog
         campaignId={campaignId}
         isSubmitting={createEntryMutation.isPending}
-        onClose={() => setIsCreateDialogOpen(false)}
+        onClose={() => {
+          createEntryMutation.reset();
+          setIsCreateDialogOpen(false);
+        }}
         onSubmit={async (values) => {
           await createEntryMutation.mutateAsync({
             content: values.content.trim(),
@@ -128,16 +238,21 @@ export function CampaignChroniclePage() {
             title: values.title.trim(),
             visibility: values.visibility,
           });
+          createEntryMutation.reset();
           setIsCreateDialogOpen(false);
         }}
         open={isCreateDialogOpen}
+        submitError={createEntryMutation.error?.message ?? null}
       />
 
       <ChronicleEntryFormDialog
         campaignId={campaignId}
         initialEntry={editingEntryId ? entryDetailsQuery.data ?? null : null}
         isSubmitting={updateEntryMutation.isPending || entryDetailsQuery.isLoading}
-        onClose={() => setEditingEntryId(null)}
+        onClose={() => {
+          updateEntryMutation.reset();
+          setEditingEntryId(null);
+        }}
         onSubmit={async (values) => {
           if (!editingEntryId) {
             return;
@@ -154,9 +269,11 @@ export function CampaignChroniclePage() {
               visibility: values.visibility,
             },
           });
+          updateEntryMutation.reset();
           setEditingEntryId(null);
         }}
         open={Boolean(editingEntryId)}
+        submitError={updateEntryMutation.error?.message ?? null}
       />
 
       <Dialog fullWidth maxWidth="md" onClose={() => setSelectedEntryId(null)} open={Boolean(selectedEntryId)}>
@@ -167,6 +284,9 @@ export function CampaignChroniclePage() {
             <Typography variant="body2">Visibility: {entryDetailsQuery.data?.visibility}</Typography>
             <Typography variant="body2">
               In-world date: {entryDetailsQuery.data?.inWorldDate ?? "Not set"}
+            </Typography>
+            <Typography variant="body2">
+              Occurred at: {entryDetailsQuery.data?.occurredAt ?? "Not set"}
             </Typography>
           </Stack>
         </DialogContent>

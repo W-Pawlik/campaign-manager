@@ -2,6 +2,9 @@ import { Button, Chip, Paper, Stack, Typography } from "@mui/material";
 
 import type { CampaignQuestListItem } from "@/features/campaigns";
 import { CampaignEntityReferenceChip, useCampaignReferenceIndex } from "@/features/campaigns";
+import { QuestPriorityIndicator } from "@/features/quests/ui/QuestPriorityIndicator";
+import { QuestStatusChip } from "@/features/quests/ui/QuestStatusChip";
+import { QuestTimeline } from "@/features/quests/ui/QuestTimeline";
 import { EmptyState } from "@/shared/components";
 
 type CampaignQuestsListProps = {
@@ -49,9 +52,8 @@ export function CampaignQuestsList({
                 <Typography color="text.secondary">{quest.description ?? "No description yet."}</Typography>
               </Stack>
               <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-                <Chip label={quest.status.replace("_", " ")} size="small" />
+                <QuestStatusChip status={quest.status} />
                 <Chip label={quest.type.replace("_", " ")} size="small" variant="outlined" />
-                <Chip label={quest.priority} size="small" variant="outlined" />
               </Stack>
             </Stack>
 
@@ -69,6 +71,15 @@ export function CampaignQuestsList({
                 label={references.getReferenceLabel("LOCATION", quest.relatedLocationId)}
               />
             </Stack>
+
+            <QuestPriorityIndicator priority={quest.priority} />
+
+            <QuestTimeline
+              completedAt={quest.completedAt}
+              failedAt={quest.failedAt}
+              startedAt={quest.startedAt}
+              status={quest.status}
+            />
 
             <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
               <Button onClick={() => onOpenDetails(quest.id)} variant="outlined">

@@ -48,6 +48,7 @@ export function CampaignEntityReferenceChip({
         component={RouterLink}
         label={`${entityType.replace("_", " ")}: ${label ?? entityId}`}
         size="small"
+        state={entityType === "SESSION" ? { highlightedSessionId: entityId } : undefined}
         to={href}
         variant="outlined"
       />

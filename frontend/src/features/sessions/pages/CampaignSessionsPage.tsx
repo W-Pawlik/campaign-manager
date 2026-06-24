@@ -1,6 +1,6 @@
 import { Alert, Button, Stack } from "@mui/material";
-import { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { useCampaignDetailsQuery } from "@/features/campaigns";
 import {
@@ -45,6 +45,8 @@ function toNullableIsoDateTime(value?: string): string | null | undefined {
 
 export function CampaignSessionsPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
+  const location = useLocation();
+  const navigate = useNavigate();
   const campaignDetailsQuery = useCampaignDetailsQuery(campaignId);
   const sessionsQuery = useCampaignSessionsQuery(campaignId);
   const createSessionMutation = useCreateSessionMutation(campaignId);
@@ -56,6 +58,7 @@ export function CampaignSessionsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [highlightedSessionId, setHighlightedSessionId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<SessionFilterValue>("ALL");
   const sessionDetailsQuery = useSessionDetailsQuery(campaignId, selectedSessionId ?? editingSessionId);
 
@@ -70,6 +73,58 @@ export function CampaignSessionsPage() {
 
     return null;
   }, [campaignDetailsQuery.error, campaignDetailsQuery.isError, sessionsQuery.error, sessionsQuery.isError]);
+  const canManage = canManageSessions(campaignDetailsQuery.data?.role);
+  const actionMutationError =
+    cancelSessionMutation.error?.message ??
+    completeSessionMutation.error?.message ??
+    confirmSessionAttendanceMutation.error?.message ??
+    declineSessionAttendanceMutation.error?.message ??
+    null;
+  const filteredSessions = (sessionsQuery.data ?? []).filter((session) =>
+    isSessionFilterMatch(session.status, statusFilter),
+  );
+  const routedHighlightedSessionId =
+    typeof location.state === "object" &&
+    location.state !== null &&
+    "highlightedSessionId" in location.state &&
+    typeof (location.state as { highlightedSessionId?: unknown }).highlightedSessionId === "string"
+      ? ((location.state as { highlightedSessionId: string }).highlightedSessionId ?? null)
+      : null;
+
+  const isMutating =
+    createSessionMutation.isPending ||
+    updateSessionMutation.isPending ||
+    cancelSessionMutation.isPending ||
+    completeSessionMutation.isPending ||
+    confirmSessionAttendanceMutation.isPending ||
+    declineSessionAttendanceMutation.isPending;
+
+  useEffect(() => {
+    if (!highlightedSessionId) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setHighlightedSessionId(null);
+    }, 2200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [highlightedSessionId]);
+
+  useEffect(() => {
+    if (!routedHighlightedSessionId) {
+      return;
+    }
+
+    setHighlightedSessionId(routedHighlightedSessionId);
+
+    window.setTimeout(() => {
+      const element = document.getElementById(`session-card-${routedHighlightedSessionId}`);
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 10);
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, navigate, routedHighlightedSessionId]);
 
   if (campaignDetailsQuery.isLoading || sessionsQuery.isLoading) {
     return <LoadingScreen minHeight="60vh" />;
@@ -87,26 +142,6 @@ export function CampaignSessionsPage() {
       />
     );
   }
-
-  const canManage = canManageSessions(campaignDetailsQuery.data.role);
-  const actionMutationError =
-    cancelSessionMutation.error?.message ??
-    completeSessionMutation.error?.message ??
-    confirmSessionAttendanceMutation.error?.message ??
-    declineSessionAttendanceMutation.error?.message ??
-    null;
-
-  const filteredSessions = (sessionsQuery.data ?? []).filter((session) =>
-    isSessionFilterMatch(session.status, statusFilter),
-  );
-
-  const isMutating =
-    createSessionMutation.isPending ||
-    updateSessionMutation.isPending ||
-    cancelSessionMutation.isPending ||
-    completeSessionMutation.isPending ||
-    confirmSessionAttendanceMutation.isPending ||
-    declineSessionAttendanceMutation.isPending;
 
   return (
     <>
@@ -130,6 +165,7 @@ export function CampaignSessionsPage() {
             <SessionStatusFilterBar onChange={setStatusFilter} value={statusFilter} />
             <CampaignSessionsList
               canManageSessions={canManage}
+              highlightedSessionId={highlightedSessionId}
               isSubmitting={isMutating}
               onCancelSession={(sessionId) => cancelSessionMutation.mutate(sessionId)}
               onCompleteSession={(sessionId) => completeSessionMutation.mutate(sessionId)}
@@ -209,6 +245,7 @@ export function CampaignSessionsPage() {
       />
 
       <SessionDetailsDialog
+        campaignId={campaignId}
         canManageSessions={canManage}
         isSubmitting={confirmSessionAttendanceMutation.isPending || declineSessionAttendanceMutation.isPending}
         onClose={() => setSelectedSessionId(null)}

@@ -3,6 +3,7 @@
 ## Contents
 
 - Architecture: [`architecture.md`](architecture.md)
+- Database schema: [`database-schema.md`](database-schema.md)
 - Modules: [`modules.md`](modules.md)
 - API overview: [`api.md`](api.md)
 - Auth/AuthZ flow: [`auth.md`](auth.md)
