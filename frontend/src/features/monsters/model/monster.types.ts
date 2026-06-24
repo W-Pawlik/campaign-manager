@@ -79,6 +79,30 @@ export type CampaignMonsterDetails = {
   updatedAt: string;
 };
 
+export type Open5eCreatureNormalizedData = {
+  illustrationUrl?: string | null;
+  armorClassDetails?: string | null;
+  hitDice?: string | null;
+  armorClass?: number | null;
+  hitPoints?: number | null;
+  speed?: unknown | null;
+  languages?: string | null;
+  senses?: string | null;
+  alignment?: string | null;
+  type?: string | null;
+  size?: string | null;
+  challengeRating?: string | null;
+  description?: string | null;
+  traits?: unknown;
+  strength?: number | null;
+  dexterity?: number | null;
+  constitution?: number | null;
+  intelligence?: number | null;
+  wisdom?: number | null;
+  charisma?: number | null;
+  actions?: unknown;
+} & Record<string, unknown>;
+
 export type CreateMonsterPayload = {
   name: string;
   size?: MonsterSize | null;
@@ -97,24 +121,6 @@ export type CreateMonsterPayload = {
 
 export type UpdateMonsterPayload = Partial<CreateMonsterPayload>;
 
-export type ImportOpen5eMonsterPayload = {
-  externalReferenceId?: string;
-  nameOverride?: string;
-  resourceKey?: string;
-};
-
-export type Open5eSearchResult = {
-  provider: string;
-  resourceType: string;
-  key: string;
-  name: string;
-  summary?: string | null;
-  highlighted?: string | null;
-  sourceDocumentKey?: string | null;
-  sourceDocumentName?: string | null;
-  metadata?: Record<string, unknown>;
-};
-
 export type Open5eResourceDetails = {
   id: string;
   provider: string;
@@ -123,12 +129,69 @@ export type Open5eResourceDetails = {
   slug: string | null;
   url: string | null;
   name: string;
+  illustrationUrl?: string | null;
   sourceDocumentKey: string | null;
   sourceDocumentName: string | null;
-  normalizedData?: unknown;
+  normalizedData?: Open5eCreatureNormalizedData;
   cachedAt: string;
   expiresAt: string | null;
 };
+
+export type MonsterCatalogPage<TItem> = {
+  items: TItem[];
+  limit: number;
+  page: number;
+  total: number;
+  hasNext: boolean;
+};
+
+export type Open5eCatalogCreatureMetadata = {
+  challengeRating?: string | null;
+  challengeRatingDecimal?: number | null;
+  creatureType?: string | null;
+  illustrationUrl?: string | null;
+  size?: string | null;
+} & Record<string, unknown>;
+
+export type Open5eCatalogCreatureListItem = {
+  provider: "OPEN5E";
+  resourceType: "CREATURE";
+  key: string;
+  name: string;
+  illustrationUrl?: string | null;
+  sourceDocumentKey?: string | null;
+  sourceDocumentName?: string | null;
+  metadata?: Open5eCatalogCreatureMetadata;
+};
+
+export type PublishedMonsterCatalogListItem = CampaignMonsterListItem;
+
+export type Open5eCatalogFilters = {
+  documentKey?: string;
+  limit?: number;
+  maxCr?: number;
+  minCr?: number;
+  ordering?: "name" | "-name" | "challenge_rating" | "-challenge_rating";
+  page?: number;
+  search?: string;
+  type?: string;
+};
+
+export type PublishedMonsterCatalogFilters = {
+  limit?: number;
+  maxCr?: number;
+  minCr?: number;
+  page?: number;
+  search?: string;
+  type?: string;
+};
+
+export type AddCatalogMonsterToCampaignPayload = {
+  campaignId: string;
+  nameOverride?: string;
+};
+
+export type CreatePublishedMonsterPayload = Omit<CreateMonsterPayload, "visibility">;
 
 export const monsterVisibilityOptions: MonsterVisibility[] = ["GM_ONLY", "PUBLIC"];
 export const monsterSizeOptions: MonsterSize[] = [

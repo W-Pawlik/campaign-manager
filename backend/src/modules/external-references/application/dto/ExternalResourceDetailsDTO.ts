@@ -6,6 +6,7 @@ export interface ExternalResourceDetailsDTO {
   slug: string | null;
   url: string | null;
   name: string;
+  illustrationUrl?: string | null;
   sourceDocumentKey: string | null;
   sourceDocumentName: string | null;
   normalizedData?: unknown;

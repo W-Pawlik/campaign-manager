@@ -32,11 +32,15 @@ const monsterFormSchema = z.object({
 export type MonsterFormValues = z.infer<typeof monsterFormSchema>;
 
 type MonsterFormDialogProps = {
+  defaultVisibility?: MonsterFormValues["visibility"];
+  hideVisibilityField?: boolean;
   initialMonster?: CampaignMonsterDetails | null;
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (values: MonsterFormValues) => Promise<void>;
   open: boolean;
+  submitLabel?: string;
+  title?: string;
 };
 
 function toOptionalValue(value?: string | null): string {
@@ -48,11 +52,15 @@ function toOptionalNumber(value?: number | null): number | null | undefined {
 }
 
 export function MonsterFormDialog({
+  defaultVisibility = "GM_ONLY",
+  hideVisibilityField = false,
   initialMonster,
   isSubmitting,
   onClose,
   onSubmit,
   open,
+  submitLabel,
+  title,
 }: MonsterFormDialogProps) {
   const { handleSubmit, register, reset } = useForm<MonsterFormValues>({
     defaultValues: {
@@ -64,7 +72,9 @@ export function MonsterFormDialog({
       name: initialMonster?.name ?? "",
       size: (initialMonster?.size as MonsterFormValues["size"] | undefined) ?? null,
       type: toOptionalValue(initialMonster?.type),
-      visibility: (initialMonster?.visibility as MonsterFormValues["visibility"] | undefined) ?? "GM_ONLY",
+      visibility:
+        (initialMonster?.visibility as MonsterFormValues["visibility"] | undefined) ??
+        defaultVisibility,
     },
     resolver: zodResolver(monsterFormSchema),
   });
@@ -79,9 +89,11 @@ export function MonsterFormDialog({
       name: initialMonster?.name ?? "",
       size: (initialMonster?.size as MonsterFormValues["size"] | undefined) ?? null,
       type: toOptionalValue(initialMonster?.type),
-      visibility: (initialMonster?.visibility as MonsterFormValues["visibility"] | undefined) ?? "GM_ONLY",
+      visibility:
+        (initialMonster?.visibility as MonsterFormValues["visibility"] | undefined) ??
+        defaultVisibility,
     });
-  }, [initialMonster, reset]);
+  }, [defaultVisibility, initialMonster, reset]);
 
   const handleValidSubmit = handleSubmit(async (values) => {
     await onSubmit(values);
@@ -89,7 +101,7 @@ export function MonsterFormDialog({
 
   return (
     <Dialog fullWidth maxWidth="md" onClose={onClose} open={open}>
-      <DialogTitle>{initialMonster ? "Edit monster" : "Create custom monster"}</DialogTitle>
+      <DialogTitle>{title ?? (initialMonster ? "Edit monster" : "Create custom monster")}</DialogTitle>
       <DialogContent dividers>
         <Stack component="form" noValidate onSubmit={handleValidSubmit} spacing={2.5}>
           <TextField label="Name" {...register("name")} />
@@ -119,19 +131,25 @@ export function MonsterFormDialog({
             />
             <TextField label="Challenge rating" {...register("challengeRating")} />
           </Stack>
-          <TextField select label="Visibility" {...register("visibility")}>
-            {monsterVisibilityOptions.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option.replace("_", " ")}
-              </MenuItem>
-            ))}
-          </TextField>
+          {hideVisibilityField ? null : (
+            <TextField select label="Visibility" {...register("visibility")}>
+              {monsterVisibilityOptions.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option.replace("_", " ")}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>
         <Button onClick={onClose}>Cancel</Button>
         <Button disabled={isSubmitting} onClick={() => void handleValidSubmit()} variant="contained">
-          {isSubmitting ? <CircularProgress color="inherit" size={20} /> : initialMonster ? "Save changes" : "Create monster"}
+          {isSubmitting ? (
+            <CircularProgress color="inherit" size={20} />
+          ) : (
+            submitLabel ?? (initialMonster ? "Save changes" : "Create monster")
+          )}
         </Button>
       </DialogActions>
     </Dialog>

@@ -106,7 +106,7 @@ export function CampaignMonstersPage() {
             canManage ? (
               <Stack direction={{ xs: "column", md: "row" }} spacing={1.5}>
                 <Button onClick={() => navigate(appPaths.monsters)} variant="outlined">
-                  Open Open5e catalog
+                  Open monster catalog
                 </Button>
                 <Button onClick={() => setIsCreateDialogOpen(true)} variant="contained">
                   Create custom monster

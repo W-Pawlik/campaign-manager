@@ -26,12 +26,42 @@ interface Open5eListApiResponse {
   results?: unknown;
 }
 
+interface Open5eIllustrationApiRecord {
+  file_url?: unknown;
+}
+
+const OPEN5E_BASE_URL = "https://open5e.com";
+
 function toNullableString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
 function toNullableNumber(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function toAbsoluteOpen5eUrl(path: string): string {
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  return `${OPEN5E_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+function mapIllustrationUrl(value: unknown): string | null {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return toAbsoluteOpen5eUrl(value);
+  }
+
+  if (value !== null && typeof value === "object") {
+    const fileUrl = toNullableString((value as Open5eIllustrationApiRecord).file_url);
+
+    if (fileUrl !== null) {
+      return toAbsoluteOpen5eUrl(fileUrl);
+    }
+  }
+
+  return null;
 }
 
 function mapEndpointToResourceType(endpoint: string): string {
@@ -193,6 +223,7 @@ function mapCreatureNormalizedData(record: Record<string, unknown>): Record<stri
     key: toNullableString(record.key),
     name: toNullableString(record.name),
     slug: toNullableString(record.key),
+    illustrationUrl: mapIllustrationUrl(record.illustration),
     size: mapSizeToMonsterSize(record.size),
     type: mapTypeName(record.type),
     subtype: toNullableString(record.subcategory),
@@ -296,6 +327,7 @@ export class Open5eMapper {
             resourceType: EXTERNAL_RESOURCE_TYPE.CREATURE,
             key,
             name,
+            illustrationUrl: mapIllustrationUrl(record.illustration),
             sourceDocumentKey: toNullableString(document?.key),
             sourceDocumentName: toNullableString(document?.name),
             metadata: {

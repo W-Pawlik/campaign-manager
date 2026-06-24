@@ -25,7 +25,12 @@ function createExternalReference(): ExternalReference {
     name: "Goblin",
     sourceDocumentKey: "srd-2024",
     sourceDocumentName: "SRD 2024",
-    rawData: { key: "goblin" },
+    rawData: {
+      key: "goblin",
+      illustration: {
+        file_url: "/static/img/object_illustrations/open5e-illustrations/monsters/goblin.png",
+      },
+    },
     normalizedData: { name: "Goblin", challengeRating: "1/4" },
     cachedAt: new Date("2026-06-22T10:00:00.000Z"),
     expiresAt: new Date("2026-07-22T10:00:00.000Z"),
@@ -125,6 +130,7 @@ describe("External Open5e handlers", () => {
             resourceType: "CREATURE",
             key: "goblin",
             name: "Goblin",
+            illustrationUrl: "https://cdn.example.com/goblin.webp",
             sourceDocumentKey: "srd-2024",
             sourceDocumentName: "SRD 2024",
             metadata: { challengeRating: "1/4" },
@@ -156,6 +162,7 @@ describe("External Open5e handlers", () => {
     expect(result.total).toBe(45);
     expect(result.hasNext).toBe(true);
     expect(result.items[0]?.key).toBe("goblin");
+    expect(result.items[0]?.illustrationUrl).toBe("https://cdn.example.com/goblin.webp");
   });
 
   it("returns cached external resource details without refetching when reference is fresh", async () => {
@@ -182,9 +189,14 @@ describe("External Open5e handlers", () => {
     expect(open5eClient.getResource).not.toHaveBeenCalled();
     expect(result.id).toBe("external-reference-1");
     expect(result.key).toBe("goblin");
+    expect(result.illustrationUrl).toBe(
+      "https://open5e.com/static/img/object_illustrations/open5e-illustrations/monsters/goblin.png",
+    );
     expect(result.normalizedData).toEqual({
       name: "Goblin",
       challengeRating: "1/4",
+      illustrationUrl:
+        "https://open5e.com/static/img/object_illustrations/open5e-illustrations/monsters/goblin.png",
     });
   });
 });

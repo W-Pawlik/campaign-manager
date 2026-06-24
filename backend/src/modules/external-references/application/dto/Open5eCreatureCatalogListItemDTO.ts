@@ -3,6 +3,7 @@ export interface Open5eCreatureCatalogListItemDTO {
   resourceType: "CREATURE";
   key: string;
   name: string;
+  illustrationUrl?: string | null;
   sourceDocumentKey?: string | null;
   sourceDocumentName?: string | null;
   metadata?: Record<string, unknown>;

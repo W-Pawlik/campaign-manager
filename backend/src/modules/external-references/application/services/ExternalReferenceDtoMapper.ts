@@ -8,6 +8,40 @@ import type {
 } from "@modules/external-references/application/ports/Open5eClient";
 import type { ExternalReference } from "@modules/external-references/domain/entities/ExternalReference";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object";
+}
+
+function getIllustrationUrlFromUnknown(value: unknown): string | null {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value;
+  }
+
+  return null;
+}
+
+function getIllustrationUrlFromReference(reference: ExternalReference): string | null {
+  if (isRecord(reference.normalizedData)) {
+    const normalizedIllustrationUrl = getIllustrationUrlFromUnknown(
+      reference.normalizedData.illustrationUrl,
+    );
+
+    if (normalizedIllustrationUrl !== null) {
+      return normalizedIllustrationUrl;
+    }
+  }
+
+  if (isRecord(reference.rawData) && isRecord(reference.rawData.illustration)) {
+    const fileUrl = getIllustrationUrlFromUnknown(reference.rawData.illustration.file_url);
+
+    if (fileUrl !== null) {
+      return fileUrl.startsWith("http") ? fileUrl : `https://open5e.com${fileUrl}`;
+    }
+  }
+
+  return null;
+}
+
 export function mapOpen5eSearchResultToDto(
   result: Open5eSearchResult,
 ): ExternalSearchResultDTO {
@@ -27,6 +61,15 @@ export function mapOpen5eSearchResultToDto(
 export function mapExternalReferenceToDetailsDto(
   reference: ExternalReference,
 ): ExternalResourceDetailsDTO {
+  const illustrationUrl = getIllustrationUrlFromReference(reference);
+  const normalizedData =
+    reference.normalizedData !== null && isRecord(reference.normalizedData)
+      ? {
+          ...reference.normalizedData,
+          illustrationUrl,
+        }
+      : reference.normalizedData;
+
   return {
     id: reference.id,
     provider: reference.provider.value,
@@ -35,11 +78,10 @@ export function mapExternalReferenceToDetailsDto(
     slug: reference.slug,
     url: reference.url,
     name: reference.name,
+    illustrationUrl,
     sourceDocumentKey: reference.sourceDocumentKey,
     sourceDocumentName: reference.sourceDocumentName,
-    ...(reference.normalizedData === null
-      ? {}
-      : { normalizedData: reference.normalizedData }),
+    ...(normalizedData === null ? {} : { normalizedData }),
     cachedAt: reference.cachedAt.toISOString(),
     expiresAt: reference.expiresAt?.toISOString() ?? null,
   };
@@ -54,6 +96,7 @@ export function mapOpen5eCreatureCatalogPageToDto(
       resourceType: item.resourceType,
       key: item.key,
       name: item.name,
+      illustrationUrl: item.illustrationUrl ?? null,
       sourceDocumentKey: item.sourceDocumentKey ?? null,
       sourceDocumentName: item.sourceDocumentName ?? null,
       ...(item.metadata === undefined ? {} : { metadata: item.metadata }),

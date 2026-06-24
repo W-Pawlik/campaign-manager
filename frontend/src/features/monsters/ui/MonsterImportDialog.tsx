@@ -30,6 +30,7 @@ type MonsterImportDialogProps = {
   onClose: () => void;
   onSubmit: (values: { campaignId: string; nameOverride?: string }) => Promise<void>;
   open: boolean;
+  sourceLabel?: string;
 };
 
 export function MonsterImportDialog({
@@ -40,6 +41,7 @@ export function MonsterImportDialog({
   onClose,
   onSubmit,
   open,
+  sourceLabel = "catalog",
 }: MonsterImportDialogProps) {
   const { handleSubmit, register, reset } = useForm<{ campaignId: string; nameOverride?: string }>({
     defaultValues: {
@@ -62,11 +64,12 @@ export function MonsterImportDialog({
 
   return (
     <Dialog fullWidth maxWidth="sm" onClose={onClose} open={open}>
-      <DialogTitle>Import from Open5e</DialogTitle>
+      <DialogTitle>Add monster to campaign</DialogTitle>
       <DialogContent dividers>
         <Stack component="form" noValidate onSubmit={handleValidSubmit} spacing={2.5}>
           <Typography color="text.secondary">
-            Import {monsterName ?? "this creature"} into one of your campaign bestiaries as a local snapshot.
+            Copy {monsterName ?? "this creature"} from the {sourceLabel} into one of your campaign
+            bestiaries as a local snapshot.
           </Typography>
           <TextField select label="Campaign" {...register("campaignId")}>
             {campaigns.map((campaign) => (
@@ -81,7 +84,7 @@ export function MonsterImportDialog({
       <DialogActions sx={{ px: 3, py: 2 }}>
         <Button onClick={onClose}>Cancel</Button>
         <Button disabled={isSubmitting} onClick={() => void handleValidSubmit()} variant="contained">
-          {isSubmitting ? <CircularProgress color="inherit" size={20} /> : "Import"}
+          {isSubmitting ? <CircularProgress color="inherit" size={20} /> : "Add to campaign"}
         </Button>
       </DialogActions>
     </Dialog>
