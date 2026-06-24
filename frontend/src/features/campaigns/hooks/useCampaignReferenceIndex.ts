@@ -22,6 +22,7 @@ type ReferenceOption = {
 type ReferenceQueries = {
   characters: ReferenceOption[];
   chronicle: ReferenceOption[];
+  inventory: ReferenceOption[];
   locations: ReferenceOption[];
   npcs: ReferenceOption[];
   quests: ReferenceOption[];
@@ -42,6 +43,11 @@ export function useCampaignReferenceIndex(
 
   const queries = useQueries({
     queries: [
+      {
+        enabled: enabled && requiredTypes.includes("ITEM"),
+        queryFn: () => campaignsApi.listCampaignInventory(campaignId!),
+        queryKey: campaignsQueryKeys.inventory(campaignId ?? "missing"),
+      },
       {
         enabled: enabled && requiredTypes.includes("SESSION"),
         queryFn: () => campaignsApi.listCampaignSessions(campaignId!),
@@ -76,16 +82,18 @@ export function useCampaignReferenceIndex(
   });
 
   const queryData = useMemo<ReferenceQueries>(() => {
-    const sessions = (queries[0].data ?? []).map((item) => ({ id: item.id, label: item.title }));
-    const characters = (queries[1].data ?? []).map((item) => ({ id: item.id, label: item.name }));
-    const npcs = (queries[2].data ?? []).map((item) => ({ id: item.id, label: item.name }));
-    const quests = (queries[3].data ?? []).map((item) => ({ id: item.id, label: item.title }));
-    const locations = (queries[4].data ?? []).map((item) => ({ id: item.id, label: item.name }));
-    const chronicle = (queries[5].data ?? []).map((item) => ({ id: item.id, label: item.title }));
+    const inventory = (queries[0].data ?? []).map((item) => ({ id: item.id, label: item.name }));
+    const sessions = (queries[1].data ?? []).map((item) => ({ id: item.id, label: item.title }));
+    const characters = (queries[2].data ?? []).map((item) => ({ id: item.id, label: item.name }));
+    const npcs = (queries[3].data ?? []).map((item) => ({ id: item.id, label: item.name }));
+    const quests = (queries[4].data ?? []).map((item) => ({ id: item.id, label: item.title }));
+    const locations = (queries[5].data ?? []).map((item) => ({ id: item.id, label: item.name }));
+    const chronicle = (queries[6].data ?? []).map((item) => ({ id: item.id, label: item.title }));
 
     return {
       characters,
       chronicle,
+      inventory,
       locations,
       npcs,
       quests,
@@ -97,6 +105,7 @@ export function useCampaignReferenceIndex(
     () => ({
       CHARACTER: new Map(queryData.characters.map((item) => [item.id, item.label])),
       CHRONICLE_ENTRY: new Map(queryData.chronicle.map((item) => [item.id, item.label])),
+      ITEM: new Map(queryData.inventory.map((item) => [item.id, item.label])),
       LOCATION: new Map(queryData.locations.map((item) => [item.id, item.label])),
       NPC: new Map(queryData.npcs.map((item) => [item.id, item.label])),
       QUEST: new Map(queryData.quests.map((item) => [item.id, item.label])),
@@ -115,10 +124,6 @@ export function useCampaignReferenceIndex(
         return campaignName ?? "Campaign";
       }
 
-      if (entityType === "ITEM") {
-        return `Item ${entityId.slice(0, 8)}`;
-      }
-
       return referenceMaps[entityType]?.get(entityId) ?? entityId;
     },
     getReferenceOptions(entityType: CampaignReferenceEntityType | "" | null | undefined): ReferenceOption[] {
@@ -135,6 +140,8 @@ export function useCampaignReferenceIndex(
           return queryData.locations;
         case "CHRONICLE_ENTRY":
           return queryData.chronicle;
+        case "ITEM":
+          return queryData.inventory;
         case "CAMPAIGN":
           return campaignId && campaignName ? [{ id: campaignId, label: campaignName }] : [];
         default:

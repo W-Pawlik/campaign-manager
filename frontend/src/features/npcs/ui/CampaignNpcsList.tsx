@@ -59,6 +59,7 @@ export function CampaignNpcsList({
             <Typography color="text.secondary">{npc.publicDescription ?? "No public description yet."}</Typography>
             <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
               <CampaignEntityReferenceChip
+                campaignId={campaignId}
                 entityId={npc.locationId}
                 entityType={npc.locationId ? "LOCATION" : null}
                 label={references.getReferenceLabel("LOCATION", npc.locationId)}

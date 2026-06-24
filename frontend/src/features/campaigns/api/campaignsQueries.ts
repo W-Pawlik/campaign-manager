@@ -11,6 +11,7 @@ export const campaignsQueryKeys = {
   members: (campaignId: string) => [...campaignsQueryKeys.details(campaignId), "members"] as const,
   invitations: (campaignId: string) =>
     [...campaignsQueryKeys.details(campaignId), "invitations"] as const,
+  inventory: (campaignId: string) => [...campaignsQueryKeys.details(campaignId), "inventory"] as const,
   characters: (campaignId: string) =>
     [...campaignsQueryKeys.details(campaignId), "characters"] as const,
   sessions: (campaignId: string) => [...campaignsQueryKeys.details(campaignId), "sessions"] as const,
@@ -39,11 +40,27 @@ export function useCampaignSessionsQuery(campaignId: string | undefined) {
   });
 }
 
+export function useCampaignCharactersQuery(campaignId: string | undefined) {
+  return useQuery({
+    enabled: Boolean(campaignId),
+    queryFn: () => campaignsApi.listCampaignCharacters(campaignId!),
+    queryKey: campaignsQueryKeys.characters(campaignId ?? "missing"),
+  });
+}
+
 export function useCampaignQuestsQuery(campaignId: string | undefined) {
   return useQuery({
     enabled: Boolean(campaignId),
     queryFn: () => campaignsApi.listCampaignQuests(campaignId!),
     queryKey: campaignsQueryKeys.quests(campaignId ?? "missing"),
+  });
+}
+
+export function useCampaignInventoryQuery(campaignId: string | undefined) {
+  return useQuery({
+    enabled: Boolean(campaignId),
+    queryFn: () => campaignsApi.listCampaignInventory(campaignId!),
+    queryKey: campaignsQueryKeys.inventory(campaignId ?? "missing"),
   });
 }
 

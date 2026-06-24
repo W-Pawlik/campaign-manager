@@ -53,6 +53,7 @@ export function CampaignNotesList({
             </Stack>
             <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
               <CampaignEntityReferenceChip
+                campaignId={campaignId}
                 entityId={note.relatedEntityId}
                 entityType={note.relatedEntityType}
                 label={references.getReferenceLabel(note.relatedEntityType as never, note.relatedEntityId)}

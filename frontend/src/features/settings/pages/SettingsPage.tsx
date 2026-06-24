@@ -1,6 +1,8 @@
 import { Grid, Stack } from "@mui/material";
 import { useMemo, useState } from "react";
 
+import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
+import { setThemeMode } from "@/app/store/slices/uiSlice";
 import {
   useChangeCurrentUserPasswordMutation,
   useCurrentUserProfileQuery,
@@ -45,6 +47,8 @@ function normalizeOptionalText(value?: string): string | null | undefined {
 }
 
 export function SettingsPage() {
+  const dispatch = useAppDispatch();
+  const currentThemeMode = useAppSelector((state) => state.ui.themeMode);
   const currentUserProfileQuery = useCurrentUserProfileQuery();
   const updateCurrentUserProfileMutation = useUpdateCurrentUserProfileMutation();
   const changeCurrentUserPasswordMutation = useChangeCurrentUserPasswordMutation();
@@ -82,6 +86,7 @@ export function SettingsPage() {
   }
 
   const profile = currentUserProfileQuery.data;
+  const savedThemeMode = profile.profile?.settings?.themeMode ?? null;
 
   const handleProfileSubmit = async (values: ProfileFormValues) => {
     setProfileFeedback(null);
@@ -100,6 +105,22 @@ export function SettingsPage() {
     });
 
     setProfileFeedback("Profile settings saved.");
+  };
+
+  const handleThemeModeChange = async (mode: "light" | "dark") => {
+    dispatch(setThemeMode(mode));
+    setProfileFeedback(null);
+
+    await updateCurrentUserProfileMutation.mutateAsync({
+      profile: {
+        settings: {
+          ...(profile.profile?.settings ?? {}),
+          themeMode: mode,
+        },
+      },
+    });
+
+    setProfileFeedback("Theme preference saved.");
   };
 
   const handlePasswordSubmit = async (values: PasswordFormValues) => {
@@ -139,7 +160,12 @@ export function SettingsPage() {
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
           <SectionCard>
-            <SettingsThemeCard />
+            <SettingsThemeCard
+              currentThemeMode={currentThemeMode}
+              isSubmitting={updateCurrentUserProfileMutation.isPending}
+              onSelectThemeMode={handleThemeModeChange}
+              savedThemeMode={savedThemeMode}
+            />
           </SectionCard>
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>

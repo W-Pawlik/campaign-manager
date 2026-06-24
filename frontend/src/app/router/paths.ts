@@ -4,6 +4,8 @@ export const appPaths = {
   campaignCharactersRoute: "/campaigns/:campaignId/characters",
   campaignChronicle: (campaignId: string) => `/campaigns/${campaignId}/chronicle`,
   campaignChronicleRoute: "/campaigns/:campaignId/chronicle",
+  campaignInventory: (campaignId: string) => `/campaigns/${campaignId}/inventory`,
+  campaignInventoryRoute: "/campaigns/:campaignId/inventory",
   campaignLocations: (campaignId: string) => `/campaigns/${campaignId}/locations`,
   campaignLocationsRoute: "/campaigns/:campaignId/locations",
   campaignMembers: (campaignId: string) => `/campaigns/${campaignId}/members`,

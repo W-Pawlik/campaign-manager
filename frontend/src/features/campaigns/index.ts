@@ -3,8 +3,10 @@ export {
 } from "@/features/campaigns/api/campaignsApi";
 export {
   campaignsQueryKeys,
+  useCampaignCharactersQuery,
   useCampaignChronicleQuery,
   useCampaignDetailsQuery,
+  useCampaignInventoryQuery,
   useCampaignLocationsQuery,
   useCampaignNotesQuery,
   useCampaignNpcsQuery,
@@ -18,6 +20,7 @@ export type {
   CampaignCharacterListItem,
   CampaignChronicleEntry,
   CampaignDetails,
+  CampaignInventoryListItem,
   CampaignInvitation,
   CampaignListItem,
   CampaignLocationListItem,

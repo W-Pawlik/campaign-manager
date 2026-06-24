@@ -45,11 +45,13 @@ export function QuestDetailsDialog({
 
             <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
               <CampaignEntityReferenceChip
+                campaignId={campaignId}
                 entityId={quest.giverNpcId}
                 entityType={quest.giverNpcId ? "NPC" : null}
                 label={references.getReferenceLabel("NPC", quest.giverNpcId)}
               />
               <CampaignEntityReferenceChip
+                campaignId={campaignId}
                 entityId={quest.relatedLocationId}
                 entityType={quest.relatedLocationId ? "LOCATION" : null}
                 label={references.getReferenceLabel("LOCATION", quest.relatedLocationId)}
@@ -117,9 +119,10 @@ export function QuestDetailsDialog({
                   <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
                     {quest.relations.map((relation) => (
                       <CampaignEntityReferenceChip
+                        campaignId={campaignId}
                         key={relation.id}
                         entityId={relation.entityId}
-                        entityType={relation.relationType}
+                        entityType={relation.entityType}
                         label={`${relation.relationType}: ${references.getReferenceLabel(
                           relation.entityType as never,
                           relation.entityId,

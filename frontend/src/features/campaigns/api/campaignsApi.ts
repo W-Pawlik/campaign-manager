@@ -3,6 +3,7 @@ import type {
   CampaignCharacterListItem,
   CampaignChronicleEntry,
   CampaignDetails,
+  CampaignInventoryListItem,
   CampaignInvitation,
   CampaignListItem,
   CampaignLocationListItem,
@@ -48,6 +49,14 @@ export const campaignsApi = {
   async listCampaignInvitations(campaignId: string): Promise<CampaignInvitation[]> {
     const response = await httpClient.get<CampaignInvitation[]>(
       `${campaignsBasePath}/${campaignId}/invitations`,
+    );
+
+    return response.data;
+  },
+
+  async listCampaignInventory(campaignId: string): Promise<CampaignInventoryListItem[]> {
+    const response = await httpClient.get<CampaignInventoryListItem[]>(
+      `${campaignsBasePath}/${campaignId}/inventory`,
     );
 
     return response.data;

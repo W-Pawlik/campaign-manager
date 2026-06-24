@@ -4,7 +4,9 @@ export type UserProfileSettings = {
   preferredSystem?: string | null;
   defaultTimezone?: string | null;
   socialLinks?: unknown;
-  settings?: unknown;
+  settings?: {
+    themeMode?: PaletteMode | null;
+  } | null;
 };
 
 export type CurrentUserProfile = {

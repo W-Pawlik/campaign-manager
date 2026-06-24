@@ -57,11 +57,13 @@ export function CampaignQuestsList({
 
             <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
               <CampaignEntityReferenceChip
+                campaignId={campaignId}
                 entityId={quest.giverNpcId}
                 entityType={quest.giverNpcId ? "NPC" : null}
                 label={references.getReferenceLabel("NPC", quest.giverNpcId)}
               />
               <CampaignEntityReferenceChip
+                campaignId={campaignId}
                 entityId={quest.relatedLocationId}
                 entityType={quest.relatedLocationId ? "LOCATION" : null}
                 label={references.getReferenceLabel("LOCATION", quest.relatedLocationId)}

@@ -80,7 +80,13 @@ const campaignNavItems = [
     section: "workspace",
     implemented: true,
   },
-  { icon: "IN", label: "Inventory", section: "workspace", implemented: false },
+  {
+    icon: "IN",
+    label: "Inventory",
+    path: (campaignId: string) => appPaths.campaignInventory(campaignId),
+    section: "workspace",
+    implemented: true,
+  },
   {
     icon: "ME",
     label: "Members",

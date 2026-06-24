@@ -48,6 +48,7 @@ export function CampaignChronicleList({
             </Stack>
             <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
               <CampaignEntityReferenceChip
+                campaignId={campaignId}
                 entityId={entry.sessionId}
                 entityType={entry.sessionId ? "SESSION" : null}
                 label={references.getReferenceLabel("SESSION", entry.sessionId)}

@@ -9,6 +9,7 @@ import { AuthPage } from "@/features/auth";
 import { CampaignCharactersPage } from "@/features/characters";
 import { CampaignChroniclePage } from "@/features/chronicle";
 import { CampaignOverviewPage } from "@/features/campaigns";
+import { CampaignInventoryPage } from "@/features/inventory";
 import { CampaignLocationsPage } from "@/features/locations";
 import { CampaignMembersPage } from "@/features/members";
 import { CampaignMonstersPage, MonstersCatalogPage } from "@/features/monsters";
@@ -60,6 +61,10 @@ export const router = createBrowserRouter([
               {
                 path: appPaths.campaignOverview,
                 element: <CampaignOverviewPage />,
+              },
+              {
+                path: appPaths.campaignInventoryRoute,
+                element: <CampaignInventoryPage />,
               },
               {
                 path: appPaths.campaignMembersRoute,
