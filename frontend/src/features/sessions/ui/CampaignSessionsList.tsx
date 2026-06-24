@@ -7,6 +7,7 @@ import { EmptyState } from "@/shared/components";
 
 type CampaignSessionsListProps = {
   canManageSessions: boolean;
+  highlightedSessionId?: string | null;
   isSubmitting: boolean;
   onCancelSession: (sessionId: string) => void;
   onCompleteSession: (sessionId: string) => void;
@@ -17,6 +18,7 @@ type CampaignSessionsListProps = {
 
 export function CampaignSessionsList({
   canManageSessions,
+  highlightedSessionId = null,
   isSubmitting,
   onCancelSession,
   onCompleteSession,
@@ -47,7 +49,25 @@ export function CampaignSessionsList({
           session.status !== "CANCELLED";
 
         return (
-          <Paper key={session.id} sx={{ p: 2.25 }} variant="outlined">
+          <Paper
+            id={`session-card-${session.id}`}
+            key={session.id}
+            sx={(theme) => ({
+              p: 2.25,
+              scrollMarginTop: 96,
+              transition: theme.transitions.create(["border-color", "box-shadow", "background-color"], {
+                duration: theme.transitions.duration.shorter,
+              }),
+              ...(highlightedSessionId === session.id
+                ? {
+                    backgroundColor: theme.palette.action.hover,
+                    borderColor: theme.palette.error.main,
+                    boxShadow: `0 0 0 1px ${theme.palette.error.main}`,
+                  }
+                : {}),
+            })}
+            variant="outlined"
+          >
             <Stack spacing={1.5}>
               <Stack
                 direction={{ xs: "column", md: "row" }}

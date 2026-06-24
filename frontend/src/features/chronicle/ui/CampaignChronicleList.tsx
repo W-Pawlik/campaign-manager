@@ -8,6 +8,7 @@ type CampaignChronicleListProps = {
   campaignId: string;
   canManageEntries: boolean;
   entries: CampaignChronicleEntry[];
+  highlightedEntryId?: string | null;
   isSubmitting: boolean;
   onDeleteEntry: (entryId: string) => void;
   onEditEntry: (entryId: string) => void;
@@ -18,6 +19,7 @@ export function CampaignChronicleList({
   campaignId,
   canManageEntries,
   entries,
+  highlightedEntryId = null,
   isSubmitting,
   onDeleteEntry,
   onEditEntry,
@@ -37,14 +39,38 @@ export function CampaignChronicleList({
   return (
     <Stack spacing={1.5}>
       {entries.map((entry) => (
-        <Paper key={entry.id} sx={{ p: 2.25 }} variant="outlined">
+        <Paper
+          id={`chronicle-entry-${entry.id}`}
+          key={entry.id}
+          sx={(theme) => ({
+            p: 2.25,
+            scrollMarginTop: 96,
+            transition: theme.transitions.create(["border-color", "box-shadow", "background-color"], {
+              duration: theme.transitions.duration.shorter,
+            }),
+            ...(highlightedEntryId === entry.id
+              ? {
+                  borderColor: theme.palette.error.main,
+                  boxShadow: `0 0 0 1px ${theme.palette.error.main}`,
+                  backgroundColor: theme.palette.action.hover,
+                }
+              : {}),
+          })}
+          variant="outlined"
+        >
           <Stack spacing={1.5}>
             <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} sx={{ justifyContent: "space-between" }}>
               <Stack spacing={0.5}>
                 <Typography variant="h6">{entry.title}</Typography>
-                <Typography color="text.secondary">{entry.content}</Typography>
+                <Typography color="text.secondary">
+                  {entry.content.length > 280 ? `${entry.content.slice(0, 280).trimEnd()}...` : entry.content}
+                </Typography>
               </Stack>
-              <Chip label={entry.visibility.replace("_", " ")} size="small" variant="outlined" />
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
+                <Chip label={entry.visibility.replace("_", " ")} size="small" variant="outlined" />
+                {entry.inWorldDate ? <Chip label={`In-world: ${entry.inWorldDate}`} size="small" variant="outlined" /> : null}
+                {entry.occurredAt ? <Chip label="Occurred at set" size="small" variant="outlined" /> : null}
+              </Stack>
             </Stack>
             <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
               <CampaignEntityReferenceChip

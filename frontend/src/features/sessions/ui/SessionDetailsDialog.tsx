@@ -10,11 +10,14 @@ import {
   Typography,
 } from "@mui/material";
 
+import { useCampaignChronicleQuery } from "@/features/chronicle";
 import type { CampaignSessionDetails } from "@/features/sessions/model/session.types";
+import { SessionChronicleCards } from "@/features/sessions/ui/SessionChronicleCards";
 import { SessionStatusChip } from "@/features/sessions/ui/SessionStatusChip";
 import { formatDateTime } from "@/features/sessions/ui/sessionUi.utils";
 
 type SessionDetailsDialogProps = {
+  campaignId: string;
   canManageSessions: boolean;
   isSubmitting: boolean;
   onClose: () => void;
@@ -25,6 +28,7 @@ type SessionDetailsDialogProps = {
 };
 
 export function SessionDetailsDialog({
+  campaignId,
   canManageSessions,
   isSubmitting,
   onClose,
@@ -33,6 +37,9 @@ export function SessionDetailsDialog({
   open,
   session,
 }: SessionDetailsDialogProps) {
+  const chronicleQuery = useCampaignChronicleQuery(campaignId);
+  const linkedChronicleEntries = (chronicleQuery.data ?? []).filter((entry) => entry.sessionId === session?.id);
+
   return (
     <Dialog fullWidth maxWidth="md" onClose={onClose} open={open}>
       <DialogTitle>{session?.title ?? "Session details"}</DialogTitle>
@@ -100,6 +107,12 @@ export function SessionDetailsDialog({
                 </Stack>
               </>
             ) : null}
+
+            <Divider />
+            <Stack spacing={0.75}>
+              <Typography variant="subtitle1">Linked chronicle</Typography>
+              <SessionChronicleCards entries={linkedChronicleEntries} />
+            </Stack>
           </Stack>
         ) : null}
       </DialogContent>
