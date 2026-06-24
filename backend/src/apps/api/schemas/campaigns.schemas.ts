@@ -49,7 +49,7 @@ const questTypeSchema = z.enum(["MAIN", "SIDE", "PERSONAL", "FACTION", "WORLD_EV
 const questVisibilitySchema = z.enum(["PUBLIC", "GM_ONLY", "DISCOVERED"]);
 const questPrioritySchema = z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]);
 const objectiveStatusSchema = z.enum(["TODO", "IN_PROGRESS", "DONE", "FAILED", "OPTIONAL_SKIPPED"]);
-const inventoryOwnerTypeSchema = z.enum(["CHARACTER", "CAMPAIGN_PARTY", "NPC", "LOCATION", "QUEST"]);
+const inventoryOwnerTypeSchema = z.enum(["CHARACTER", "CAMPAIGN_PARTY", "NPC", "LOCATION", "QUEST", "SESSION"]);
 const itemVisibilitySchema = z.enum(["PUBLIC", "OWNER_ONLY", "GM_ONLY"]);
 const noteVisibilitySchema = z.enum([
   "PRIVATE_AUTHOR",
@@ -471,8 +471,17 @@ export type UpdateQuestObjectiveRequestBody = z.infer<typeof updateQuestObjectiv
 
 const createInventoryItemSchemaShape = {
   itemTemplateId: nullableUuidSchema.optional(),
+  source: z.enum(["CUSTOM", "OPEN5E", "SYSTEM"]).optional(),
   name: z.string().trim().min(1).max(200).optional(),
+  type: z
+    .enum(["WEAPON", "ARMOR", "SHIELD", "POTION", "SCROLL", "WONDROUS_ITEM", "TOOL", "GEAR", "TREASURE", "QUEST_ITEM", "CONSUMABLE", "OTHER"])
+    .optional(),
+  rarity: z.enum(["COMMON", "UNCOMMON", "RARE", "VERY_RARE", "LEGENDARY", "ARTIFACT", "UNKNOWN"]).nullable().optional(),
+  isMagical: z.boolean().optional(),
   description: nullableLongTextSchema.optional(),
+  weight: z.number().min(0).nullable().optional(),
+  valueAmount: z.number().min(0).nullable().optional(),
+  valueCurrency: z.string().trim().min(1).max(16).nullable().optional(),
   quantity: z.number().int().min(0).optional(),
   charges: z.number().int().min(0).nullable().optional(),
   maxCharges: z.number().int().min(0).nullable().optional(),
@@ -499,7 +508,15 @@ export const createInventoryItemSchema = z
 export const updateInventoryItemSchema = z
   .object({
     name: z.string().trim().min(1).max(200).optional(),
+    type: z
+      .enum(["WEAPON", "ARMOR", "SHIELD", "POTION", "SCROLL", "WONDROUS_ITEM", "TOOL", "GEAR", "TREASURE", "QUEST_ITEM", "CONSUMABLE", "OTHER"])
+      .optional(),
+    rarity: z.enum(["COMMON", "UNCOMMON", "RARE", "VERY_RARE", "LEGENDARY", "ARTIFACT", "UNKNOWN"]).nullable().optional(),
+    isMagical: z.boolean().optional(),
     description: nullableLongTextSchema.optional(),
+    weight: z.number().min(0).nullable().optional(),
+    valueAmount: z.number().min(0).nullable().optional(),
+    valueCurrency: z.string().trim().min(1).max(16).nullable().optional(),
     quantity: z.number().int().min(0).optional(),
     charges: z.number().int().min(0).nullable().optional(),
     maxCharges: z.number().int().min(0).nullable().optional(),

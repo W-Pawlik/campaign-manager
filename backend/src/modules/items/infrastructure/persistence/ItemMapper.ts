@@ -14,6 +14,7 @@ export interface ItemTemplatePersistenceRecord {
   name: string;
   type: string;
   rarity: string | null;
+  isMagical: boolean;
   description: string | null;
   properties: unknown | null;
   weight: number | null;
@@ -28,8 +29,16 @@ export interface InventoryItemPersistenceRecord {
   id: string;
   campaignId: string;
   itemTemplateId: string | null;
+  source: string;
+  externalReferenceId: string | null;
   name: string;
+  type: string;
+  rarity: string | null;
+  isMagical: boolean;
   description: string | null;
+  weight: number | null;
+  valueAmount: number | null;
+  valueCurrency: string | null;
   quantity: number;
   charges: number | null;
   maxCharges: number | null;
@@ -54,6 +63,7 @@ export class ItemMapper {
       name: record.name,
       type: ItemType.create(record.type),
       rarity: record.rarity === null ? null : ItemRarity.create(record.rarity),
+      isMagical: record.isMagical,
       description: record.description,
       properties: record.properties,
       weight: record.weight,
@@ -70,8 +80,16 @@ export class ItemMapper {
       id: record.id,
       campaignId: record.campaignId,
       itemTemplateId: record.itemTemplateId,
+      source: record.source,
+      externalReferenceId: record.externalReferenceId,
       name: record.name,
+      type: record.type,
+      rarity: record.rarity,
+      isMagical: record.isMagical,
       description: record.description,
+      weight: record.weight,
+      valueAmount: record.valueAmount,
+      valueCurrency: record.valueCurrency,
       quantity: record.quantity,
       charges: record.charges,
       maxCharges: record.maxCharges,
@@ -96,6 +114,7 @@ export class ItemMapper {
       name: template.name,
       type: template.type.value,
       rarity: template.rarity?.value ?? null,
+      isMagical: template.isMagical,
       description: template.description,
       properties: this.toJsonValue(template.properties),
       weight: template.weight,
@@ -112,8 +131,16 @@ export class ItemMapper {
       id: item.id,
       campaignId: item.campaignId,
       itemTemplateId: item.itemTemplateId,
+      source: item.source,
+      externalReferenceId: item.externalReferenceId,
       name: item.name,
+      type: item.type,
+      rarity: item.rarity,
+      isMagical: item.isMagical,
       description: item.description,
+      weight: item.weight,
+      valueAmount: item.valueAmount,
+      valueCurrency: item.valueCurrency,
       quantity: item.quantity,
       charges: item.charges,
       maxCharges: item.maxCharges,

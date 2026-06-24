@@ -10,6 +10,7 @@ export interface ItemTemplateProps {
   name: string;
   type: ItemType;
   rarity: ItemRarity | null;
+  isMagical: boolean;
   description: string | null;
   properties: unknown | null;
   weight: number | null;
@@ -20,6 +21,11 @@ export interface ItemTemplateProps {
   updatedAt: Date;
 }
 
+export type UpdateItemTemplateParams = Omit<
+  Partial<ItemTemplateProps>,
+  "id" | "source" | "externalReferenceId" | "createdById" | "createdAt" | "updatedAt"
+>;
+
 export class ItemTemplate {
   public readonly id: string;
   public readonly source: ItemSource;
@@ -27,6 +33,7 @@ export class ItemTemplate {
   public readonly name: string;
   public readonly type: ItemType;
   public readonly rarity: ItemRarity | null;
+  public readonly isMagical: boolean;
   public readonly description: string | null;
   public readonly properties: unknown | null;
   public readonly weight: number | null;
@@ -43,6 +50,7 @@ export class ItemTemplate {
     this.name = props.name;
     this.type = props.type;
     this.rarity = props.rarity;
+    this.isMagical = props.isMagical;
     this.description = props.description;
     this.properties = props.properties;
     this.weight = props.weight;
@@ -59,6 +67,14 @@ export class ItemTemplate {
     return new ItemTemplate(props);
   }
 
+  public withUpdates(params: UpdateItemTemplateParams): ItemTemplate {
+    return ItemTemplate.create({
+      ...this.toProps(),
+      ...params,
+      updatedAt: new Date(),
+    });
+  }
+
   private static validate(props: ItemTemplateProps): void {
     const trimmedName = props.name.trim();
 
@@ -73,5 +89,25 @@ export class ItemTemplate {
     if (props.valueAmount !== null && props.valueAmount < 0) {
       throw new ValidationError("Item template value cannot be negative");
     }
+  }
+
+  private toProps(): ItemTemplateProps {
+    return {
+      id: this.id,
+      source: this.source,
+      externalReferenceId: this.externalReferenceId,
+      name: this.name,
+      type: this.type,
+      rarity: this.rarity,
+      isMagical: this.isMagical,
+      description: this.description,
+      properties: this.properties,
+      weight: this.weight,
+      valueAmount: this.valueAmount,
+      valueCurrency: this.valueCurrency,
+      createdById: this.createdById,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+    };
   }
 }

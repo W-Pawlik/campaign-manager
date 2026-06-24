@@ -1,8 +1,10 @@
 import type { ExternalResourceDetailsDTO } from "@modules/external-references/application/dto/ExternalResourceDetailsDTO";
 import type { ExternalSearchResultDTO } from "@modules/external-references/application/dto/ExternalSearchResultDTO";
 import type { Open5eCreatureCatalogPageDTO } from "@modules/external-references/application/dto/Open5eCreatureCatalogPageDTO";
+import type { Open5eItemCatalogPageDTO } from "@modules/external-references/application/dto/Open5eItemCatalogPageDTO";
 import type {
   Open5eCreatureListItem,
+  Open5eItemListItem,
   Open5eListPage,
   Open5eSearchResult,
 } from "@modules/external-references/application/ports/Open5eClient";
@@ -97,6 +99,26 @@ export function mapOpen5eCreatureCatalogPageToDto(
       key: item.key,
       name: item.name,
       illustrationUrl: item.illustrationUrl ?? null,
+      sourceDocumentKey: item.sourceDocumentKey ?? null,
+      sourceDocumentName: item.sourceDocumentName ?? null,
+      ...(item.metadata === undefined ? {} : { metadata: item.metadata }),
+    })),
+    limit: page.limit,
+    page: page.page,
+    total: page.total,
+    hasNext: page.hasNext,
+  };
+}
+
+export function mapOpen5eItemCatalogPageToDto(
+  page: Open5eListPage<Open5eItemListItem>,
+): Open5eItemCatalogPageDTO {
+  return {
+    items: page.items.map((item) => ({
+      provider: item.provider,
+      resourceType: item.resourceType,
+      key: item.key,
+      name: item.name,
       sourceDocumentKey: item.sourceDocumentKey ?? null,
       sourceDocumentName: item.sourceDocumentName ?? null,
       ...(item.metadata === undefined ? {} : { metadata: item.metadata }),

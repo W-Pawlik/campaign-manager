@@ -11,6 +11,8 @@ import type {
   Open5eClient,
   Open5eCreatureListItem,
   Open5eGetResourceInput,
+  Open5eItemListItem,
+  Open5eListItemsInput,
   Open5eListCreaturesInput,
   Open5eListPage,
   Open5eResourceDetails,
@@ -128,13 +130,53 @@ export class Open5eHttpAdapter implements Open5eClient {
     });
   }
 
+  public async listItems(
+    input: Open5eListItemsInput,
+  ): Promise<Open5eListPage<Open5eItemListItem>> {
+    const limit = input.limit ?? 20;
+    const page = input.page ?? 1;
+    const endpoint =
+      input.resourceType === EXTERNAL_RESOURCE_TYPE.MAGIC_ITEM
+        ? "magicitems"
+        : "items";
+    const listUrl = new URL(`/v2/${endpoint}/`, coreConfig.open5e.apiBaseUrl);
+
+    listUrl.searchParams.set("limit", limit.toString());
+    listUrl.searchParams.set("page", page.toString());
+    listUrl.searchParams.set(
+      "fields",
+      "key,name,category,rarity,weight,cost,requires_attunement,document",
+    );
+    listUrl.searchParams.set("document__fields", "name,key");
+
+    if (input.search !== undefined) {
+      listUrl.searchParams.set("name__icontains", input.search);
+    }
+
+    if (input.documentKey !== undefined) {
+      listUrl.searchParams.set("document__key__in", input.documentKey);
+    }
+
+    if (input.ordering !== undefined) {
+      listUrl.searchParams.set("ordering", input.ordering);
+    }
+
+    const payload = await this.fetchJson(listUrl);
+
+    return this.mapper.mapItemListPage(payload, {
+      limit,
+      page,
+      resourceType: input.resourceType,
+    });
+  }
+
   public async getResource(
     input: Open5eGetResourceInput,
   ): Promise<Open5eResourceDetails> {
     const endpoint = mapResourceTypeToEndpoint(input.resourceType);
     const resourceUrl = new URL(`/v2/${endpoint}/`, coreConfig.open5e.apiBaseUrl);
 
-    resourceUrl.searchParams.set("key", input.key);
+    resourceUrl.searchParams.set("key__in", input.key);
     resourceUrl.searchParams.set("limit", "1");
 
     const payload = await this.fetchJson(resourceUrl);
@@ -144,6 +186,7 @@ export class Open5eHttpAdapter implements Open5eClient {
         input.resourceType,
         payload,
         new URL(`/v2/${endpoint}/`, coreConfig.open5e.apiBaseUrl).toString(),
+        input.key,
       );
     } catch (error) {
       if (error instanceof Open5eInvalidResponseError) {

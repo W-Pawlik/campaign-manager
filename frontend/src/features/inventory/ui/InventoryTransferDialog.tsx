@@ -21,7 +21,7 @@ import type { InventoryTransferFormValues } from "@/features/inventory/ui/invent
 const inventoryTransferSchema = z.object({
   quantity: z.number().int().min(1).nullable().optional(),
   targetOwnerId: z.string().trim().min(1, "Select a destination owner."),
-  targetOwnerType: z.enum(["CHARACTER", "CAMPAIGN_PARTY", "NPC", "LOCATION", "QUEST"]),
+  targetOwnerType: z.enum(["CHARACTER", "CAMPAIGN_PARTY", "NPC", "LOCATION", "QUEST", "SESSION"]),
 });
 
 type OwnerOption = {

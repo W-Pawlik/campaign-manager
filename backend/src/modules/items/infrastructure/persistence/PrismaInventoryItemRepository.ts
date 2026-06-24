@@ -25,7 +25,7 @@ export class PrismaInventoryItemRepository implements InventoryItemRepository {
       },
     });
 
-    return item === null ? null : this.mapper.toInventoryDomain(item);
+    return item === null ? null : this.mapper.toInventoryDomain(item as InventoryItemPersistenceRecord);
   }
 
   public async create(item: InventoryItem): Promise<void> {

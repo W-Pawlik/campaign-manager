@@ -6,7 +6,9 @@ export const ITEMS_TYPES = {
   InventoryOwnerApplicationService: Symbol.for("items.InventoryOwnerApplicationService"),
   InventoryVisibilityApplicationService: Symbol.for("items.InventoryVisibilityApplicationService"),
   CreateItemTemplateHandler: Symbol.for("items.CreateItemTemplateHandler"),
+  UpdateItemTemplateHandler: Symbol.for("items.UpdateItemTemplateHandler"),
   CreateInventoryItemHandler: Symbol.for("items.CreateInventoryItemHandler"),
+  ImportOpen5eItemToInventoryHandler: Symbol.for("items.ImportOpen5eItemToInventoryHandler"),
   UpdateInventoryItemHandler: Symbol.for("items.UpdateInventoryItemHandler"),
   DeleteInventoryItemHandler: Symbol.for("items.DeleteInventoryItemHandler"),
   TransferInventoryItemHandler: Symbol.for("items.TransferInventoryItemHandler"),
@@ -15,4 +17,7 @@ export const ITEMS_TYPES = {
   ListCampaignInventoryHandler: Symbol.for("items.ListCampaignInventoryHandler"),
   GetInventoryItemDetailsHandler: Symbol.for("items.GetInventoryItemDetailsHandler"),
   ListOwnerInventoryHandler: Symbol.for("items.ListOwnerInventoryHandler"),
+  ListMyInventoryItemsHandler: Symbol.for("items.ListMyInventoryItemsHandler"),
+  ListPublishedItemTemplatesHandler: Symbol.for("items.ListPublishedItemTemplatesHandler"),
+  GetPublishedItemTemplateDetailsHandler: Symbol.for("items.GetPublishedItemTemplateDetailsHandler"),
 } as const;

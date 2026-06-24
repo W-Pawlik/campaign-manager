@@ -28,4 +28,8 @@ export class ItemSource {
   public static custom(): ItemSource {
     return new ItemSource(ITEM_SOURCE.CUSTOM);
   }
+
+  public static open5e(): ItemSource {
+    return new ItemSource(ITEM_SOURCE.OPEN5E);
+  }
 }

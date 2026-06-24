@@ -12,6 +12,7 @@ export const inventoryQueryKeys = {
   all: ["inventory"] as const,
   details: (campaignId: string, itemId: string) => [...inventoryQueryKeys.all, campaignId, itemId] as const,
   list: (campaignId: string) => [...inventoryQueryKeys.all, campaignId, "list"] as const,
+  myList: (campaignId: string) => [...inventoryQueryKeys.all, campaignId, "my-list"] as const,
 };
 
 function invalidateInventoryQueries(
@@ -20,6 +21,7 @@ function invalidateInventoryQueries(
   itemId?: string,
 ) {
   queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.list(campaignId) });
+  queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.myList(campaignId) });
   queryClient.invalidateQueries({ queryKey: campaignsQueryKeys.inventory(campaignId) });
 
   if (itemId) {
@@ -40,6 +42,14 @@ export function useInventoryItemDetailsQuery(campaignId: string | undefined, ite
     enabled: Boolean(campaignId && itemId),
     queryFn: () => inventoryApi.getInventoryItemDetails(campaignId!, itemId!),
     queryKey: inventoryQueryKeys.details(campaignId ?? "missing", itemId ?? "missing"),
+  });
+}
+
+export function useMyInventoryItemsQuery(campaignId: string | undefined) {
+  return useQuery({
+    enabled: Boolean(campaignId),
+    queryFn: () => inventoryApi.listMyInventory(campaignId!),
+    queryKey: inventoryQueryKeys.myList(campaignId ?? "missing"),
   });
 }
 

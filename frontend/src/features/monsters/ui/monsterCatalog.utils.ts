@@ -219,7 +219,7 @@ function toStatblockEntry(value: unknown): MonsterStatblockEntry | null {
   }
 
   const parts = [
-    value.action_type === "ACTION" ? null : formatActionType(value.action_type),
+    formatActionType(value.action_type),
     formatUsageLimits(value.usage_limits),
     typeof value.legendary_action_cost === "number" && value.legendary_action_cost > 1
       ? `Cost ${value.legendary_action_cost}`

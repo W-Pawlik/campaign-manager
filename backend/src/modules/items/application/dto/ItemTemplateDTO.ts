@@ -5,6 +5,7 @@ export interface ItemTemplateDTO {
   name: string;
   type: string;
   rarity: string | null;
+  isMagical: boolean;
   description: string | null;
   properties: unknown | null;
   weight: number | null;

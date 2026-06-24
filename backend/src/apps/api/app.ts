@@ -22,6 +22,7 @@ import type { CampaignQuestsController } from "@api/controllers/CampaignQuestsCo
 import type { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import type { ExternalOpen5eController } from "@api/controllers/ExternalOpen5eController";
+import type { ItemCatalogController } from "@api/controllers/ItemCatalogController";
 import type { MonsterCatalogController } from "@api/controllers/MonsterCatalogController";
 
 export interface CreateApiAppOptions {
@@ -77,6 +78,9 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   const monsterCatalogController = options.container.get<MonsterCatalogController>(
     API_TYPES.MonsterCatalogController,
   );
+  const itemCatalogController = options.container.get<ItemCatalogController>(
+    API_TYPES.ItemCatalogController,
+  );
 
   const corsOrigin =
     apiConfig.corsOrigin === "*"
@@ -118,6 +122,7 @@ export function createApiApp(options: CreateApiAppOptions): Express {
       campaignSessionsController,
       externalOpen5eController,
       monsterCatalogController,
+      itemCatalogController,
       authMiddleware,
       ...routesOptions,
     }),

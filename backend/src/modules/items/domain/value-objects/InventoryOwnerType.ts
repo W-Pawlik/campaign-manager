@@ -6,6 +6,7 @@ export const INVENTORY_OWNER_TYPE = {
   NPC: "NPC",
   LOCATION: "LOCATION",
   QUEST: "QUEST",
+  SESSION: "SESSION",
 } as const;
 
 export type InventoryOwnerTypeValue =
@@ -46,5 +47,9 @@ export class InventoryOwnerType {
 
   public isQuest(): boolean {
     return this.value === INVENTORY_OWNER_TYPE.QUEST;
+  }
+
+  public isSession(): boolean {
+    return this.value === INVENTORY_OWNER_TYPE.SESSION;
   }
 }

@@ -34,7 +34,14 @@ export function InventoryDetailsDialog({
               />
             ) : null}
           </Stack>
+          <Typography variant="body2">Type: {item?.type?.replaceAll("_", " ") ?? "Unknown"}</Typography>
+          <Typography variant="body2">Rarity: {item?.rarity?.replaceAll("_", " ") ?? "None"}</Typography>
+          <Typography variant="body2">Source: {item?.source ?? "CUSTOM"}</Typography>
           <Typography variant="body2">Quantity: {item?.quantity ?? 0}</Typography>
+          <Typography variant="body2">Weight: {item?.weight ?? "N/A"}</Typography>
+          <Typography variant="body2">
+            Value: {item?.valueAmount ?? "N/A"} {item?.valueCurrency ?? ""}
+          </Typography>
           <Typography variant="body2">Visibility: {item?.visibility?.replace("_", " ")}</Typography>
           <Typography variant="body2">
             Charges: {item?.charges ?? "N/A"} / {item?.maxCharges ?? "N/A"}
@@ -42,6 +49,7 @@ export function InventoryDetailsDialog({
           <Typography variant="body2">Equipped: {item?.isEquipped ? "Yes" : "No"}</Typography>
           <Typography variant="body2">Attuned: {item?.isAttuned ? "Yes" : "No"}</Typography>
           <Typography variant="body2">Identified: {item?.isIdentified ? "Yes" : "No"}</Typography>
+          <Typography variant="body2">Magical: {item?.isMagical ? "Yes" : "No"}</Typography>
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, py: 2 }}>

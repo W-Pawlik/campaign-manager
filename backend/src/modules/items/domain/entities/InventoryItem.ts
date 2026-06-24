@@ -6,8 +6,16 @@ export interface InventoryItemProps {
   id: string;
   campaignId: string;
   itemTemplateId: string | null;
+  source: string;
+  externalReferenceId: string | null;
   name: string;
+  type: string;
+  rarity: string | null;
+  isMagical: boolean;
   description: string | null;
+  weight: number | null;
+  valueAmount: number | null;
+  valueCurrency: string | null;
   quantity: number;
   charges: number | null;
   maxCharges: number | null;
@@ -32,8 +40,16 @@ export class InventoryItem {
   public readonly id: string;
   public readonly campaignId: string;
   public readonly itemTemplateId: string | null;
+  public readonly source: string;
+  public readonly externalReferenceId: string | null;
   public readonly name: string;
+  public readonly type: string;
+  public readonly rarity: string | null;
+  public readonly isMagical: boolean;
   public readonly description: string | null;
+  public readonly weight: number | null;
+  public readonly valueAmount: number | null;
+  public readonly valueCurrency: string | null;
   public readonly quantity: number;
   public readonly charges: number | null;
   public readonly maxCharges: number | null;
@@ -52,8 +68,16 @@ export class InventoryItem {
     this.id = props.id;
     this.campaignId = props.campaignId;
     this.itemTemplateId = props.itemTemplateId;
+    this.source = props.source;
+    this.externalReferenceId = props.externalReferenceId;
     this.name = props.name;
+    this.type = props.type;
+    this.rarity = props.rarity;
+    this.isMagical = props.isMagical;
     this.description = props.description;
+    this.weight = props.weight;
+    this.valueAmount = props.valueAmount;
+    this.valueCurrency = props.valueCurrency;
     this.quantity = props.quantity;
     this.charges = props.charges;
     this.maxCharges = props.maxCharges;
@@ -166,8 +190,16 @@ export class InventoryItem {
       id: this.id,
       campaignId: this.campaignId,
       itemTemplateId: this.itemTemplateId,
+      source: this.source,
+      externalReferenceId: this.externalReferenceId,
       name: this.name,
+      type: this.type,
+      rarity: this.rarity,
+      isMagical: this.isMagical,
       description: this.description,
+      weight: this.weight,
+      valueAmount: this.valueAmount,
+      valueCurrency: this.valueCurrency,
       quantity: this.quantity,
       charges: this.charges,
       maxCharges: this.maxCharges,
@@ -195,6 +227,10 @@ export class InventoryItem {
       throw new ValidationError("Inventory item quantity must be a non-negative integer");
     }
 
+    if (props.type.trim().length < 1 || props.type.trim().length > 120) {
+      throw new ValidationError("Inventory item type must be between 1 and 120 characters");
+    }
+
     if (props.charges !== null && (!Number.isInteger(props.charges) || props.charges < 0)) {
       throw new ValidationError("Inventory item charges must be a non-negative integer");
     }
@@ -205,6 +241,14 @@ export class InventoryItem {
 
     if (props.charges !== null && props.maxCharges !== null && props.charges > props.maxCharges) {
       throw new ValidationError("Inventory item charges cannot exceed max charges");
+    }
+
+    if (props.weight !== null && props.weight < 0) {
+      throw new ValidationError("Inventory item weight cannot be negative");
+    }
+
+    if (props.valueAmount !== null && props.valueAmount < 0) {
+      throw new ValidationError("Inventory item value cannot be negative");
     }
   }
 }

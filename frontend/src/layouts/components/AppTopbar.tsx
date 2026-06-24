@@ -25,6 +25,7 @@ export function AppTopbar() {
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null);
 
   const isCampaignsSelected = location.pathname === appPaths.home;
+  const isItemsSelected = location.pathname === appPaths.items;
   const isMonstersSelected = location.pathname === appPaths.monsters;
   const avatarLabel = useMemo(() => {
     const source = currentUser?.email?.trim();
@@ -91,6 +92,14 @@ export function AppTopbar() {
                     to={appPaths.home}
                   >
                     Campaigns
+                  </Button>
+                  <Button
+                    color="inherit"
+                    component={RouterLink}
+                    sx={{ opacity: isItemsSelected ? 1 : 0.82 }}
+                    to={appPaths.items}
+                  >
+                    Items
                   </Button>
                   <Button
                     color="inherit"

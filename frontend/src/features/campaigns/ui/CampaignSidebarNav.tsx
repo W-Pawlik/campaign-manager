@@ -82,7 +82,7 @@ const campaignNavItems = [
   },
   {
     icon: "IN",
-    label: "Inventory",
+    label: "Items",
     path: (campaignId: string) => appPaths.campaignInventory(campaignId),
     section: "workspace",
     implemented: true,

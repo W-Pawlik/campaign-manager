@@ -10,6 +10,9 @@ import { mapInventoryItemDtoFromDomain } from "@modules/items/application/servic
 import type { InventoryOwnerApplicationService } from "@modules/items/application/services/InventoryOwnerApplicationService";
 import { InventoryItem } from "@modules/items/domain/entities/InventoryItem";
 import { InventoryOwnerType } from "@modules/items/domain/value-objects/InventoryOwnerType";
+import { ItemRarity } from "@modules/items/domain/value-objects/ItemRarity";
+import { ItemSource } from "@modules/items/domain/value-objects/ItemSource";
+import { ItemType } from "@modules/items/domain/value-objects/ItemType";
 import { ItemVisibility } from "@modules/items/domain/value-objects/ItemVisibility";
 
 export class CreateInventoryItemHandler implements CommandHandler<CreateInventoryItemCommand, InventoryItemDTO> {
@@ -43,6 +46,18 @@ export class CreateInventoryItemHandler implements CommandHandler<CreateInventor
     }
 
     const name = command.input.name?.trim() ?? template?.name;
+    const source =
+      command.input.source?.trim() ??
+      template?.source.value ??
+      ItemSource.custom().value;
+    const type =
+      command.input.type?.trim() ??
+      template?.type.value ??
+      ItemType.other().value;
+    const rarity =
+      command.input.rarity === undefined
+        ? template?.rarity?.value ?? null
+        : command.input.rarity;
 
     if (name === undefined) {
       throw new ValidationError("Inventory item name is required when item template is not provided");
@@ -53,8 +68,19 @@ export class CreateInventoryItemHandler implements CommandHandler<CreateInventor
       id: randomUUID(),
       campaignId: command.input.campaignId,
       itemTemplateId: command.input.itemTemplateId ?? null,
+      source: ItemSource.create(source).value,
+      externalReferenceId: command.input.externalReferenceId ?? template?.externalReferenceId ?? null,
       name,
+      type: ItemType.create(type).value,
+      rarity:
+        rarity === null
+          ? null
+          : ItemRarity.create(rarity).value,
+      isMagical: command.input.isMagical ?? template?.isMagical ?? false,
       description: command.input.description ?? template?.description ?? null,
+      weight: command.input.weight ?? template?.weight ?? null,
+      valueAmount: command.input.valueAmount ?? template?.valueAmount ?? null,
+      valueCurrency: command.input.valueCurrency ?? template?.valueCurrency ?? null,
       quantity: command.input.quantity ?? 1,
       charges: command.input.charges ?? null,
       maxCharges: command.input.maxCharges ?? null,

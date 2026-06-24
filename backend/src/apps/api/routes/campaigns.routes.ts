@@ -154,6 +154,9 @@ export function createCampaignsRouter(
       await campaignInventoryController.createInventoryItem(req, res);
     },
   );
+  router.get("/:campaignId/inventory/my-items", authMiddleware, async (req, res) => {
+    await campaignInventoryController.listMyInventoryItems(req, res);
+  });
   router.get("/:campaignId/inventory/:itemId", authMiddleware, async (req, res) => {
     await campaignInventoryController.getInventoryItemDetails(req, res);
   });

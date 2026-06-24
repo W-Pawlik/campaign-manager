@@ -14,6 +14,7 @@ import { CampaignSessionsController } from "@api/controllers/CampaignSessionsCon
 import { CampaignsController } from "@api/controllers/CampaignsController";
 import { ExternalOpen5eController } from "@api/controllers/ExternalOpen5eController";
 import { HealthController } from "@api/controllers/HealthController";
+import { ItemCatalogController } from "@api/controllers/ItemCatalogController";
 import { MonsterCatalogController } from "@api/controllers/MonsterCatalogController";
 import { UsersController } from "@api/controllers/users.controller";
 import { createAuthMiddleware } from "@api/middlewares/auth.middleware";
@@ -172,6 +173,15 @@ export function loadApiContainerModule(container: Container): void {
       const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
 
       return new MonsterCatalogController(commandBus, queryBus);
+    })
+    .inTransientScope();
+  container
+    .bind<ItemCatalogController>(API_TYPES.ItemCatalogController)
+    .toDynamicValue((context) => {
+      const commandBus = context.get<CommandBus>(CORE_TYPES.CommandBus);
+      const queryBus = context.get<QueryBus>(CORE_TYPES.QueryBus);
+
+      return new ItemCatalogController(commandBus, queryBus);
     })
     .inTransientScope();
 

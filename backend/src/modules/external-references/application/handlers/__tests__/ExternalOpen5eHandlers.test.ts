@@ -55,6 +55,7 @@ describe("External Open5e handlers", () => {
   it("maps Open5e search results into lightweight DTOs", async () => {
     const open5eClient: Open5eClient = {
       listCreatures: vi.fn(),
+      listItems: vi.fn(),
       search: vi.fn().mockResolvedValue([
         {
           provider: "OPEN5E",
@@ -106,6 +107,7 @@ describe("External Open5e handlers", () => {
   it("validates search query minimum length", async () => {
     const open5eClient: Open5eClient = {
       listCreatures: vi.fn(),
+      listItems: vi.fn(),
       search: vi.fn(),
       getResource: vi.fn(),
     };
@@ -141,6 +143,7 @@ describe("External Open5e handlers", () => {
         total: 45,
         hasNext: true,
       }),
+      listItems: vi.fn(),
       search: vi.fn(),
       getResource: vi.fn(),
     };
@@ -172,6 +175,7 @@ describe("External Open5e handlers", () => {
     });
     const open5eClient: Open5eClient = {
       listCreatures: vi.fn(),
+      listItems: vi.fn(),
       search: vi.fn(),
       getResource: vi.fn(),
     };
@@ -198,5 +202,40 @@ describe("External Open5e handlers", () => {
       illustrationUrl:
         "https://open5e.com/static/img/object_illustrations/open5e-illustrations/monsters/goblin.png",
     });
+  });
+
+  it("refetches the persisted reference after create to survive duplicate cache writes", async () => {
+    const persistedReference = createExternalReference();
+    const repository = createRepository({
+      findByProviderResourceTypeAndKey: vi
+        .fn()
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(persistedReference),
+      create: vi.fn().mockResolvedValue(undefined),
+    });
+    const open5eClient: Open5eClient = {
+      listCreatures: vi.fn(),
+      listItems: vi.fn(),
+      search: vi.fn(),
+      getResource: vi.fn().mockResolvedValue({
+        provider: "OPEN5E",
+        resourceType: "CREATURE",
+        key: "goblin",
+        name: "Goblin",
+        slug: "goblin",
+        url: "https://api.open5e.com/v2/creatures/goblin/",
+        sourceDocumentKey: "srd-2024",
+        sourceDocumentName: "SRD 2024",
+        rawData: { key: "goblin" },
+        normalizedData: { name: "Goblin" },
+      }),
+    };
+    const resolver = new Open5eExternalReferenceResolver(repository, open5eClient);
+
+    const result = await resolver.getOrRefresh("CREATURE", "goblin");
+
+    expect(repository.create).toHaveBeenCalledTimes(1);
+    expect(repository.findByProviderResourceTypeAndKey).toHaveBeenCalledTimes(2);
+    expect(result.id).toBe(persistedReference.id);
   });
 });

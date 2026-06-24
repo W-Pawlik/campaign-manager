@@ -22,6 +22,7 @@ export const appPaths = {
   campaignSessions: (campaignId: string) => `/campaigns/${campaignId}/sessions`,
   campaignSessionsRoute: "/campaigns/:campaignId/sessions",
   home: "/",
+  items: "/items",
   login: "/login",
   monsters: "/monsters",
   notFound: "*",

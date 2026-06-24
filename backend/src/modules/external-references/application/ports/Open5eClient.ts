@@ -16,6 +16,15 @@ export interface Open5eListCreaturesInput {
   page?: number;
 }
 
+export interface Open5eListItemsInput {
+  resourceType: "EQUIPMENT" | "MAGIC_ITEM";
+  search?: string;
+  documentKey?: string;
+  ordering?: string;
+  limit?: number;
+  page?: number;
+}
+
 export interface Open5eSearchResult {
   provider: "OPEN5E";
   resourceType: string;
@@ -48,6 +57,16 @@ export interface Open5eListPage<TItem> {
   hasNext: boolean;
 }
 
+export interface Open5eItemListItem {
+  provider: "OPEN5E";
+  resourceType: "EQUIPMENT" | "MAGIC_ITEM";
+  key: string;
+  name: string;
+  sourceDocumentKey?: string | null;
+  sourceDocumentName?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
 export interface Open5eGetResourceInput {
   resourceType: string;
   key: string;
@@ -71,5 +90,6 @@ export interface Open5eClient {
   listCreatures(
     input: Open5eListCreaturesInput,
   ): Promise<Open5eListPage<Open5eCreatureListItem>>;
+  listItems(input: Open5eListItemsInput): Promise<Open5eListPage<Open5eItemListItem>>;
   getResource(input: Open5eGetResourceInput): Promise<Open5eResourceDetails>;
 }

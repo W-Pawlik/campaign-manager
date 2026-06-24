@@ -16,6 +16,9 @@ export const EXTERNAL_REFERENCES_TYPES = {
   ListOpen5eCreatureCatalogHandler: Symbol.for(
     "external-references.ListOpen5eCreatureCatalogHandler",
   ),
+  ListOpen5eItemCatalogHandler: Symbol.for(
+    "external-references.ListOpen5eItemCatalogHandler",
+  ),
   GetExternalResourceDetailsHandler: Symbol.for(
     "external-references.GetExternalResourceDetailsHandler",
   ),

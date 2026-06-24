@@ -1,6 +1,7 @@
 import { Open5eInvalidResponseError } from "@modules/external-references/application/errors/Open5eErrors";
 import type {
   Open5eCreatureListItem,
+  Open5eItemListItem,
   Open5eListPage,
   Open5eResourceDetails,
   Open5eSearchResult,
@@ -176,6 +177,98 @@ function mapChallengeRatingString(value: unknown): string | null {
   return value.toString();
 }
 
+function toNullableBoolean(value: unknown): boolean | null {
+  return typeof value === "boolean" ? value : null;
+}
+
+function parseDecimalString(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return null;
+  }
+
+  const parsedValue = Number(value);
+
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function mapItemTypeFromCategory(value: unknown): string {
+  const categoryKey =
+    value !== null &&
+    typeof value === "object" &&
+    "key" in value &&
+    typeof value.key === "string"
+      ? value.key
+      : typeof value === "string"
+        ? value
+        : "";
+
+  switch (categoryKey.trim().toLowerCase()) {
+    case "weapon":
+      return "WEAPON";
+    case "armor":
+      return "ARMOR";
+    case "shield":
+      return "SHIELD";
+    case "potion":
+      return "POTION";
+    case "scroll":
+      return "SCROLL";
+    case "wondrous-item":
+    case "wondrous_item":
+      return "WONDROUS_ITEM";
+    case "tool":
+      return "TOOL";
+    case "gear":
+    case "adventuring-gear":
+    case "adventuring_gear":
+      return "GEAR";
+    case "treasure":
+      return "TREASURE";
+    case "consumable":
+      return "CONSUMABLE";
+    default:
+      return "OTHER";
+  }
+}
+
+function mapItemRarity(value: unknown): string | null {
+  const rarityKey =
+    value !== null &&
+    typeof value === "object" &&
+    "key" in value &&
+    typeof value.key === "string"
+      ? value.key
+      : typeof value === "string"
+        ? value
+        : null;
+
+  if (rarityKey === null) {
+    return null;
+  }
+
+  switch (rarityKey.trim().toLowerCase()) {
+    case "common":
+      return "COMMON";
+    case "uncommon":
+      return "UNCOMMON";
+    case "rare":
+      return "RARE";
+    case "very-rare":
+    case "very_rare":
+      return "VERY_RARE";
+    case "legendary":
+      return "LEGENDARY";
+    case "artifact":
+      return "ARTIFACT";
+    default:
+      return "UNKNOWN";
+  }
+}
+
 function mapCreatureNormalizedData(record: Record<string, unknown>): Record<string, unknown> {
   const document =
     record.document !== null && typeof record.document === "object"
@@ -275,6 +368,43 @@ function mapCreatureNormalizedData(record: Record<string, unknown>): Record<stri
   };
 }
 
+function mapItemNormalizedData(resourceType: string, record: Record<string, unknown>): Record<string, unknown> {
+  const document =
+    record.document !== null && typeof record.document === "object"
+      ? (record.document as Record<string, unknown>)
+      : null;
+  const category =
+    record.category !== null && typeof record.category === "object"
+      ? (record.category as Record<string, unknown>)
+      : null;
+
+  return {
+    key: toNullableString(record.key),
+    name: toNullableString(record.name),
+    slug: toNullableString(record.key),
+    description: toNullableString(record.desc),
+    type: mapItemTypeFromCategory(category ?? record.category),
+    open5eCategory: toNullableString(category?.key) ?? toNullableString(record.category),
+    rarity: mapItemRarity(record.rarity),
+    isMagical: resourceType === EXTERNAL_RESOURCE_TYPE.MAGIC_ITEM,
+    weight: parseDecimalString(record.weight),
+    weightUnit: toNullableString(record.weight_unit),
+    valueAmount: parseDecimalString(record.cost),
+    valueCurrency: parseDecimalString(record.cost) === null ? null : "gp",
+    requiresAttunement: toNullableBoolean(record.requires_attunement),
+    attunementDetail: toNullableString(record.attunement_detail),
+    properties: {
+      category: record.category ?? null,
+      weapon: record.weapon ?? null,
+      armor: record.armor ?? null,
+      size: record.size ?? null,
+      crossreferences: record.crossreferences ?? null,
+    },
+    sourceDocumentKey: toNullableString(document?.key),
+    sourceDocumentName: toNullableString(document?.name),
+  };
+}
+
 export class Open5eMapper {
   public mapCreatureListPage(
     payload: unknown,
@@ -335,6 +465,79 @@ export class Open5eMapper {
               challengeRatingDecimal: toNullableNumber(record.challenge_rating),
               creatureType: mapTypeName(record.type),
               size: mapSizeToMonsterSize(record.size),
+            },
+          },
+        ];
+      }),
+      limit: options.limit,
+      page: options.page,
+      total,
+      hasNext,
+    };
+  }
+
+  public mapItemListPage(
+    payload: unknown,
+    options: {
+      limit: number;
+      page: number;
+      resourceType: "EQUIPMENT" | "MAGIC_ITEM";
+    },
+  ): Open5eListPage<Open5eItemListItem> {
+    if (
+      payload === null ||
+      typeof payload !== "object" ||
+      !("results" in payload) ||
+      !Array.isArray(payload.results)
+    ) {
+      throw new Open5eInvalidResponseError();
+    }
+
+    const total =
+      "count" in payload && typeof payload.count === "number" && Number.isFinite(payload.count)
+        ? payload.count
+        : null;
+    const hasNext = "next" in payload ? payload.next !== null : false;
+
+    if (total === null) {
+      throw new Open5eInvalidResponseError();
+    }
+
+    return {
+      items: payload.results.flatMap((item): Open5eItemListItem[] => {
+        if (item === null || typeof item !== "object") {
+          return [];
+        }
+
+        const record = item as Record<string, unknown>;
+        const key = toNullableString(record.key);
+        const name = toNullableString(record.name);
+
+        if (key === null || name === null) {
+          return [];
+        }
+
+        const document =
+          record.document !== null && typeof record.document === "object"
+            ? (record.document as Record<string, unknown>)
+            : null;
+
+        return [
+          {
+            provider: "OPEN5E",
+            resourceType: options.resourceType,
+            key,
+            name,
+            sourceDocumentKey: toNullableString(document?.key),
+            sourceDocumentName: toNullableString(document?.name),
+            metadata: {
+              itemType: mapItemTypeFromCategory(record.category),
+              rarity: mapItemRarity(record.rarity),
+              weight: parseDecimalString(record.weight),
+              valueAmount: parseDecimalString(record.cost),
+              valueCurrency: parseDecimalString(record.cost) === null ? null : "gp",
+              requiresAttunement: toNullableBoolean(record.requires_attunement),
+              isMagical: options.resourceType === EXTERNAL_RESOURCE_TYPE.MAGIC_ITEM,
             },
           },
         ];
@@ -408,6 +611,7 @@ export class Open5eMapper {
     resourceType: string,
     payload: unknown,
     endpointBaseUrl: string,
+    requestedKey?: string,
   ): Open5eResourceDetails {
     if (
       payload === null ||
@@ -423,7 +627,17 @@ export class Open5eMapper {
       throw new Open5eInvalidResponseError();
     }
 
-    const rawRecord = results[0];
+    const rawRecord =
+      requestedKey === undefined
+        ? results[0]
+        : results.find(
+            (entry) =>
+              entry !== null &&
+              typeof entry === "object" &&
+              "key" in entry &&
+              typeof entry.key === "string" &&
+              entry.key === requestedKey,
+          ) ?? null;
 
     if (rawRecord === null || typeof rawRecord !== "object") {
       throw new Open5eInvalidResponseError();
@@ -444,7 +658,9 @@ export class Open5eMapper {
     const normalizedData =
       resourceType === EXTERNAL_RESOURCE_TYPE.CREATURE
         ? mapCreatureNormalizedData(record)
-        : null;
+        : resourceType === EXTERNAL_RESOURCE_TYPE.EQUIPMENT || resourceType === EXTERNAL_RESOURCE_TYPE.MAGIC_ITEM
+          ? mapItemNormalizedData(resourceType, record)
+          : null;
 
     return {
       provider: "OPEN5E",

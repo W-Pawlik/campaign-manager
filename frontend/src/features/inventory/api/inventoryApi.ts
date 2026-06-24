@@ -43,6 +43,14 @@ export const inventoryApi = {
     return response.data;
   },
 
+  async listMyInventory(campaignId: string): Promise<CampaignInventoryListItem[]> {
+    const response = await httpClient.get<CampaignInventoryListItem[]>(
+      `${campaignsBasePath}/${campaignId}/inventory/my-items`,
+    );
+
+    return response.data;
+  },
+
   async transferInventoryItem(
     campaignId: string,
     itemId: string,

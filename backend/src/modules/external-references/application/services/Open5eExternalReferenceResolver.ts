@@ -77,7 +77,14 @@ export class Open5eExternalReferenceResolver {
 
       await this.externalReferenceRepository.create(createdReference);
 
-      return createdReference;
+      const persistedReference =
+        await this.externalReferenceRepository.findByProviderResourceTypeAndKey(
+          createdReference.provider.value,
+          createdReference.resourceType.value,
+          details.key,
+        );
+
+      return persistedReference ?? createdReference;
     }
 
     const refreshedReference = existingReference.refresh({

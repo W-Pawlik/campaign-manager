@@ -1,7 +1,8 @@
 import { Alert, Button, Stack, Typography } from "@mui/material";
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
+import { appPaths } from "@/app/router/paths";
 import { useAppSelector } from "@/app/store/hooks";
 import { useUserCampaignsQuery } from "@/features/campaigns";
 import {
@@ -94,6 +95,7 @@ function mapPublishedMonsterPayload(values: MonsterFormValues): CreatePublishedM
 }
 
 export function MonstersCatalogPage() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSource = parseCatalogSource(searchParams.get("source"));
   const lastActiveCampaignId = useAppSelector((state) => state.workspace.lastActiveCampaignId);
@@ -395,6 +397,7 @@ export function MonstersCatalogPage() {
           }
 
           setImportSelection(null);
+          navigate(appPaths.campaignMonsters(values.campaignId));
         }}
         open={Boolean(importSelection)}
         sourceLabel={importSelection?.sourceLabel}

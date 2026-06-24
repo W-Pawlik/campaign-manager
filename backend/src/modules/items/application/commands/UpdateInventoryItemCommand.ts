@@ -6,7 +6,13 @@ export interface UpdateInventoryItemInput {
   itemId: string;
   actorUserId: string;
   name?: string;
+  type?: string;
+  rarity?: string | null;
+  isMagical?: boolean;
   description?: string | null;
+  weight?: number | null;
+  valueAmount?: number | null;
+  valueCurrency?: string | null;
   quantity?: number;
   charges?: number | null;
   maxCharges?: number | null;

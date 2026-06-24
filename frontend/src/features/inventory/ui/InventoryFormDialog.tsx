@@ -18,21 +18,36 @@ import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import type { InventoryItemDetails } from "@/features/inventory/model/inventory.types";
-import { inventoryOwnerTypeOptions, itemVisibilityOptions } from "@/features/inventory/model/inventory.types";
+import {
+  inventoryItemRarityOptions,
+  inventoryItemTypeOptions,
+  inventoryOwnerTypeOptions,
+  itemVisibilityOptions,
+} from "@/features/inventory/model/inventory.types";
 import type { InventoryFormValues } from "@/features/inventory/ui/inventoryForm.types";
 
 const inventoryFormSchema = z.object({
   charges: z.number().min(0).nullable().optional(),
   description: z.string().max(10000).optional(),
+  isMagical: z.boolean(),
   isAttuned: z.boolean(),
   isEquipped: z.boolean(),
   isIdentified: z.boolean(),
   maxCharges: z.number().min(0).nullable().optional(),
   name: z.string().trim().min(1, "Item name is required.").max(200),
   ownerId: z.string().trim().min(1, "Select an owner."),
-  ownerType: z.enum(["CHARACTER", "CAMPAIGN_PARTY", "NPC", "LOCATION", "QUEST"]),
+  ownerType: z.enum(["CHARACTER", "CAMPAIGN_PARTY", "NPC", "LOCATION", "QUEST", "SESSION"]),
   quantity: z.number().int().min(0).max(9999),
+  rarity: z.union([
+    z.enum(["COMMON", "UNCOMMON", "RARE", "VERY_RARE", "LEGENDARY", "ARTIFACT", "UNKNOWN"]),
+    z.literal(""),
+    z.null(),
+  ]),
+  type: z.enum(["WEAPON", "ARMOR", "SHIELD", "POTION", "SCROLL", "WONDROUS_ITEM", "TOOL", "GEAR", "TREASURE", "QUEST_ITEM", "CONSUMABLE", "OTHER"]),
+  valueAmount: z.number().min(0).nullable().optional(),
+  valueCurrency: z.string().max(16).optional(),
   visibility: z.enum(["PUBLIC", "OWNER_ONLY", "GM_ONLY"]),
+  weight: z.number().min(0).nullable().optional(),
 });
 
 type OwnerOption = {
@@ -68,6 +83,7 @@ export function InventoryFormDialog({
     defaultValues: {
       charges: toOptionalNumber(initialItem?.charges),
       description: initialItem?.description ?? "",
+      isMagical: initialItem?.isMagical ?? false,
       isAttuned: initialItem?.isAttuned ?? false,
       isEquipped: initialItem?.isEquipped ?? false,
       isIdentified: initialItem?.isIdentified ?? true,
@@ -76,7 +92,12 @@ export function InventoryFormDialog({
       ownerId: initialItem?.ownerId ?? "",
       ownerType: (initialItem?.ownerType as InventoryFormValues["ownerType"] | undefined) ?? defaultOwnerType,
       quantity: initialItem?.quantity ?? 1,
+      rarity: (initialItem?.rarity as InventoryFormValues["rarity"] | undefined) ?? null,
+      type: (initialItem?.type as InventoryFormValues["type"] | undefined) ?? "OTHER",
+      valueAmount: initialItem?.valueAmount ?? null,
+      valueCurrency: initialItem?.valueCurrency ?? "",
       visibility: (initialItem?.visibility as InventoryFormValues["visibility"] | undefined) ?? "PUBLIC",
+      weight: initialItem?.weight ?? null,
     },
     resolver: zodResolver(inventoryFormSchema),
   });
@@ -88,6 +109,7 @@ export function InventoryFormDialog({
     reset({
       charges: toOptionalNumber(initialItem?.charges),
       description: initialItem?.description ?? "",
+      isMagical: initialItem?.isMagical ?? false,
       isAttuned: initialItem?.isAttuned ?? false,
       isEquipped: initialItem?.isEquipped ?? false,
       isIdentified: initialItem?.isIdentified ?? true,
@@ -96,7 +118,12 @@ export function InventoryFormDialog({
       ownerId: initialItem?.ownerId ?? "",
       ownerType: (initialItem?.ownerType as InventoryFormValues["ownerType"] | undefined) ?? defaultOwnerType,
       quantity: initialItem?.quantity ?? 1,
+      rarity: (initialItem?.rarity as InventoryFormValues["rarity"] | undefined) ?? null,
+      type: (initialItem?.type as InventoryFormValues["type"] | undefined) ?? "OTHER",
+      valueAmount: initialItem?.valueAmount ?? null,
+      valueCurrency: initialItem?.valueCurrency ?? "",
       visibility: (initialItem?.visibility as InventoryFormValues["visibility"] | undefined) ?? "PUBLIC",
+      weight: initialItem?.weight ?? null,
     });
   }, [defaultOwnerType, initialItem, reset]);
 
@@ -129,6 +156,38 @@ export function InventoryFormDialog({
 
           <TextField label="Item name" {...register("name")} />
           <TextField label="Description" minRows={3} multiline {...register("description")} />
+
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+            <TextField select label="Type" {...register("type")}>
+              {inventoryItemTypeOptions.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option.replaceAll("_", " ")}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField select label="Rarity" {...register("rarity")}>
+              <MenuItem value="">No rarity</MenuItem>
+              {inventoryItemRarityOptions.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option.replaceAll("_", " ")}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Weight"
+              type="number"
+              {...register("weight", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
+            />
+          </Stack>
+
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
+            <TextField
+              label="Value"
+              type="number"
+              {...register("valueAmount", { setValueAs: (value) => (value === "" ? null : Number(value)) })}
+            />
+            <TextField label="Currency" {...register("valueCurrency")} />
+          </Stack>
 
           <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
             <TextField
@@ -178,6 +237,7 @@ export function InventoryFormDialog({
             <FormControlLabel control={<Checkbox {...register("isIdentified")} />} label="Identified" />
             <FormControlLabel control={<Checkbox {...register("isAttuned")} />} label="Attuned" />
             <FormControlLabel control={<Checkbox {...register("isEquipped")} />} label="Equipped" />
+            <FormControlLabel control={<Checkbox {...register("isMagical")} />} label="Magical" />
           </Stack>
         </Stack>
       </DialogContent>

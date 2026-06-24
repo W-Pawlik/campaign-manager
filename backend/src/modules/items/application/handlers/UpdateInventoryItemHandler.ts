@@ -6,6 +6,8 @@ import type { InventoryItemDTO } from "@modules/items/application/dto/InventoryI
 import type { InventoryItemRepository } from "@modules/items/application/ports/InventoryItemRepository";
 import { mapInventoryItemDtoFromDomain } from "@modules/items/application/services/ItemDtoMapper";
 import type { InventoryOwnerApplicationService } from "@modules/items/application/services/InventoryOwnerApplicationService";
+import { ItemRarity } from "@modules/items/domain/value-objects/ItemRarity";
+import { ItemType } from "@modules/items/domain/value-objects/ItemType";
 import { ItemVisibility } from "@modules/items/domain/value-objects/ItemVisibility";
 
 export class UpdateInventoryItemHandler implements CommandHandler<UpdateInventoryItemCommand, InventoryItemDTO> {
@@ -18,7 +20,13 @@ export class UpdateInventoryItemHandler implements CommandHandler<UpdateInventor
   public async execute(command: UpdateInventoryItemCommand): Promise<InventoryItemDTO> {
     if (
       command.input.name === undefined &&
+      command.input.type === undefined &&
+      command.input.rarity === undefined &&
+      command.input.isMagical === undefined &&
       command.input.description === undefined &&
+      command.input.weight === undefined &&
+      command.input.valueAmount === undefined &&
+      command.input.valueCurrency === undefined &&
       command.input.quantity === undefined &&
       command.input.charges === undefined &&
       command.input.maxCharges === undefined &&
@@ -47,7 +55,15 @@ export class UpdateInventoryItemHandler implements CommandHandler<UpdateInventor
 
     const updatedItem = item.withUpdates({
       ...(command.input.name === undefined ? {} : { name: command.input.name.trim() }),
+      ...(command.input.type === undefined ? {} : { type: ItemType.create(command.input.type).value }),
+      ...(command.input.rarity === undefined
+        ? {}
+        : { rarity: command.input.rarity === null ? null : ItemRarity.create(command.input.rarity).value }),
+      ...(command.input.isMagical === undefined ? {} : { isMagical: command.input.isMagical }),
       ...(command.input.description === undefined ? {} : { description: command.input.description }),
+      ...(command.input.weight === undefined ? {} : { weight: command.input.weight }),
+      ...(command.input.valueAmount === undefined ? {} : { valueAmount: command.input.valueAmount }),
+      ...(command.input.valueCurrency === undefined ? {} : { valueCurrency: command.input.valueCurrency }),
       ...(command.input.quantity === undefined ? {} : { quantity: command.input.quantity }),
       ...(command.input.charges === undefined ? {} : { charges: command.input.charges }),
       ...(command.input.maxCharges === undefined ? {} : { maxCharges: command.input.maxCharges }),

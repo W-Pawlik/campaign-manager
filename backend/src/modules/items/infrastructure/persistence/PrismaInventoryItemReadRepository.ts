@@ -28,7 +28,7 @@ export class PrismaInventoryItemReadRepository implements InventoryItemReadRepos
       ],
     });
 
-    return items.map((item) => this.mapper.toInventoryDomain(item));
+    return items.map((item) => this.mapper.toInventoryDomain(item as InventoryItemPersistenceRecord));
   }
 
   public async getInventoryItemDetails(campaignId: string, itemId: string): Promise<InventoryItem | null> {
@@ -41,7 +41,7 @@ export class PrismaInventoryItemReadRepository implements InventoryItemReadRepos
       },
     });
 
-    return item === null ? null : this.mapper.toInventoryDomain(item);
+    return item === null ? null : this.mapper.toInventoryDomain(item as InventoryItemPersistenceRecord);
   }
 
   public async listOwnerInventory(
@@ -63,6 +63,6 @@ export class PrismaInventoryItemReadRepository implements InventoryItemReadRepos
       ],
     });
 
-    return items.map((item) => this.mapper.toInventoryDomain(item));
+    return items.map((item) => this.mapper.toInventoryDomain(item as InventoryItemPersistenceRecord));
   }
 }

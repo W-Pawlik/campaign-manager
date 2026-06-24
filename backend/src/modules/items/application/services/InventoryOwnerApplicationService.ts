@@ -5,6 +5,7 @@ import type { LocationRepository } from "@modules/locations/application/ports/Lo
 import type { InventoryOwnerType } from "@modules/items/domain/value-objects/InventoryOwnerType";
 import type { NpcRepository } from "@modules/npcs/application/ports/NpcRepository";
 import type { QuestRepository } from "@modules/quests/application/ports/QuestRepository";
+import type { GameSessionRepository } from "@modules/sessions/application/ports/GameSessionRepository";
 
 export class InventoryOwnerApplicationService {
   public constructor(
@@ -12,6 +13,7 @@ export class InventoryOwnerApplicationService {
     private readonly npcRepository: NpcRepository,
     private readonly locationRepository: LocationRepository,
     private readonly questRepository: QuestRepository,
+    private readonly sessionRepository: GameSessionRepository,
   ) {}
 
   public async validateOwnerExists(
@@ -62,6 +64,16 @@ export class InventoryOwnerApplicationService {
 
       if (quest === null) {
         throw new ValidationError("Inventory owner quest not found in campaign");
+      }
+
+      return;
+    }
+
+    if (ownerType.isSession()) {
+      const session = await this.sessionRepository.findById(campaignId, ownerId);
+
+      if (session === null) {
+        throw new ValidationError("Inventory owner session not found in campaign");
       }
     }
   }

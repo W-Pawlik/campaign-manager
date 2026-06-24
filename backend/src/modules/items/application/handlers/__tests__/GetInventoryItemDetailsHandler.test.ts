@@ -30,6 +30,7 @@ function createOwnerService(characterOwnerUserId: string): InventoryOwnerApplica
     { findById: vi.fn(), create: vi.fn(), save: vi.fn() },
     { findById: vi.fn(), create: vi.fn(), save: vi.fn() },
     { findById: vi.fn(), create: vi.fn(), save: vi.fn(), createObjective: vi.fn(), findObjectiveById: vi.fn(), saveObjective: vi.fn(), deleteObjective: vi.fn(), createRelation: vi.fn(), deleteRelation: vi.fn() },
+    { findById: vi.fn(), create: vi.fn(), save: vi.fn() },
   ) as unknown as InventoryOwnerApplicationService;
 }
 
@@ -46,8 +47,16 @@ function createItem(visibility: ItemVisibility): InventoryItem {
     id: "item-1",
     campaignId: "campaign-1",
     itemTemplateId: null,
+    source: "CUSTOM",
+    externalReferenceId: null,
     name: "Hidden letter",
+    type: "OTHER",
+    rarity: null,
+    isMagical: false,
     description: null,
+    weight: null,
+    valueAmount: null,
+    valueCurrency: null,
     quantity: 1,
     charges: null,
     maxCharges: null,

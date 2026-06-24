@@ -47,6 +47,10 @@ export function getInventoryItemId(req: Request): string {
   return getRequiredRouteParam(req, "itemId", "Inventory item id is required");
 }
 
+export function getItemTemplateId(req: Request): string {
+  return getRequiredRouteParam(req, "itemTemplateId", "Item template id is required");
+}
+
 export function getObjectiveId(req: Request): string {
   return getRequiredRouteParam(req, "objectiveId", "Quest objective id is required");
 }
