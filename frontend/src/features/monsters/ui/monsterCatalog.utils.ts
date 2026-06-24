@@ -10,6 +10,11 @@ export type MonsterStatblockEntry = {
   subtitle?: string | null;
 };
 
+export type MonsterSpeedEntry = {
+  label: string;
+  value: string;
+};
+
 export type MonsterCatalogListEntry =
   | Open5eCatalogCreatureListItem
   | PublishedMonsterCatalogListItem;
@@ -142,6 +147,37 @@ export function formatSpeed(value: unknown): string {
   return segments.length > 0 ? segments.join(", ") : "N/A";
 }
 
+export function getSpeedEntries(value: unknown): MonsterSpeedEntry[] {
+  if (!isRecord(value)) {
+    return [{ label: "Speed", value: getRenderableText(value) }];
+  }
+
+  const unit = typeof value.unit === "string" && value.unit.length > 0 ? value.unit : "ft.";
+  const entries: MonsterSpeedEntry[] = [];
+  const movementLabels: Array<[key: string, label: string]> = [
+    ["walk", "Walk"],
+    ["fly", "Fly"],
+    ["swim", "Swim"],
+    ["climb", "Climb"],
+    ["burrow", "Burrow"],
+    ["crawl", "Crawl"],
+  ];
+
+  for (const [key, label] of movementLabels) {
+    const movementValue = value[key];
+
+    if (typeof movementValue === "number" && movementValue > 0) {
+      entries.push({ label, value: `${movementValue} ${unit}` });
+    }
+  }
+
+  if (value.hover === true) {
+    entries.push({ label: "Hover", value: "Yes" });
+  }
+
+  return entries.length > 0 ? entries : [{ label: "Speed", value: "N/A" }];
+}
+
 function formatActionType(value: unknown): string | null {
   if (typeof value !== "string" || value.trim().length === 0) {
     return null;
@@ -183,7 +219,7 @@ function toStatblockEntry(value: unknown): MonsterStatblockEntry | null {
   }
 
   const parts = [
-    formatActionType(value.action_type),
+    value.action_type === "ACTION" ? null : formatActionType(value.action_type),
     formatUsageLimits(value.usage_limits),
     typeof value.legendary_action_cost === "number" && value.legendary_action_cost > 1
       ? `Cost ${value.legendary_action_cost}`

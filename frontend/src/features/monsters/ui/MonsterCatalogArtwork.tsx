@@ -4,7 +4,9 @@ import { createMonsterFallbackImage } from "@/features/monsters/ui/monsterCatalo
 
 type MonsterCatalogArtworkProps = {
   alt: string;
+  backgroundColor?: string;
   imageUrl: string | null;
+  imageBackgroundColor?: string;
   minHeight?: number | string | Record<string, number | string>;
   objectFit?: "cover" | "contain";
   overlay?: boolean;
@@ -12,7 +14,9 @@ type MonsterCatalogArtworkProps = {
 
 export function MonsterCatalogArtwork({
   alt,
+  backgroundColor = "secondary.dark",
   imageUrl,
+  imageBackgroundColor = "rgba(22, 18, 15, 0.18)",
   minHeight = 260,
   objectFit = "cover",
   overlay = true,
@@ -22,7 +26,7 @@ export function MonsterCatalogArtwork({
   return (
     <Box
       sx={{
-        bgcolor: "secondary.dark",
+        bgcolor: backgroundColor,
         minHeight,
         overflow: "hidden",
         position: "relative",
@@ -38,7 +42,7 @@ export function MonsterCatalogArtwork({
         }}
         src={imageUrl ?? fallbackImage}
         sx={{
-          backgroundColor: "rgba(22, 18, 15, 0.18)",
+          backgroundColor: imageBackgroundColor,
           display: "block",
           height: "100%",
           inset: 0,
