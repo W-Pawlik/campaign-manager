@@ -9,7 +9,10 @@ import {
 } from "@modules/external-references/application/errors/Open5eErrors";
 import type {
   Open5eClient,
+  Open5eCreatureListItem,
   Open5eGetResourceInput,
+  Open5eListCreaturesInput,
+  Open5eListPage,
   Open5eResourceDetails,
   Open5eSearchInput,
   Open5eSearchResult,
@@ -70,6 +73,59 @@ export class Open5eHttpAdapter implements Open5eClient {
     return mappedResults.filter((result) =>
       input.resourceTypes?.includes(result.resourceType),
     );
+  }
+
+  public async listCreatures(
+    input: Open5eListCreaturesInput,
+  ): Promise<Open5eListPage<Open5eCreatureListItem>> {
+    const limit = input.limit ?? 20;
+    const page = input.page ?? 1;
+    const listUrl = new URL("/v2/creatures/", coreConfig.open5e.apiBaseUrl);
+
+    listUrl.searchParams.set("limit", limit.toString());
+    listUrl.searchParams.set("page", page.toString());
+    listUrl.searchParams.set(
+      "fields",
+      "key,name,type,size,challenge_rating,document",
+    );
+    listUrl.searchParams.set("document__fields", "name,key");
+
+    if (input.search !== undefined) {
+      listUrl.searchParams.set("name__icontains", input.search);
+    }
+
+    if (input.type !== undefined) {
+      listUrl.searchParams.set("type", input.type);
+    }
+
+    if (input.documentKey !== undefined) {
+      listUrl.searchParams.set("document__key__in", input.documentKey);
+    }
+
+    if (input.minChallengeRating !== undefined) {
+      listUrl.searchParams.set(
+        "challenge_rating__gte",
+        input.minChallengeRating.toString(),
+      );
+    }
+
+    if (input.maxChallengeRating !== undefined) {
+      listUrl.searchParams.set(
+        "challenge_rating__lte",
+        input.maxChallengeRating.toString(),
+      );
+    }
+
+    if (input.ordering !== undefined) {
+      listUrl.searchParams.set("ordering", input.ordering);
+    }
+
+    const payload = await this.fetchJson(listUrl);
+
+    return this.mapper.mapCreatureListPage(payload, {
+      limit,
+      page,
+    });
   }
 
   public async getResource(

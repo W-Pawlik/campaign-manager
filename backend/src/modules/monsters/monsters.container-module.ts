@@ -7,10 +7,14 @@ import type { Open5eExternalReferenceResolver } from "@modules/external-referenc
 import { EXTERNAL_REFERENCES_TYPES } from "@modules/external-references/external-references.types";
 import { ArchiveMonsterHandler } from "@modules/monsters/application/handlers/ArchiveMonsterHandler";
 import { CopyMonsterToCampaignHandler } from "@modules/monsters/application/handlers/CopyMonsterToCampaignHandler";
+import { CopyPublishedMonsterToCampaignHandler } from "@modules/monsters/application/handlers/CopyPublishedMonsterToCampaignHandler";
 import { CreateCustomMonsterHandler } from "@modules/monsters/application/handlers/CreateCustomMonsterHandler";
+import { CreatePublishedMonsterHandler } from "@modules/monsters/application/handlers/CreatePublishedMonsterHandler";
 import { GetMonsterDetailsHandler } from "@modules/monsters/application/handlers/GetMonsterDetailsHandler";
+import { GetPublishedMonsterDetailsHandler } from "@modules/monsters/application/handlers/GetPublishedMonsterDetailsHandler";
 import { ImportOpen5eCreatureAsMonsterHandler } from "@modules/monsters/application/handlers/ImportOpen5eCreatureAsMonsterHandler";
 import { ListCampaignMonstersHandler } from "@modules/monsters/application/handlers/ListCampaignMonstersHandler";
+import { ListPublishedMonstersHandler } from "@modules/monsters/application/handlers/ListPublishedMonstersHandler";
 import { UpdateMonsterHandler } from "@modules/monsters/application/handlers/UpdateMonsterHandler";
 import type { MonsterReadRepository } from "@modules/monsters/application/ports/MonsterReadRepository";
 import type { MonsterRepository } from "@modules/monsters/application/ports/MonsterRepository";
@@ -59,6 +63,17 @@ export function loadMonstersContainerModule(container: Container): void {
     .inTransientScope();
 
   container
+    .bind<CreatePublishedMonsterHandler>(MONSTERS_TYPES.CreatePublishedMonsterHandler)
+    .toDynamicValue((context) => {
+      const monsterRepository = context.get<MonsterRepository>(
+        MONSTERS_TYPES.MonsterRepository,
+      );
+
+      return new CreatePublishedMonsterHandler(monsterRepository);
+    })
+    .inTransientScope();
+
+  container
     .bind<UpdateMonsterHandler>(MONSTERS_TYPES.UpdateMonsterHandler)
     .toDynamicValue((context) => {
       const monsterRepository = context.get<MonsterRepository>(MONSTERS_TYPES.MonsterRepository);
@@ -85,6 +100,25 @@ export function loadMonstersContainerModule(container: Container): void {
       const accessService = context.get<CampaignAccessApplicationService>(CAMPAIGNS_TYPES.CampaignAccessApplicationService);
 
       return new CopyMonsterToCampaignHandler(monsterRepository, accessService);
+    })
+    .inTransientScope();
+
+  container
+    .bind<CopyPublishedMonsterToCampaignHandler>(
+      MONSTERS_TYPES.CopyPublishedMonsterToCampaignHandler,
+    )
+    .toDynamicValue((context) => {
+      const monsterRepository = context.get<MonsterRepository>(
+        MONSTERS_TYPES.MonsterRepository,
+      );
+      const accessService = context.get<CampaignAccessApplicationService>(
+        CAMPAIGNS_TYPES.CampaignAccessApplicationService,
+      );
+
+      return new CopyPublishedMonsterToCampaignHandler(
+        monsterRepository,
+        accessService,
+      );
     })
     .inTransientScope();
 
@@ -123,6 +157,17 @@ export function loadMonstersContainerModule(container: Container): void {
     .inTransientScope();
 
   container
+    .bind<ListPublishedMonstersHandler>(MONSTERS_TYPES.ListPublishedMonstersHandler)
+    .toDynamicValue((context) => {
+      const monsterReadRepository = context.get<MonsterReadRepository>(
+        MONSTERS_TYPES.MonsterReadRepository,
+      );
+
+      return new ListPublishedMonstersHandler(monsterReadRepository);
+    })
+    .inTransientScope();
+
+  container
     .bind<GetMonsterDetailsHandler>(MONSTERS_TYPES.GetMonsterDetailsHandler)
     .toDynamicValue((context) => {
       const accessService = context.get<CampaignAccessApplicationService>(CAMPAIGNS_TYPES.CampaignAccessApplicationService);
@@ -130,6 +175,19 @@ export function loadMonstersContainerModule(container: Container): void {
       const visibilityService = context.get<MonsterVisibilityApplicationService>(MONSTERS_TYPES.MonsterVisibilityApplicationService);
 
       return new GetMonsterDetailsHandler(accessService, monsterReadRepository, visibilityService);
+    })
+    .inTransientScope();
+
+  container
+    .bind<GetPublishedMonsterDetailsHandler>(
+      MONSTERS_TYPES.GetPublishedMonsterDetailsHandler,
+    )
+    .toDynamicValue((context) => {
+      const monsterReadRepository = context.get<MonsterReadRepository>(
+        MONSTERS_TYPES.MonsterReadRepository,
+      );
+
+      return new GetPublishedMonsterDetailsHandler(monsterReadRepository);
     })
     .inTransientScope();
 }

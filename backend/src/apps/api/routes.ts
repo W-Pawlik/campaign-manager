@@ -14,11 +14,13 @@ import type { CampaignQuestsController } from "@api/controllers/CampaignQuestsCo
 import type { CampaignSessionsController } from "@api/controllers/CampaignSessionsController";
 import type { CampaignsController } from "@api/controllers/CampaignsController";
 import type { ExternalOpen5eController } from "@api/controllers/ExternalOpen5eController";
+import type { MonsterCatalogController } from "@api/controllers/MonsterCatalogController";
 import { createHealthRouter } from "@api/routes/health.route";
 import { createAuthRouter } from "@api/routes/auth.route";
 import { createUsersRouter } from "@api/routes/users.routes";
 import { createCampaignsRouter } from "@api/routes/campaigns.routes";
 import { createExternalOpen5eRouter } from "@api/routes/external-open5e.routes";
+import { createMonsterCatalogRouter } from "@api/routes/monster-catalog.routes";
 
 export interface ApiRoutesOptions {
   healthController: HealthController;
@@ -36,6 +38,7 @@ export interface ApiRoutesOptions {
   campaignNotesController: CampaignNotesController;
   campaignSessionsController: CampaignSessionsController;
   externalOpen5eController: ExternalOpen5eController;
+  monsterCatalogController: MonsterCatalogController;
   authMiddleware: RequestHandler;
   registerAdditionalRoutes?: (router: Router) => void;
 }
@@ -67,6 +70,13 @@ export function createApiRouter(options: ApiRoutesOptions): RequestHandler {
     "/api/v1/external/open5e",
     createExternalOpen5eRouter(
       options.externalOpen5eController,
+      options.authMiddleware,
+    ),
+  );
+  router.use(
+    "/api/v1/monster-catalog",
+    createMonsterCatalogRouter(
+      options.monsterCatalogController,
       options.authMiddleware,
     ),
   );

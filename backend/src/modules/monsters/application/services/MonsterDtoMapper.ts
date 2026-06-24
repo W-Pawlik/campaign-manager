@@ -1,5 +1,7 @@
 import type { MonsterDetailsDTO } from "@modules/monsters/application/dto/MonsterDetailsDTO";
+import type { MonsterCatalogPageDTO } from "@modules/monsters/application/dto/MonsterCatalogPageDTO";
 import type { MonsterListItemDTO } from "@modules/monsters/application/dto/MonsterListItemDTO";
+import type { MonsterPageResult } from "@modules/monsters/application/ports/MonsterReadRepository";
 import type { Monster } from "@modules/monsters/domain/entities/Monster";
 
 export function mapMonsterListItemFromDomain(monster: Monster): MonsterListItemDTO {
@@ -73,5 +75,17 @@ export function mapMonsterDetailsFromDomain(monster: Monster): MonsterDetailsDTO
     customData: monster.customData,
     createdAt: monster.createdAt.toISOString(),
     updatedAt: monster.updatedAt.toISOString(),
+  };
+}
+
+export function mapMonsterCatalogPageFromDomain(
+  page: MonsterPageResult,
+): MonsterCatalogPageDTO {
+  return {
+    items: page.items.map(mapMonsterListItemFromDomain),
+    limit: page.limit,
+    page: page.page,
+    total: page.total,
+    hasNext: page.hasNext,
   };
 }

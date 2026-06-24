@@ -14,6 +14,7 @@ export const API_TYPES = {
   CampaignSessionsController: Symbol.for("api.CampaignSessionsController"),
   CampaignChronicleController: Symbol.for("api.CampaignChronicleController"),
   ExternalOpen5eController: Symbol.for("api.ExternalOpen5eController"),
+  MonsterCatalogController: Symbol.for("api.MonsterCatalogController"),
   AuthMiddleware: Symbol.for("api.AuthMiddleware"),
   RequestContextMiddleware: Symbol.for("api.RequestContextMiddleware"),
   RequestLoggerMiddleware: Symbol.for("api.RequestLoggerMiddleware"),

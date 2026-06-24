@@ -1,5 +1,7 @@
 import { Open5eInvalidResponseError } from "@modules/external-references/application/errors/Open5eErrors";
 import type {
+  Open5eCreatureListItem,
+  Open5eListPage,
   Open5eResourceDetails,
   Open5eSearchResult,
 } from "@modules/external-references/application/ports/Open5eClient";
@@ -19,6 +21,8 @@ interface Open5eSearchApiResult {
 }
 
 interface Open5eListApiResponse {
+  count?: unknown;
+  next?: unknown;
   results?: unknown;
 }
 
@@ -241,6 +245,75 @@ function mapCreatureNormalizedData(record: Record<string, unknown>): Record<stri
 }
 
 export class Open5eMapper {
+  public mapCreatureListPage(
+    payload: unknown,
+    options: {
+      limit: number;
+      page: number;
+    },
+  ): Open5eListPage<Open5eCreatureListItem> {
+    if (
+      payload === null ||
+      typeof payload !== "object" ||
+      !("results" in payload) ||
+      !Array.isArray(payload.results)
+    ) {
+      throw new Open5eInvalidResponseError();
+    }
+
+    const total =
+      "count" in payload && typeof payload.count === "number" && Number.isFinite(payload.count)
+        ? payload.count
+        : null;
+    const hasNext = "next" in payload ? payload.next !== null : false;
+
+    if (total === null) {
+      throw new Open5eInvalidResponseError();
+    }
+
+    return {
+      items: payload.results.flatMap((item): Open5eCreatureListItem[] => {
+        if (item === null || typeof item !== "object") {
+          return [];
+        }
+
+        const record = item as Record<string, unknown>;
+        const key = toNullableString(record.key);
+        const name = toNullableString(record.name);
+
+        if (key === null || name === null) {
+          return [];
+        }
+
+        const document =
+          record.document !== null && typeof record.document === "object"
+            ? (record.document as Record<string, unknown>)
+            : null;
+
+        return [
+          {
+            provider: "OPEN5E",
+            resourceType: EXTERNAL_RESOURCE_TYPE.CREATURE,
+            key,
+            name,
+            sourceDocumentKey: toNullableString(document?.key),
+            sourceDocumentName: toNullableString(document?.name),
+            metadata: {
+              challengeRating: mapChallengeRatingString(record.challenge_rating),
+              challengeRatingDecimal: toNullableNumber(record.challenge_rating),
+              creatureType: mapTypeName(record.type),
+              size: mapSizeToMonsterSize(record.size),
+            },
+          },
+        ];
+      }),
+      limit: options.limit,
+      page: options.page,
+      total,
+      hasNext,
+    };
+  }
+
   public mapSearchResults(payload: unknown): Open5eSearchResult[] {
     if (
       payload === null ||

@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { ValidationError } from "@core/application/errors/AppError";
 import { GetExternalResourceDetailsHandler } from "@modules/external-references/application/handlers/GetExternalResourceDetailsHandler";
+import { ListOpen5eCreatureCatalogHandler } from "@modules/external-references/application/handlers/ListOpen5eCreatureCatalogHandler";
 import { SearchExternalResourcesHandler } from "@modules/external-references/application/handlers/SearchExternalResourcesHandler";
 import type { ExternalReferenceRepository } from "@modules/external-references/application/ports/ExternalReferenceRepository";
 import type { Open5eClient } from "@modules/external-references/application/ports/Open5eClient";
 import { GetExternalResourceDetailsQuery } from "@modules/external-references/application/queries/GetExternalResourceDetailsQuery";
+import { ListOpen5eCreatureCatalogQuery } from "@modules/external-references/application/queries/ListOpen5eCreatureCatalogQuery";
 import { SearchExternalResourcesQuery } from "@modules/external-references/application/queries/SearchExternalResourcesQuery";
 import { Open5eExternalReferenceResolver } from "@modules/external-references/application/services/Open5eExternalReferenceResolver";
 import { ExternalReference } from "@modules/external-references/domain/entities/ExternalReference";
@@ -47,6 +49,7 @@ function createRepository(
 describe("External Open5e handlers", () => {
   it("maps Open5e search results into lightweight DTOs", async () => {
     const open5eClient: Open5eClient = {
+      listCreatures: vi.fn(),
       search: vi.fn().mockResolvedValue([
         {
           provider: "OPEN5E",
@@ -97,6 +100,7 @@ describe("External Open5e handlers", () => {
 
   it("validates search query minimum length", async () => {
     const open5eClient: Open5eClient = {
+      listCreatures: vi.fn(),
       search: vi.fn(),
       getResource: vi.fn(),
     };
@@ -112,12 +116,55 @@ describe("External Open5e handlers", () => {
     ).rejects.toBeInstanceOf(ValidationError);
   });
 
+  it("lists Open5e creatures as paginated catalog results", async () => {
+    const open5eClient: Open5eClient = {
+      listCreatures: vi.fn().mockResolvedValue({
+        items: [
+          {
+            provider: "OPEN5E",
+            resourceType: "CREATURE",
+            key: "goblin",
+            name: "Goblin",
+            sourceDocumentKey: "srd-2024",
+            sourceDocumentName: "SRD 2024",
+            metadata: { challengeRating: "1/4" },
+          },
+        ],
+        limit: 20,
+        page: 2,
+        total: 45,
+        hasNext: true,
+      }),
+      search: vi.fn(),
+      getResource: vi.fn(),
+    };
+    const handler = new ListOpen5eCreatureCatalogHandler(open5eClient);
+
+    const result = await handler.execute(
+      new ListOpen5eCreatureCatalogQuery({
+        actorUserId: "user-1",
+        search: "goblin",
+        page: 2,
+      }),
+    );
+
+    expect(open5eClient.listCreatures).toHaveBeenCalledWith({
+      search: "goblin",
+      limit: 20,
+      page: 2,
+    });
+    expect(result.total).toBe(45);
+    expect(result.hasNext).toBe(true);
+    expect(result.items[0]?.key).toBe("goblin");
+  });
+
   it("returns cached external resource details without refetching when reference is fresh", async () => {
     const externalReference = createExternalReference();
     const repository = createRepository({
       findByProviderResourceTypeAndKey: vi.fn().mockResolvedValue(externalReference),
     });
     const open5eClient: Open5eClient = {
+      listCreatures: vi.fn(),
       search: vi.fn(),
       getResource: vi.fn(),
     };

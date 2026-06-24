@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 import type { Container } from "inversify";
 import { CORE_TYPES } from "@core/di/core.types";
 import { GetExternalResourceDetailsHandler } from "@modules/external-references/application/handlers/GetExternalResourceDetailsHandler";
+import { ListOpen5eCreatureCatalogHandler } from "@modules/external-references/application/handlers/ListOpen5eCreatureCatalogHandler";
 import { SearchExternalResourcesHandler } from "@modules/external-references/application/handlers/SearchExternalResourcesHandler";
 import type { ExternalReferenceRepository } from "@modules/external-references/application/ports/ExternalReferenceRepository";
 import type { Open5eClient } from "@modules/external-references/application/ports/Open5eClient";
@@ -74,6 +75,19 @@ export function loadExternalReferencesContainerModule(
       );
 
       return new SearchExternalResourcesHandler(open5eClient);
+    })
+    .inTransientScope();
+
+  container
+    .bind<ListOpen5eCreatureCatalogHandler>(
+      EXTERNAL_REFERENCES_TYPES.ListOpen5eCreatureCatalogHandler,
+    )
+    .toDynamicValue((context) => {
+      const open5eClient = context.get<Open5eClient>(
+        EXTERNAL_REFERENCES_TYPES.Open5eClient,
+      );
+
+      return new ListOpen5eCreatureCatalogHandler(open5eClient);
     })
     .inTransientScope();
 

@@ -1,11 +1,17 @@
 import type { PrismaClient } from "@prisma/client";
-import type { ListCampaignMonstersFilters, MonsterReadRepository } from "@modules/monsters/application/ports/MonsterReadRepository";
+import type {
+  ListCampaignMonstersFilters,
+  ListPublishedMonstersFilters,
+  MonsterPageResult,
+  MonsterReadRepository,
+} from "@modules/monsters/application/ports/MonsterReadRepository";
 import type { Monster } from "@modules/monsters/domain/entities/Monster";
 import type { MonsterMapper, MonsterPersistenceRecord } from "@modules/monsters/infrastructure/persistence/MonsterMapper";
 
 interface MonsterReadDelegate {
   findMany(args: unknown): Promise<MonsterPersistenceRecord[]>;
   findFirst(args: unknown): Promise<MonsterPersistenceRecord | null>;
+  count(args: unknown): Promise<number>;
 }
 
 export class PrismaMonsterReadRepository implements MonsterReadRepository {
@@ -55,6 +61,53 @@ export class PrismaMonsterReadRepository implements MonsterReadRepository {
     });
 
     return monsters.map((monster) => this.mapper.toDomain(monster));
+  }
+
+  public async listPublishedMonsters(
+    filters: ListPublishedMonstersFilters,
+  ): Promise<MonsterPageResult> {
+    const monsterClient = this.prismaClient as PrismaClient & { monster: MonsterReadDelegate };
+    const where: Record<string, unknown> = {
+      campaignId: null,
+      source: "CUSTOM",
+      visibility: "PUBLIC",
+      status: "ACTIVE",
+      deletedAt: null,
+    };
+
+    if (filters.search !== undefined) {
+      where["name"] = { contains: filters.search, mode: "insensitive" };
+    }
+
+    if (filters.type !== undefined) {
+      where["type"] = filters.type;
+    }
+
+    if (filters.minCr !== undefined || filters.maxCr !== undefined) {
+      where["challengeRatingDecimal"] = {
+        ...(filters.minCr === undefined ? {} : { gte: filters.minCr }),
+        ...(filters.maxCr === undefined ? {} : { lte: filters.maxCr }),
+      };
+    }
+
+    const skip = (filters.page - 1) * filters.limit;
+    const [monsters, total] = await Promise.all([
+      monsterClient.monster.findMany({
+        where,
+        orderBy: [{ name: "asc" }],
+        skip,
+        take: filters.limit,
+      }),
+      monsterClient.monster.count({ where }),
+    ]);
+
+    return {
+      items: monsters.map((monster) => this.mapper.toDomain(monster)),
+      limit: filters.limit,
+      page: filters.page,
+      total,
+      hasNext: skip + monsters.length < total,
+    };
   }
 
   public async getDetails(monsterId: string): Promise<Monster | null> {
