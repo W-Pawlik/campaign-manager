@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  Alert,
   Button,
   CircularProgress,
   Dialog,
@@ -24,21 +25,104 @@ import {
   questVisibilityOptions,
 } from "@/features/quests/model/quest.types";
 
-const questFormSchema = z.object({
-  completedAt: z.string().optional(),
-  description: z.string().max(10000).optional(),
-  failedAt: z.string().optional(),
-  giverNpcId: z.string().optional(),
-  gmNotes: z.string().max(10000).optional(),
-  priority: z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]),
-  relatedLocationId: z.string().optional(),
-  rewardDescription: z.string().max(10000).optional(),
-  startedAt: z.string().optional(),
-  status: z.enum(["DRAFT", "AVAILABLE", "ACTIVE", "ON_HOLD", "COMPLETED", "FAILED", "ABANDONED", "HIDDEN"]),
-  title: z.string().trim().min(1, "Quest title is required.").max(200),
-  type: z.enum(["MAIN", "SIDE", "PERSONAL", "FACTION", "WORLD_EVENT"]),
-  visibility: z.enum(["PUBLIC", "GM_ONLY", "DISCOVERED"]),
-});
+function toComparableTimestamp(value?: string): number | null {
+  if (!value || value.trim().length === 0) {
+    return null;
+  }
+
+  return new Date(value).getTime();
+}
+
+function isCompletedStatus(status: QuestFormValues["status"]): boolean {
+  return status === "COMPLETED";
+}
+
+function isFailedStatus(status: QuestFormValues["status"]): boolean {
+  return status === "FAILED" || status === "ABANDONED";
+}
+
+const questFormSchema = z
+  .object({
+    completedAt: z.string().optional(),
+    description: z.string().max(10000).optional(),
+    failedAt: z.string().optional(),
+    giverNpcId: z.string().optional(),
+    gmNotes: z.string().max(10000).optional(),
+    priority: z.enum(["LOW", "NORMAL", "HIGH", "CRITICAL"]),
+    relatedLocationId: z.string().optional(),
+    rewardDescription: z.string().max(10000).optional(),
+    startedAt: z.string().optional(),
+    status: z.enum(["DRAFT", "AVAILABLE", "ACTIVE", "ON_HOLD", "COMPLETED", "FAILED", "ABANDONED", "HIDDEN"]),
+    title: z.string().trim().min(1, "Quest title is required.").max(200),
+    type: z.enum(["MAIN", "SIDE", "PERSONAL", "FACTION", "WORLD_EVENT"]),
+    visibility: z.enum(["PUBLIC", "GM_ONLY", "DISCOVERED"]),
+  })
+  .superRefine((values, context) => {
+    const startedAt = toComparableTimestamp(values.startedAt);
+    const completedAt = toComparableTimestamp(values.completedAt);
+    const failedAt = toComparableTimestamp(values.failedAt);
+
+    if (startedAt !== null && completedAt !== null && completedAt < startedAt) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Completed date cannot be earlier than the start date.",
+        path: ["completedAt"],
+      });
+    }
+
+    if (startedAt !== null && failedAt !== null && failedAt < startedAt) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Failed date cannot be earlier than the start date.",
+        path: ["failedAt"],
+      });
+    }
+
+    if (completedAt !== null && failedAt !== null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A quest cannot be both completed and failed. Clear one of these dates.",
+        path: ["completedAt"],
+      });
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A quest cannot be both failed and completed. Clear one of these dates.",
+        path: ["failedAt"],
+      });
+    }
+
+    if (isFailedStatus(values.status) && completedAt !== null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Failed or abandoned quests cannot have a completed date.",
+        path: ["completedAt"],
+      });
+    }
+
+    if (isCompletedStatus(values.status) && failedAt !== null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Completed quests cannot have a failed date.",
+        path: ["failedAt"],
+      });
+    }
+
+    if (!isCompletedStatus(values.status) && !isFailedStatus(values.status) && completedAt !== null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Only completed quests can have a completed date.",
+        path: ["completedAt"],
+      });
+    }
+
+    if (!isFailedStatus(values.status) && failedAt !== null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Only failed or abandoned quests can have a failed date.",
+        path: ["failedAt"],
+      });
+    }
+  });
 
 type QuestFormValues = z.infer<typeof questFormSchema>;
 
@@ -49,6 +133,7 @@ type QuestFormDialogProps = {
   onClose: () => void;
   onSubmit: (values: QuestFormValues) => Promise<void>;
   open: boolean;
+  submitError?: string | null;
 };
 
 function toDateTimeLocalValue(value: string | null | undefined): string {
@@ -69,9 +154,15 @@ export function QuestFormDialog({
   onClose,
   onSubmit,
   open,
+  submitError = null,
 }: QuestFormDialogProps) {
   const references = useCampaignReferenceIndex(campaignId, ["NPC", "LOCATION"]);
-  const { handleSubmit, register, reset } = useForm<QuestFormValues>({
+  const {
+    formState: { errors },
+    handleSubmit,
+    register,
+    reset,
+  } = useForm<QuestFormValues>({
     defaultValues: {
       completedAt: toDateTimeLocalValue(initialQuest?.completedAt),
       description: initialQuest?.description ?? "",
@@ -117,12 +208,26 @@ export function QuestFormDialog({
       <DialogTitle>{initialQuest ? "Edit quest" : "Create quest"}</DialogTitle>
       <DialogContent dividers>
         <Stack component="form" noValidate onSubmit={handleValidSubmit} spacing={2.5}>
+          {submitError ? <Alert severity="error">{submitError}</Alert> : null}
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 8 }}>
-              <TextField fullWidth label="Title" {...register("title")} />
+              <TextField
+                error={Boolean(errors.title)}
+                fullWidth
+                helperText={errors.title?.message}
+                label="Title"
+                {...register("title")}
+              />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField fullWidth label="Status" select {...register("status")}>
+              <TextField
+                error={Boolean(errors.status)}
+                fullWidth
+                helperText={errors.status?.message}
+                label="Status"
+                select
+                {...register("status")}
+              >
                 {questStatusOptions.map((status) => (
                   <MenuItem key={status} value={status}>
                     {status.replace("_", " ")}
@@ -182,7 +287,9 @@ export function QuestFormDialog({
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                error={Boolean(errors.startedAt)}
                 fullWidth
+                helperText={errors.startedAt?.message}
                 label="Started at"
                 slotProps={{ inputLabel: { shrink: true } }}
                 type="datetime-local"
@@ -191,7 +298,9 @@ export function QuestFormDialog({
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                error={Boolean(errors.completedAt)}
                 fullWidth
+                helperText={errors.completedAt?.message}
                 label="Completed at"
                 slotProps={{ inputLabel: { shrink: true } }}
                 type="datetime-local"
@@ -200,7 +309,9 @@ export function QuestFormDialog({
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
               <TextField
+                error={Boolean(errors.failedAt)}
                 fullWidth
+                helperText={errors.failedAt?.message}
                 label="Failed at"
                 slotProps={{ inputLabel: { shrink: true } }}
                 type="datetime-local"

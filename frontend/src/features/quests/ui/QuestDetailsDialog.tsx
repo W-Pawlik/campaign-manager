@@ -2,6 +2,9 @@ import { Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Divide
 
 import { CampaignEntityReferenceChip, useCampaignReferenceIndex } from "@/features/campaigns";
 import type { CampaignQuestDetails, QuestObjective } from "@/features/quests/model/quest.types";
+import { QuestPriorityIndicator } from "@/features/quests/ui/QuestPriorityIndicator";
+import { QuestStatusChip } from "@/features/quests/ui/QuestStatusChip";
+import { QuestTimeline } from "@/features/quests/ui/QuestTimeline";
 
 type QuestDetailsDialogProps = {
   campaignId: string;
@@ -36,12 +39,21 @@ export function QuestDetailsDialog({
         {quest ? (
           <Stack spacing={2.5}>
             <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-              <Chip label={quest.status.replace("_", " ")} size="small" />
+              <QuestStatusChip status={quest.status} />
               <Chip label={quest.type.replace("_", " ")} size="small" variant="outlined" />
               <Chip label={quest.visibility.replace("_", " ")} size="small" variant="outlined" />
             </Stack>
 
             <Typography color="text.secondary">{quest.description ?? "No description yet."}</Typography>
+
+            <QuestPriorityIndicator priority={quest.priority} />
+
+            <QuestTimeline
+              completedAt={quest.completedAt}
+              failedAt={quest.failedAt}
+              startedAt={quest.startedAt}
+              status={quest.status}
+            />
 
             <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
               <CampaignEntityReferenceChip
@@ -84,7 +96,7 @@ export function QuestDetailsDialog({
                           sx={{ justifyContent: "space-between" }}
                         >
                           <Typography variant="body1">{objective.title}</Typography>
-                          <Chip label={objective.status.replace("_", " ")} size="small" />
+                          <QuestStatusChip status={objective.status} />
                         </Stack>
                         <Typography color="text.secondary" variant="body2">
                           {objective.description ?? "No description."}
