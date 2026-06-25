@@ -6,32 +6,35 @@ import {
   characterTypeOptions,
 } from "@/features/characters/model/character.types";
 import type { CharacterFormValues } from "@/features/characters/ui/characterForm.types";
+import type { UserLookupItem } from "@/features/users";
+import { UserLookupAutocomplete } from "@/features/users";
 
 type CharacterIdentityFieldsProps = {
   canAssignOwner: boolean;
   ownerErrorMessage?: string;
+  ownerOption: UserLookupItem | null;
+  onOwnerChange: (value: UserLookupItem | null) => void;
   register: UseFormRegister<CharacterFormValues>;
 };
 
 export function CharacterIdentityFields({
   canAssignOwner,
   ownerErrorMessage,
+  ownerOption,
+  onOwnerChange,
   register,
 }: CharacterIdentityFieldsProps) {
   return (
     <Grid container spacing={2}>
       {canAssignOwner ? (
         <Grid size={{ xs: 12, md: 6 }}>
-          <TextField
+          <UserLookupAutocomplete
             error={Boolean(ownerErrorMessage)}
-            fullWidth
-            helperText={
-              ownerErrorMessage ??
-              "Current API accepts only owner user ID as UUID. Assigning by email or username requires backend support."
-            }
-            label="Owner user ID"
-            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            {...register("ownerUserId")}
+            helperText={ownerErrorMessage ?? "Search by username or display name."}
+            label="Owner"
+            onChange={onOwnerChange}
+            placeholder="Search for a player"
+            value={ownerOption}
           />
         </Grid>
       ) : null}

@@ -76,7 +76,7 @@ export function DashboardPage({ onCampaignSelected }: DashboardPageProps) {
                 }}
               />
             }
-            description={`Signed in as ${currentUser?.email ?? "unknown user"}. Select a campaign workspace or create a new one in ${appConstants.appName}.`}
+            description={`Signed in as ${currentUser?.username ?? currentUser?.email ?? "unknown user"}. Select a campaign workspace or create a new one in ${appConstants.appName}.`}
             title="Campaign dashboard"
           />
         </Box>

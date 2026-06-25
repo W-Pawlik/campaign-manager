@@ -6,6 +6,7 @@ import { ChangeCurrentUserPasswordCommand } from "@modules/users/application/com
 import { DeleteCurrentUserAccountCommand } from "@modules/users/application/commands/DeleteCurrentUserAccountCommand";
 import { UpdateCurrentUserProfileCommand } from "@modules/users/application/commands/UpdateCurrentUserProfileCommand";
 import { GetCurrentUserProfileQuery } from "@modules/users/application/queries/GetCurrentUserProfileQuery";
+import { SearchUsersQuery } from "@modules/users/application/queries/SearchUsersQuery";
 import { USERS_TYPES } from "@modules/users/users.types";
 
 export function registerUsersHandlers(container: Container): void {
@@ -19,4 +20,5 @@ export function registerUsersHandlers(container: Container): void {
   );
   commandBus.register(DeleteCurrentUserAccountCommand.name, USERS_TYPES.DeleteCurrentUserAccountHandler);
   queryBus.register(GetCurrentUserProfileQuery.name, USERS_TYPES.GetCurrentUserProfileHandler);
+  queryBus.register(SearchUsersQuery.name, USERS_TYPES.SearchUsersHandler);
 }

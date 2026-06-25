@@ -1,8 +1,6 @@
-export interface CurrentUserDTO {
+export type UserLookupItem = {
   id: string;
-  email: string;
   username: string;
   displayName: string;
   avatarUrl: string | null;
-  createdAt: string;
-}
+};

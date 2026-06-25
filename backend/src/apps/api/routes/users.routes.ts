@@ -1,8 +1,12 @@
 import { Router, type RequestHandler } from "express";
 import type { UsersController } from "@api/controllers/users.controller";
-import { createValidateBodyMiddleware } from "@api/middlewares/validate-request.middleware";
+import {
+  createValidateBodyMiddleware,
+  createValidateQueryMiddleware,
+} from "@api/middlewares/validate-request.middleware";
 import {
   changeCurrentUserPasswordSchema,
+  searchUsersQuerySchema,
   updateCurrentUserProfileSchema,
 } from "@api/schemas/users.schemas";
 
@@ -12,6 +16,14 @@ export function createUsersRouter(
 ): Router {
   const router = Router();
 
+  router.get(
+    "/search",
+    authMiddleware,
+    createValidateQueryMiddleware(searchUsersQuerySchema),
+    async (req, res) => {
+      await controller.searchUsers(req, res);
+    },
+  );
   router.get("/me", authMiddleware, async (req, res) => {
     await controller.getCurrentUserProfile(req, res);
   });

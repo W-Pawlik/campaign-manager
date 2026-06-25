@@ -10,3 +10,12 @@ export function createValidateBodyMiddleware<TSchema extends z.ZodTypeAny>(
     next();
   };
 }
+
+export function createValidateQueryMiddleware<TSchema extends z.ZodTypeAny>(
+  schema: TSchema,
+): RequestHandler {
+  return (req, _res, next) => {
+    req.query = schema.parse(req.query) as typeof req.query;
+    next();
+  };
+}

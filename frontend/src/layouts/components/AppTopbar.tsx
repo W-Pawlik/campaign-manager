@@ -74,14 +74,17 @@ export function AppTopbar() {
   const isItemsSelected = location.pathname === appPaths.items;
   const isMonstersSelected = location.pathname === appPaths.monsters;
   const avatarLabel = useMemo(() => {
-    const source = currentUser?.email?.trim();
+    const source =
+      currentUser?.username?.trim() ||
+      currentUser?.displayName?.trim() ||
+      currentUser?.email?.trim();
 
     if (!source) {
       return "U";
     }
 
     return source.charAt(0).toUpperCase();
-  }, [currentUser?.email]);
+  }, [currentUser?.displayName, currentUser?.email, currentUser?.username]);
 
   const isUserMenuOpen = menuAnchorEl !== null;
 
@@ -206,8 +209,21 @@ export function AppTopbar() {
                   ml: "auto",
                 }}
               >
+                {currentUser?.username ? (
+                  <Stack spacing={0.05} sx={{ alignItems: "flex-end", lineHeight: 1 }}>
+                    <Typography color="#f1dfba" variant="body2">
+                      {currentUser.username}
+                    </Typography>
+                    {currentUser.displayName && currentUser.displayName !== currentUser.username ? (
+                      <Typography color="text.secondary" variant="caption">
+                        {currentUser.displayName}
+                      </Typography>
+                    ) : null}
+                  </Stack>
+                ) : null}
                 <IconButton color="inherit" onClick={handleOpenUserMenu}>
                   <Avatar
+                    src={currentUser?.avatarUrl ?? undefined}
                     sx={{
                       bgcolor: "primary.main",
                       color: "primary.contrastText",

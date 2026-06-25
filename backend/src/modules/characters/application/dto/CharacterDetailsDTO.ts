@@ -2,6 +2,8 @@ export interface CharacterDetailsDTO {
   id: string;
   campaignId: string;
   ownerUserId: string | null;
+  ownerUsername?: string | null;
+  ownerDisplayName?: string | null;
   sheetTemplateId: string | null;
   name: string;
   avatarUrl: string | null;

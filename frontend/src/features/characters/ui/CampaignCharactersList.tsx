@@ -120,7 +120,11 @@ export function CampaignCharactersList({
                   >
                     <Icon icon="tdesign:member-filled" style={{ fontSize: 15 }} />
                     <Typography color="inherit" variant="body2">
-                      {getCharacterOwnerLabel(character.ownerUserId)}
+                      {getCharacterOwnerLabel(
+                        character.ownerUsername,
+                        character.ownerDisplayName,
+                        character.ownerUserId,
+                      )}
                     </Typography>
                   </Stack>
 

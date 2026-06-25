@@ -19,6 +19,13 @@ export const updateCurrentUserProfileSchema = z
   })
   .strict();
 
+export const searchUsersQuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(20).optional(),
+    query: z.string().trim().min(1).max(80),
+  })
+  .strict();
+
 export const changeCurrentUserPasswordSchema = z
   .object({
     currentPassword: z.string().min(1),

@@ -1,5 +1,8 @@
 import type { PrismaClient } from "@prisma/client";
-import type { GameSessionDetailsReadModel } from "@modules/sessions/application/dto/GameSessionDetailsReadModel";
+import type {
+  GameSessionDetailsReadModel,
+  SessionParticipantReadModel,
+} from "@modules/sessions/application/dto/GameSessionDetailsReadModel";
 import type { GameSessionReadRepository } from "@modules/sessions/application/ports/GameSessionReadRepository";
 import type { GameSession } from "@modules/sessions/domain/entities/GameSession";
 import type { SessionParticipant } from "@modules/sessions/domain/entities/SessionParticipant";
@@ -10,7 +13,15 @@ import type {
 } from "@modules/sessions/infrastructure/persistence/SessionMapper";
 
 interface GameSessionDetailsPersistenceRecord extends GameSessionPersistenceRecord {
-  participants: SessionParticipantPersistenceRecord[];
+  participants: Array<
+    SessionParticipantPersistenceRecord & {
+      user: {
+        avatarUrl: string | null;
+        displayName: string;
+        username: string;
+      };
+    }
+  >;
 }
 
 interface GameSessionReadDelegate {
@@ -55,6 +66,15 @@ export class PrismaGameSessionReadRepository implements GameSessionReadRepositor
       },
       include: {
         participants: {
+          include: {
+            user: {
+              select: {
+                avatarUrl: true,
+                displayName: true,
+                username: true,
+              },
+            },
+          },
           orderBy: [
             { createdAt: "asc" },
             { userId: "asc" },
@@ -67,9 +87,23 @@ export class PrismaGameSessionReadRepository implements GameSessionReadRepositor
       return null;
     }
 
+    const participants: SessionParticipantReadModel[] = session.participants.map((participant) => ({
+      id: participant.id,
+      sessionId: participant.sessionId,
+      userId: participant.userId,
+      username: participant.user.username,
+      displayName: participant.user.displayName,
+      avatarUrl: participant.user.avatarUrl,
+      characterId: participant.characterId,
+      attendanceStatus: participant.attendanceStatus,
+      note: participant.note,
+      createdAt: participant.createdAt,
+      updatedAt: participant.updatedAt,
+    }));
+
     return {
       session: this.mapper.toDomain(session),
-      participants: session.participants.map((participant) => this.mapper.participantToDomain(participant)),
+      participants,
     };
   }
 

@@ -34,6 +34,23 @@ export class PrismaUserRepository implements UserRepository {
     return this.userMapper.toDomain(user);
   }
 
+  public async search(query: string, limit: number): Promise<UserEntity[]> {
+    const users = await this.prismaClient.user.findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          { username: { contains: query, mode: "insensitive" } },
+          { displayName: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      orderBy: [{ username: "asc" }],
+      take: limit,
+    });
+
+    return users.map((user) => this.userMapper.toDomain(user));
+  }
+
   public async save(user: UserEntity): Promise<void> {
     await this.prismaClient.user.update({
       where: { id: user.id },

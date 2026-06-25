@@ -2,19 +2,38 @@ import type { CampaignRole } from "@modules/campaigns/domain/value-objects/Campa
 import type { GameSession } from "@modules/sessions/domain/entities/GameSession";
 import type { SessionDetailsDTO, SessionGmViewDTO, SessionListItemDTO, SessionPlayerViewDTO } from "@modules/sessions/application/dto/SessionDetailsDTO";
 import type { SessionParticipant } from "@modules/sessions/domain/entities/SessionParticipant";
+import type { SessionParticipantReadModel } from "@modules/sessions/application/dto/GameSessionDetailsReadModel";
 import type { SessionParticipantDTO } from "@modules/sessions/application/dto/SessionParticipantDTO";
 import type { CampaignVisibilityApplicationService } from "@modules/campaigns/application/services/CampaignVisibilityApplicationService";
 
-export function mapSessionParticipantDtoFromDomain(participant: SessionParticipant): SessionParticipantDTO {
+function toIsoString(value: Date | string): string {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function hasUserSummary(
+  participant: SessionParticipant | SessionParticipantReadModel,
+): participant is SessionParticipantReadModel {
+  return "username" in participant;
+}
+
+export function mapSessionParticipantDtoFromDomain(
+  participant: SessionParticipant | SessionParticipantReadModel,
+): SessionParticipantDTO {
   return {
     id: participant.id,
     sessionId: participant.sessionId,
     userId: participant.userId,
+    username: hasUserSummary(participant) ? participant.username : null,
+    displayName: hasUserSummary(participant) ? participant.displayName : null,
+    avatarUrl: hasUserSummary(participant) ? participant.avatarUrl : null,
     characterId: participant.characterId,
-    attendanceStatus: participant.attendanceStatus.value,
+    attendanceStatus:
+      typeof participant.attendanceStatus === "string"
+        ? participant.attendanceStatus
+        : participant.attendanceStatus.value,
     note: participant.note,
-    createdAt: participant.createdAt.toISOString(),
-    updatedAt: participant.updatedAt.toISOString(),
+    createdAt: toIsoString(participant.createdAt),
+    updatedAt: toIsoString(participant.updatedAt),
   };
 }
 
@@ -42,7 +61,7 @@ export function mapSessionListItemFromDomain(session: GameSession): SessionListI
 
 export function mapSessionPlayerViewFromDomain(
   session: GameSession,
-  participants: SessionParticipant[],
+  participants: Array<SessionParticipant | SessionParticipantReadModel>,
 ): SessionPlayerViewDTO {
   return {
     ...mapSessionListItemFromDomain(session),
@@ -52,7 +71,7 @@ export function mapSessionPlayerViewFromDomain(
 
 export function mapSessionGmViewFromDomain(
   session: GameSession,
-  participants: SessionParticipant[],
+  participants: Array<SessionParticipant | SessionParticipantReadModel>,
 ): SessionGmViewDTO {
   return {
     ...mapSessionPlayerViewFromDomain(session, participants),
@@ -62,7 +81,7 @@ export function mapSessionGmViewFromDomain(
 
 export function mapSessionDetailsFromDomain(
   session: GameSession,
-  participants: SessionParticipant[],
+  participants: Array<SessionParticipant | SessionParticipantReadModel>,
   role: CampaignRole,
   visibilityService: CampaignVisibilityApplicationService,
 ): SessionDetailsDTO {

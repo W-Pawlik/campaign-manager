@@ -7,6 +7,7 @@ import type { UserRepository } from "@modules/users/application/ports/UserReposi
 import { ChangeCurrentUserPasswordHandler } from "@modules/users/application/handlers/ChangeCurrentUserPasswordHandler";
 import { DeleteCurrentUserAccountHandler } from "@modules/users/application/handlers/DeleteCurrentUserAccountHandler";
 import { GetCurrentUserProfileHandler } from "@modules/users/application/handlers/GetCurrentUserProfileHandler";
+import { SearchUsersHandler } from "@modules/users/application/handlers/SearchUsersHandler";
 import { UpdateCurrentUserProfileHandler } from "@modules/users/application/handlers/UpdateCurrentUserProfileHandler";
 import { PrismaUserCampaignOwnershipChecker } from "@modules/users/infrastructure/persistence/PrismaUserCampaignOwnershipChecker";
 import { PrismaUserProfileRepository } from "@modules/users/infrastructure/persistence/PrismaUserProfileRepository";
@@ -60,6 +61,15 @@ export function loadUsersContainerModule(container: Container): void {
       const userProfileRepository = context.get<UserProfileRepository>(USERS_TYPES.UserProfileRepository);
 
       return new GetCurrentUserProfileHandler(userRepository, userProfileRepository);
+    })
+    .inTransientScope();
+
+  container
+    .bind<SearchUsersHandler>(USERS_TYPES.SearchUsersHandler)
+    .toDynamicValue((context) => {
+      const userRepository = context.get<UserRepository>(USERS_TYPES.UserRepository);
+
+      return new SearchUsersHandler(userRepository);
     })
     .inTransientScope();
 

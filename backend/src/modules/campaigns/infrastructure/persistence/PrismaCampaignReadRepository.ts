@@ -91,6 +91,21 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
       where: {
         campaignId,
       },
+      include: {
+        invitedBy: {
+          select: {
+            displayName: true,
+            username: true,
+          },
+        },
+        user: {
+          select: {
+            avatarUrl: true,
+            displayName: true,
+            username: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: "asc",
       },
@@ -100,12 +115,17 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
       id: member.id,
       campaignId: member.campaignId,
       userId: member.userId,
+      username: member.user.username,
+      displayName: member.user.displayName,
+      avatarUrl: member.user.avatarUrl,
       role: member.role,
       status: member.status,
       nickname: member.nickname,
       joinedAt: member.joinedAt?.toISOString() ?? null,
       invitedAt: member.invitedAt?.toISOString() ?? null,
       invitedById: member.invitedById,
+      invitedByUsername: member.invitedBy?.username ?? null,
+      invitedByDisplayName: member.invitedBy?.displayName ?? null,
       createdAt: member.createdAt.toISOString(),
       updatedAt: member.updatedAt.toISOString(),
     }));
@@ -116,6 +136,21 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
       where: {
         campaignId,
       },
+      include: {
+        invitedBy: {
+          select: {
+            displayName: true,
+            username: true,
+          },
+        },
+        user: {
+          select: {
+            avatarUrl: true,
+            displayName: true,
+            username: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -125,9 +160,14 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
       id: invitation.id,
       campaignId: invitation.campaignId,
       userId: invitation.userId,
+      username: invitation.user.username,
+      displayName: invitation.user.displayName,
+      avatarUrl: invitation.user.avatarUrl,
       role: invitation.role,
       status: invitation.status,
       invitedById: invitation.invitedById,
+      invitedByUsername: invitation.invitedBy.username,
+      invitedByDisplayName: invitation.invitedBy.displayName,
       respondedAt: invitation.respondedAt?.toISOString() ?? null,
       createdAt: invitation.createdAt.toISOString(),
       updatedAt: invitation.updatedAt.toISOString(),

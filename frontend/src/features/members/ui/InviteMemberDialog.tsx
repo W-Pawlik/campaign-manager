@@ -65,11 +65,10 @@ export function InviteMemberDialog({
   return (
     <Dialog fullWidth maxWidth="sm" onClose={handleDialogClose} open={open}>
       <DialogTitle>Invite member</DialogTitle>
+
       <DialogContent dividers>
         <Stack component="form" noValidate onSubmit={handleValidSubmit} spacing={2.5}>
-          <Typography color="text.secondary">
-            This backend flow currently expects a target user ID, so the invite form uses that value directly.
-          </Typography>
+          <Typography color="text.secondary">Enter the target user ID manually.</Typography>
 
           {submitError ? <Alert severity="error">{submitError}</Alert> : null}
 
@@ -77,7 +76,7 @@ export function InviteMemberDialog({
             autoFocus
             error={Boolean(errors.userId)}
             fullWidth
-            helperText={errors.userId?.message ?? "Use the application user ID of the invited person."}
+            helperText={errors.userId?.message}
             label="User ID"
             {...register("userId")}
           />
@@ -98,9 +97,14 @@ export function InviteMemberDialog({
           </TextField>
         </Stack>
       </DialogContent>
+
       <DialogActions sx={{ px: 3, py: 2 }}>
         <Button onClick={handleDialogClose}>Cancel</Button>
-        <Button disabled={isSubmitting} onClick={() => void handleValidSubmit()} variant="contained">
+        <Button
+          disabled={isSubmitting}
+          onClick={() => void handleValidSubmit()}
+          variant="contained"
+        >
           {isSubmitting ? <CircularProgress color="inherit" size={20} /> : "Send invitation"}
         </Button>
       </DialogActions>

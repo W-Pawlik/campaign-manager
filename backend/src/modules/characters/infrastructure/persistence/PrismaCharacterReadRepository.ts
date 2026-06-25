@@ -12,6 +12,14 @@ export class PrismaCharacterReadRepository implements CharacterReadRepository {
         campaignId,
         deletedAt: null,
       },
+      include: {
+        owner: {
+          select: {
+            displayName: true,
+            username: true,
+          },
+        },
+      },
       orderBy: [
         { name: "asc" },
         { createdAt: "asc" },
@@ -22,6 +30,8 @@ export class PrismaCharacterReadRepository implements CharacterReadRepository {
       id: character.id,
       campaignId: character.campaignId,
       ownerUserId: character.ownerUserId,
+      ownerUsername: character.owner?.username ?? null,
+      ownerDisplayName: character.owner?.displayName ?? null,
       name: character.name,
       avatarUrl: character.avatarUrl,
       type: character.type,
@@ -43,6 +53,14 @@ export class PrismaCharacterReadRepository implements CharacterReadRepository {
         campaignId,
         deletedAt: null,
       },
+      include: {
+        owner: {
+          select: {
+            displayName: true,
+            username: true,
+          },
+        },
+      },
     });
 
     if (character === null) {
@@ -53,6 +71,8 @@ export class PrismaCharacterReadRepository implements CharacterReadRepository {
       id: character.id,
       campaignId: character.campaignId,
       ownerUserId: character.ownerUserId,
+      ownerUsername: character.owner?.username ?? null,
+      ownerDisplayName: character.owner?.displayName ?? null,
       sheetTemplateId: character.sheetTemplateId,
       name: character.name,
       avatarUrl: character.avatarUrl,

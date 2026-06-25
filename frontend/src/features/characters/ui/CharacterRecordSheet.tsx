@@ -105,7 +105,11 @@ export function CharacterRecordSheet({ character, onClose, onEdit }: CharacterRe
             <FieldRibbon label="Background" value={character.background ?? "Unwritten"} />
             <FieldRibbon
               label="Player name"
-              value={getCharacterOwnerLabel(character.ownerUserId)}
+              value={getCharacterOwnerLabel(
+                character.ownerUsername,
+                character.ownerDisplayName,
+                character.ownerUserId,
+              )}
             />
           </Stack>
 
@@ -268,7 +272,14 @@ export function CharacterRecordSheet({ character, onClose, onEdit }: CharacterRe
               <Stack spacing={0.75}>
                 <MetricLine label="Type" value={formatCharacterTypeLabel(character.type)} />
                 <MetricLine label="Status" value={formatCharacterStatusLabel(character.status)} />
-                <MetricLine label="Owner" value={getCharacterOwnerLabel(character.ownerUserId)} />
+                <MetricLine
+                  label="Owner"
+                  value={getCharacterOwnerLabel(
+                    character.ownerUsername,
+                    character.ownerDisplayName,
+                    character.ownerUserId,
+                  )}
+                />
               </Stack>
             </SheetSection>
           </Stack>

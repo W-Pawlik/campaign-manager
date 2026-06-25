@@ -19,6 +19,10 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
+function getInvitationPrimaryLabel(invitation: CampaignInvitation): string {
+  return invitation.displayName ?? invitation.username ?? invitation.userId;
+}
+
 export function CampaignInvitationsList({
   canRespondToInvitations,
   currentUserId,
@@ -51,9 +55,9 @@ export function CampaignInvitationsList({
                 sx={{ justifyContent: "space-between" }}
               >
                 <Stack spacing={0.5}>
-                  <Typography variant="h6">{invitation.userId}</Typography>
+                  <Typography variant="h6">{getInvitationPrimaryLabel(invitation)}</Typography>
                   <Typography color="text.secondary" variant="body2">
-                    Invited by: {invitation.invitedById}
+                    Invited by: {invitation.invitedByDisplayName ?? invitation.invitedByUsername ?? invitation.invitedById}
                   </Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>

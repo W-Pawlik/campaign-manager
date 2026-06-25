@@ -28,6 +28,18 @@ function formatDate(value: string | null): string {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
 }
 
+function getMemberPrimaryLabel(member: CampaignMember): string {
+  return member.nickname ?? member.displayName ?? member.username ?? member.userId;
+}
+
+function getMemberSecondaryLabel(member: CampaignMember): string {
+  if (member.username) {
+    return `@${member.username}`;
+  }
+
+  return `User ID: ${member.userId}`;
+}
+
 export function CampaignMembersList({
   canManageMembers,
   isSubmitting,
@@ -58,9 +70,9 @@ export function CampaignMembersList({
                 sx={{ justifyContent: "space-between" }}
               >
                 <Stack spacing={0.5}>
-                  <Typography variant="h6">{member.nickname ?? member.userId}</Typography>
+                  <Typography variant="h6">{getMemberPrimaryLabel(member)}</Typography>
                   <Typography color="text.secondary" variant="body2">
-                    User ID: {member.userId}
+                    {getMemberSecondaryLabel(member)}
                   </Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>

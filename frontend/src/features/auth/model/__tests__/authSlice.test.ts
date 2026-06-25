@@ -5,9 +5,12 @@ import { bootstrapAuth, login, logout } from "@/features/auth/model/authThunks";
 import type { CurrentUser } from "@/features/auth/model/auth.types";
 
 const currentUser: CurrentUser = {
+  avatarUrl: null,
   createdAt: "2026-06-23T10:00:00.000Z",
+  displayName: "Game Master",
   email: "gm@example.com",
   id: "user-1",
+  username: "gm_master",
 };
 
 describe("authSlice", () => {

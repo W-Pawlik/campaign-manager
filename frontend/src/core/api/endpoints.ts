@@ -12,5 +12,6 @@ export const apiEndpoints = {
   users: {
     current: "/users/me",
     password: "/users/me/password",
+    search: "/users/search",
   },
 } as const;

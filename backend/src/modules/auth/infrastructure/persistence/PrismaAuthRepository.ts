@@ -20,6 +20,9 @@ export class PrismaAuthRepository implements AuthRepository {
       id: user.id,
       email: Email.create(user.email),
       passwordHash: PasswordHash.create(user.passwordHash),
+      username: user.username,
+      displayName: user.displayName,
+      avatarUrl: user.avatarUrl,
       createdAt: user.createdAt,
     });
   }
@@ -37,6 +40,9 @@ export class PrismaAuthRepository implements AuthRepository {
       id: user.id,
       email: Email.create(user.email),
       passwordHash: PasswordHash.create(user.passwordHash),
+      username: user.username,
+      displayName: user.displayName,
+      avatarUrl: user.avatarUrl,
       createdAt: user.createdAt,
     });
   }

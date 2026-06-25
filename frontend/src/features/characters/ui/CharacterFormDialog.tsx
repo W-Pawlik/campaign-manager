@@ -10,7 +10,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Icon } from "@iconify/react";
@@ -21,6 +21,7 @@ import { CharacterAbilityFields } from "@/features/characters/ui/CharacterAbilit
 import { CharacterIdentityFields } from "@/features/characters/ui/CharacterIdentityFields";
 import { CharacterNarrativeFields } from "@/features/characters/ui/CharacterNarrativeFields";
 import type { CharacterFormValues } from "@/features/characters/ui/characterForm.types";
+import type { UserLookupItem } from "@/features/users";
 
 const characterFormSchema = z.object({
   alignment: z.string().max(80).optional(),
@@ -41,12 +42,7 @@ const characterFormSchema = z.object({
   level: z.number().min(1).max(30).nullable().optional(),
   maxHitPoints: z.number().min(0).max(999).nullable().optional(),
   name: z.string().trim().min(1, "Character name is required.").max(120),
-  ownerUserId: z
-    .string()
-    .trim()
-    .uuid("Owner must currently be provided as a valid user ID.")
-    .or(z.literal(""))
-    .optional(),
+  ownerUserId: z.string().trim().or(z.literal("")).optional(),
   personalityTraits: z.string().max(10000).optional(),
   race: z.string().max(120).optional(),
   status: z.enum(["DRAFT", "ACTIVE", "INACTIVE", "DEAD", "RETIRED", "ARCHIVED"]),
@@ -83,11 +79,13 @@ export function CharacterFormDialog({
   open,
   submitError = null,
 }: CharacterFormDialogProps) {
+  const [ownerOption, setOwnerOption] = useState<UserLookupItem | null>(null);
   const {
     formState: { errors },
     handleSubmit,
     register,
     reset,
+    setValue,
   } = useForm<CharacterFormValues>({
     defaultValues: {
       alignment: toOptionalValue(initialCharacter?.alignment),
@@ -122,6 +120,22 @@ export function CharacterFormDialog({
   });
 
   useEffect(() => {
+    const nextOwnerOption =
+      initialCharacter?.ownerUserId && (initialCharacter.ownerUsername || initialCharacter.ownerDisplayName)
+        ? {
+            id: initialCharacter.ownerUserId,
+            username: initialCharacter.ownerUsername ?? initialCharacter.ownerUserId,
+            displayName:
+              initialCharacter.ownerDisplayName ??
+              initialCharacter.ownerUsername ??
+              initialCharacter.ownerUserId,
+            avatarUrl: null,
+          }
+        : null;
+
+    queueMicrotask(() => {
+      setOwnerOption(nextOwnerOption);
+    });
     reset({
       alignment: toOptionalValue(initialCharacter?.alignment),
       appearance: toOptionalValue(initialCharacter?.appearance),
@@ -197,6 +211,7 @@ export function CharacterFormDialog({
         </IconButton>
 
         <Stack component="form" noValidate onSubmit={handleValidSubmit} spacing={3}>
+          <input type="hidden" {...register("ownerUserId")} />
           <Stack spacing={0.6}>
             <Typography
               sx={{
@@ -218,6 +233,11 @@ export function CharacterFormDialog({
             <Typography variant="subtitle1">Identity</Typography>
             <CharacterIdentityFields
               canAssignOwner={canAssignOwner}
+              onOwnerChange={(value) => {
+                setOwnerOption(value);
+                setValue("ownerUserId", value?.id ?? "", { shouldValidate: true });
+              }}
+              ownerOption={ownerOption}
               ownerErrorMessage={errors.ownerUserId?.message}
               register={register}
             />

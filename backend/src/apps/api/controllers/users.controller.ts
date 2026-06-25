@@ -6,6 +6,7 @@ import { ChangeCurrentUserPasswordCommand } from "@modules/users/application/com
 import { DeleteCurrentUserAccountCommand } from "@modules/users/application/commands/DeleteCurrentUserAccountCommand";
 import { UpdateCurrentUserProfileCommand } from "@modules/users/application/commands/UpdateCurrentUserProfileCommand";
 import { GetCurrentUserProfileQuery } from "@modules/users/application/queries/GetCurrentUserProfileQuery";
+import { SearchUsersQuery } from "@modules/users/application/queries/SearchUsersQuery";
 
 export class UsersController {
   public constructor(
@@ -16,6 +17,17 @@ export class UsersController {
   public async getCurrentUserProfile(_req: Request, res: Response): Promise<void> {
     const userId = this.getAuthUserId(res);
     const result = await this.queryBus.execute(new GetCurrentUserProfileQuery({ userId }));
+
+    res.status(200).json(result);
+  }
+
+  public async searchUsers(req: Request, res: Response): Promise<void> {
+    const result = await this.queryBus.execute(
+      new SearchUsersQuery({
+        limit: typeof req.query.limit === "number" ? req.query.limit : 8,
+        query: String(req.query.query),
+      }),
+    );
 
     res.status(200).json(result);
   }

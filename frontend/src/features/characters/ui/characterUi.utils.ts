@@ -58,7 +58,19 @@ export function getCharacterSubtitle(
   return parts.length > 0 ? parts.join(" • ") : "Unclassified adventurer";
 }
 
-export function getCharacterOwnerLabel(ownerUserId: string | null): string {
+export function getCharacterOwnerLabel(
+  ownerUsername: string | null | undefined,
+  ownerDisplayName: string | null | undefined,
+  ownerUserId: string | null,
+): string {
+  if (ownerDisplayName?.trim()) {
+    return ownerUsername?.trim() ? `${ownerDisplayName} (@${ownerUsername})` : ownerDisplayName;
+  }
+
+  if (ownerUsername?.trim()) {
+    return `@${ownerUsername}`;
+  }
+
   return ownerUserId ?? "Unassigned";
 }
 
@@ -88,6 +100,8 @@ export function getCharacterSearchText(character: CampaignCharacterListItem): st
     character.level?.toString(),
     character.type,
     character.status,
+    character.ownerUsername,
+    character.ownerDisplayName,
   ]
     .filter((value): value is string => Boolean(value))
     .join(" ")
@@ -218,55 +232,30 @@ export function buildSkillRows(character: CampaignCharacterDetails) {
       modifier: getAbilityModifier(character.intelligence),
     },
     { label: "Perception", ability: "Wis", modifier: getAbilityModifier(character.wisdom) },
-    { label: "Persuasion", ability: "Cha", modifier: getAbilityModifier(character.charisma) },
-    { label: "Stealth", ability: "Dex", modifier: getAbilityModifier(character.dexterity) },
-    { label: "Survival", ability: "Wis", modifier: getAbilityModifier(character.wisdom) },
   ];
 }
 
 export function stringifyUnknownRecord(value: unknown, fallback: string): string {
-  if (value == null) {
-    return fallback;
-  }
-
-  if (typeof value === "string") {
-    return value.trim().length > 0 ? value : fallback;
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value;
   }
 
   if (Array.isArray(value)) {
-    const parts = value
-      .map((item) => {
-        if (typeof item === "string") {
-          return item;
-        }
+    const normalized = value
+      .map((item) => (typeof item === "string" ? item.trim() : JSON.stringify(item)))
+      .filter((item) => item.length > 0);
 
-        if (item && typeof item === "object") {
-          return Object.values(item as Record<string, unknown>)
-            .filter((part): part is string => typeof part === "string")
-            .join(" ");
-        }
-
-        return "";
-      })
-      .filter(Boolean);
-
-    return parts.length > 0 ? parts.join(", ") : fallback;
+    return normalized.length > 0 ? normalized.join(", ") : fallback;
   }
 
-  if (typeof value === "object") {
-    const parts = Object.entries(value as Record<string, unknown>).flatMap(([key, nestedValue]) => {
-      if (typeof nestedValue === "string" && nestedValue.trim().length > 0) {
-        return `${key}: ${nestedValue}`;
-      }
+  if (value && typeof value === "object") {
+    try {
+      const serialized = JSON.stringify(value, null, 2);
 
-      if (typeof nestedValue === "number") {
-        return `${key}: ${nestedValue}`;
-      }
-
-      return [];
-    });
-
-    return parts.length > 0 ? parts.join(", ") : fallback;
+      return serialized.length > 2 ? serialized : fallback;
+    } catch {
+      return fallback;
+    }
   }
 
   return fallback;

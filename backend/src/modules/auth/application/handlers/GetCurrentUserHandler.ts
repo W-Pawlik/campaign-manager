@@ -16,9 +16,14 @@ export class GetCurrentUserHandler
       throw new NotFoundError("User not found");
     }
 
+    const emailLocalPart = userCredentials.email.value.split("@")[0] ?? "user";
+
     return {
       id: userCredentials.id,
       email: userCredentials.email.value,
+      username: userCredentials.username ?? `user_${userCredentials.id.slice(0, 8)}`,
+      displayName: userCredentials.displayName ?? emailLocalPart,
+      avatarUrl: userCredentials.avatarUrl ?? null,
       createdAt: userCredentials.createdAt.toISOString(),
     };
   }
