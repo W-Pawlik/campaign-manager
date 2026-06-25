@@ -27,34 +27,34 @@ function topbarNavButtonSx(active: boolean) {
     opacity: 1,
     position: "relative",
     px: 1.75,
-    "&::before": active
+    ...(active
       ? {
-          background:
-            "linear-gradient(90deg, rgba(255, 34, 34, 0) 0%, rgba(255, 66, 66, 0.92) 18%, rgba(255, 66, 66, 0.92) 82%, rgba(255, 34, 34, 0) 100%)",
-          borderRadius: 999,
-          bottom: -7,
-          content: '""',
-          height: 3,
-          left: 10,
-          position: "absolute",
-          right: 10,
+          "&::before": {
+            background:
+              "linear-gradient(90deg, rgba(255, 34, 34, 0) 0%, rgba(255, 66, 66, 0.92) 18%, rgba(255, 66, 66, 0.92) 82%, rgba(255, 34, 34, 0) 100%)",
+            borderRadius: 999,
+            bottom: -7,
+            content: '""',
+            height: 3,
+            left: 10,
+            position: "absolute",
+            right: 10,
+          },
+          "&::after": {
+            background:
+              "linear-gradient(180deg, rgba(255, 138, 91, 1) 0%, rgba(182, 23, 23, 1) 100%)",
+            borderBottomLeftRadius: 2,
+            borderBottomRightRadius: 2,
+            bottom: -11,
+            content: '""',
+            height: 6,
+            left: "50%",
+            position: "absolute",
+            transform: "translateX(-50%) rotate(45deg)",
+            width: 6,
+          },
         }
-      : undefined,
-    "&::after": active
-      ? {
-          background:
-            "linear-gradient(180deg, rgba(255, 138, 91, 1) 0%, rgba(182, 23, 23, 1) 100%)",
-          borderBottomLeftRadius: 2,
-          borderBottomRightRadius: 2,
-          bottom: -11,
-          content: '""',
-          height: 6,
-          left: "50%",
-          position: "absolute",
-          transform: "translateX(-50%) rotate(45deg)",
-          width: 6,
-        }
-      : undefined,
+      : {}),
     "&:hover": {
       backgroundColor: "transparent",
       color: active ? "#e1c27d" : "#f3e8d1",

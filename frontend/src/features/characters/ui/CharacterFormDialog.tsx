@@ -1,19 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
+  Box,
   Button,
   CircularProgress,
   Dialog,
-  DialogActions,
   DialogContent,
-  DialogTitle,
+  IconButton,
   Stack,
   Typography,
 } from "@mui/material";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Icon } from "@iconify/react";
 
+import MonsterCardBackground from "@/assets/MonsterCardBackground.png";
 import type { CampaignCharacterDetails } from "@/features/characters/model/character.types";
 import { CharacterAbilityFields } from "@/features/characters/ui/CharacterAbilityFields";
 import { CharacterIdentityFields } from "@/features/characters/ui/CharacterIdentityFields";
@@ -112,7 +114,8 @@ export function CharacterFormDialog({
       status: (initialCharacter?.status as CharacterFormValues["status"] | undefined) ?? "DRAFT",
       strength: toOptionalNumber(initialCharacter?.strength),
       subclass: toOptionalValue(initialCharacter?.subclass),
-      type: (initialCharacter?.type as CharacterFormValues["type"] | undefined) ?? "PLAYER_CHARACTER",
+      type:
+        (initialCharacter?.type as CharacterFormValues["type"] | undefined) ?? "PLAYER_CHARACTER",
       wisdom: toOptionalNumber(initialCharacter?.wisdom),
     },
     resolver: zodResolver(characterFormSchema),
@@ -144,7 +147,8 @@ export function CharacterFormDialog({
       status: (initialCharacter?.status as CharacterFormValues["status"] | undefined) ?? "DRAFT",
       strength: toOptionalNumber(initialCharacter?.strength),
       subclass: toOptionalValue(initialCharacter?.subclass),
-      type: (initialCharacter?.type as CharacterFormValues["type"] | undefined) ?? "PLAYER_CHARACTER",
+      type:
+        (initialCharacter?.type as CharacterFormValues["type"] | undefined) ?? "PLAYER_CHARACTER",
       wisdom: toOptionalNumber(initialCharacter?.wisdom),
     });
   }, [initialCharacter, reset]);
@@ -154,10 +158,61 @@ export function CharacterFormDialog({
   });
 
   return (
-    <Dialog fullWidth maxWidth="lg" onClose={onClose} open={open}>
-      <DialogTitle>{initialCharacter ? "Edit character" : "Create character"}</DialogTitle>
-      <DialogContent dividers>
+    <Dialog
+      fullWidth
+      maxWidth="lg"
+      onClose={onClose}
+      open={open}
+      slotProps={{
+        paper: {
+          sx: {
+            backgroundImage: `linear-gradient(180deg, rgba(250, 244, 232, 0.94) 0%, rgba(239, 227, 201, 0.96) 100%), url(${MonsterCardBackground})`,
+            backgroundPosition: "center",
+            backgroundSize: "cover",
+            border: "1px solid rgba(93, 69, 42, 0.52)",
+            borderRadius: 3,
+            color: "#2d2115",
+            overflow: "hidden",
+          },
+        },
+      }}
+    >
+      <DialogContent
+        sx={{
+          p: { xs: 2, md: 3 },
+          position: "relative",
+        }}
+      >
+        <IconButton
+          onClick={onClose}
+          sx={{
+            color: "#4d3923",
+            position: "absolute",
+            right: 12,
+            top: 12,
+            zIndex: 2,
+          }}
+        >
+          <Icon icon="solar:close-circle-linear" style={{ fontSize: 28 }} />
+        </IconButton>
+
         <Stack component="form" noValidate onSubmit={handleValidSubmit} spacing={3}>
+          <Stack spacing={0.6}>
+            <Typography
+              sx={{
+                color: "#2f2217",
+                fontFamily: '"Georgia", "Times New Roman", serif',
+                fontSize: { xs: "2rem", md: "2.6rem" },
+                lineHeight: 1,
+              }}
+            >
+              {initialCharacter ? "Edit character" : "Create character"}
+            </Typography>
+            <Typography color="#5c452a" variant="body2">
+              Build the character sheet, core stats, and narrative notes in one place.
+            </Typography>
+          </Stack>
+
           {submitError ? <Alert severity="error">{submitError}</Alert> : null}
           <Stack spacing={1}>
             <Typography variant="subtitle1">Identity</Typography>
@@ -175,14 +230,29 @@ export function CharacterFormDialog({
             <Typography variant="subtitle1">Narrative</Typography>
             <CharacterNarrativeFields register={register} />
           </Stack>
+
+          <Stack
+            direction={{ xs: "column-reverse", sm: "row" }}
+            spacing={1.5}
+            sx={{ justifyContent: "space-between", pt: 1 }}
+          >
+            <Box />
+            <Button
+              disabled={isSubmitting}
+              onClick={() => void handleValidSubmit()}
+              variant="contained"
+            >
+              {isSubmitting ? (
+                <CircularProgress color="inherit" size={20} />
+              ) : initialCharacter ? (
+                "Save changes"
+              ) : (
+                "Create character"
+              )}
+            </Button>
+          </Stack>
         </Stack>
       </DialogContent>
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button disabled={isSubmitting} onClick={() => void handleValidSubmit()} variant="contained">
-          {isSubmitting ? <CircularProgress color="inherit" size={20} /> : initialCharacter ? "Save changes" : "Create character"}
-        </Button>
-      </DialogActions>
     </Dialog>
   );
 }

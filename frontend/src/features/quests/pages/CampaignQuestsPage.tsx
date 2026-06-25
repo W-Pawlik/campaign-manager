@@ -1,8 +1,12 @@
-import { Alert, Button, Stack } from "@mui/material";
+import { Alert, Stack } from "@mui/material";
 import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { useCampaignDetailsQuery } from "@/features/campaigns";
+import {
+  useCampaignDetailsQuery,
+  useCampaignInventoryQuery,
+  useCampaignNotesQuery,
+} from "@/features/campaigns";
 import {
   useAddQuestObjectiveMutation,
   useCampaignQuestsQuery,
@@ -13,11 +17,14 @@ import {
   useUpdateQuestMutation,
   useUpdateQuestObjectiveMutation,
 } from "@/features/quests/api/questsQueries";
-import { CampaignQuestsList } from "@/features/quests/ui/CampaignQuestsList";
+import { CampaignQuestsBoard } from "@/features/quests/ui/CampaignQuestsBoard";
 import { QuestDetailsDialog } from "@/features/quests/ui/QuestDetailsDialog";
 import { QuestFormDialog } from "@/features/quests/ui/QuestFormDialog";
-import { QuestListControls } from "@/features/quests/ui/QuestListControls";
 import { QuestObjectiveDialog } from "@/features/quests/ui/QuestObjectiveDialog";
+import { CampaignQuestsFeaturedSection } from "@/features/quests/ui/CampaignQuestsFeaturedSection";
+import { CampaignQuestsFilterBar } from "@/features/quests/ui/CampaignQuestsFilterBar";
+import { CampaignQuestsHeader } from "@/features/quests/ui/CampaignQuestsHeader";
+import { CampaignQuestsSidebar } from "@/features/quests/ui/CampaignQuestsSidebar";
 import type { QuestObjective } from "@/features/quests/model/quest.types";
 import {
   defaultQuestListFilters,
@@ -25,7 +32,13 @@ import {
   sortQuests,
   type QuestListFilters,
 } from "@/features/quests/ui/questListUi.utils";
-import { ErrorState, LoadingScreen, PageHeader, SectionCard } from "@/shared/components";
+import {
+  matchesQuestSearch,
+  pickFeaturedQuest,
+  pickQuestQuickNotes,
+  pickQuestRewards,
+} from "@/features/quests/ui/questPageUi.utils";
+import { ErrorState, LoadingScreen } from "@/shared/components";
 
 function canManageQuests(role: string | undefined): boolean {
   return role === "OWNER" || role === "GM" || role === "CO_GM";
@@ -53,6 +66,8 @@ export function CampaignQuestsPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
   const campaignDetailsQuery = useCampaignDetailsQuery(campaignId);
   const questsQuery = useCampaignQuestsQuery(campaignId);
+  const notesQuery = useCampaignNotesQuery(campaignId);
+  const inventoryQuery = useCampaignInventoryQuery(campaignId);
   const createQuestMutation = useCreateQuestMutation(campaignId);
   const updateQuestMutation = useUpdateQuestMutation(campaignId);
   const deleteQuestMutation = useDeleteQuestMutation(campaignId);
@@ -65,6 +80,7 @@ export function CampaignQuestsPage() {
   const [editingObjective, setEditingObjective] = useState<QuestObjective | null>(null);
   const [isObjectiveDialogOpen, setIsObjectiveDialogOpen] = useState(false);
   const [listFilters, setListFilters] = useState<QuestListFilters>(defaultQuestListFilters);
+  const [searchValue, setSearchValue] = useState("");
   const questDetailsQuery = useQuestDetailsQuery(campaignId, selectedQuestId ?? editingQuestId);
 
   const pageError = useMemo(() => {
@@ -94,14 +110,24 @@ export function CampaignQuestsPage() {
     updateObjectiveMutation.error?.message ??
     deleteObjectiveMutation.error?.message ??
     null;
-  const visibleQuests = useMemo(
-    () =>
-      sortQuests(
-        (questsQuery.data ?? []).filter((quest) => matchesQuestListFilters(quest, listFilters)),
-        listFilters.sortField,
-        listFilters.sortDirection,
+  const visibleQuests = useMemo(() => {
+    return sortQuests(
+      (questsQuery.data ?? []).filter(
+        (quest) => matchesQuestListFilters(quest, listFilters) && matchesQuestSearch(quest, searchValue),
       ),
-    [listFilters, questsQuery.data],
+      listFilters.sortField,
+      listFilters.sortDirection,
+    );
+  }, [listFilters, questsQuery.data, searchValue]);
+  const featuredQuest = useMemo(() => pickFeaturedQuest(visibleQuests), [visibleQuests]);
+  const featuredQuestDetailsQuery = useQuestDetailsQuery(campaignId, featuredQuest?.id ?? null);
+  const featuredQuestNotes = useMemo(
+    () => pickQuestQuickNotes(notesQuery.data ?? [], featuredQuest?.id),
+    [featuredQuest?.id, notesQuery.data],
+  );
+  const featuredQuestRewards = useMemo(
+    () => pickQuestRewards(inventoryQuery.data ?? [], featuredQuest?.id),
+    [featuredQuest?.id, inventoryQuery.data],
   );
 
   if (campaignDetailsQuery.isLoading || questsQuery.isLoading) {
@@ -124,25 +150,32 @@ export function CampaignQuestsPage() {
   return (
     <>
       <Stack spacing={3.5}>
-        <PageHeader
-          action={
-            canManage ? (
-              <Button onClick={() => setIsCreateDialogOpen(true)} variant="contained">
-                Create quest
-              </Button>
-            ) : undefined
-          }
-          description="Follow story arcs, side missions, objectives, and campaign-facing references in one structured place."
-          title="Quests"
+        <CampaignQuestsHeader
+          canManageQuests={canManage}
+          onCreateQuest={() => setIsCreateDialogOpen(true)}
         />
 
         {mutationError ? <Alert severity="error">{mutationError}</Alert> : null}
 
-        <SectionCard>
-          <Stack spacing={2.5}>
-            <QuestListControls onChange={setListFilters} value={listFilters} />
-            <CampaignQuestsList
-              campaignId={campaignId}
+        <CampaignQuestsFilterBar
+          onChange={setListFilters}
+          onSearchChange={setSearchValue}
+          searchValue={searchValue}
+          value={listFilters}
+        />
+
+        <Stack direction={{ xs: "column", xl: "row" }} spacing={2}>
+          <Stack spacing={2} sx={{ flex: 1, minWidth: 0 }}>
+            <CampaignQuestsFeaturedSection
+              canManageQuests={canManage}
+              isSubmitting={isMutating}
+              onDeleteQuest={(questId) => deleteQuestMutation.mutate(questId)}
+              onEditQuest={(questId) => setEditingQuestId(questId)}
+              onOpenDetails={(questId) => setSelectedQuestId(questId)}
+              quest={featuredQuest?.id ? featuredQuestDetailsQuery.data ?? null : null}
+            />
+
+            <CampaignQuestsBoard
               canManageQuests={canManage}
               isSubmitting={isMutating}
               onDeleteQuest={(questId) => deleteQuestMutation.mutate(questId)}
@@ -151,7 +184,15 @@ export function CampaignQuestsPage() {
               quests={visibleQuests}
             />
           </Stack>
-        </SectionCard>
+
+          <Stack sx={{ minWidth: { xl: 340 }, width: { xs: "100%", xl: 340 } }}>
+            <CampaignQuestsSidebar
+              notes={featuredQuestNotes}
+              rewardQuestTitle={featuredQuest?.title ?? null}
+              rewards={featuredQuestRewards}
+            />
+          </Stack>
+        </Stack>
       </Stack>
 
       <QuestFormDialog

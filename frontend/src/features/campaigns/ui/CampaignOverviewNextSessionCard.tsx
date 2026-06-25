@@ -60,7 +60,7 @@ export function CampaignOverviewNextSessionCard({
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundSize: "cover",
-        border: "1px solid rgba(210, 153, 86, 0.16)",
+        border: "1px solid rgba(188, 128, 52, 0.32)",
         borderRadius: 3,
         minHeight: 280,
         overflow: "hidden",

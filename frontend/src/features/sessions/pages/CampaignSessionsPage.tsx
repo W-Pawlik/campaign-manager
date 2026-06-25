@@ -1,4 +1,5 @@
-import { Alert, Button, Stack } from "@mui/material";
+import { Icon } from "@iconify/react";
+import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -13,13 +14,17 @@ import {
   useSessionDetailsQuery,
   useUpdateSessionMutation,
 } from "@/features/sessions/api/sessionsQueries";
+import { CampaignSessionsFeaturedCard } from "@/features/sessions/ui/CampaignSessionsFeaturedCard";
 import { CampaignSessionsList } from "@/features/sessions/ui/CampaignSessionsList";
 import { SessionDetailsDialog } from "@/features/sessions/ui/SessionDetailsDialog";
 import { SessionFormDialog } from "@/features/sessions/ui/SessionFormDialog";
 import { SessionStatusFilterBar } from "@/features/sessions/ui/SessionStatusFilterBar";
-import type { SessionFilterValue } from "@/features/sessions/ui/sessionUi.utils";
-import { isSessionFilterMatch } from "@/features/sessions/ui/sessionUi.utils";
-import { ErrorState, LoadingScreen, PageHeader, SectionCard } from "@/shared/components";
+import type { SessionFilterValue, SessionSortValue } from "@/features/sessions/ui/sessionUi.utils";
+import {
+  formatSessionSortLabel,
+  isSessionFilterMatch,
+} from "@/features/sessions/ui/sessionUi.utils";
+import { ErrorState, LoadingScreen } from "@/shared/components";
 
 function canManageSessions(role: string | undefined): boolean {
   return role === "OWNER" || role === "GM" || role === "CO_GM";
@@ -43,6 +48,34 @@ function toNullableIsoDateTime(value?: string): string | null | undefined {
   return value.trim().length === 0 ? null : new Date(value).toISOString();
 }
 
+function sortSessions(
+  sessions: ReturnType<typeof useCampaignSessionsQuery>["data"] extends infer T
+    ? T extends Array<infer U>
+      ? U[]
+      : never
+    : never,
+  sortValue: SessionSortValue,
+) {
+  return [...sessions].sort((left, right) => {
+    if (sortValue === "TITLE") {
+      return left.title.localeCompare(right.title);
+    }
+
+    if (sortValue === "RECENT") {
+      return new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime();
+    }
+
+    const leftTime = left.scheduledStartAt
+      ? new Date(left.scheduledStartAt).getTime()
+      : Number.MAX_SAFE_INTEGER;
+    const rightTime = right.scheduledStartAt
+      ? new Date(right.scheduledStartAt).getTime()
+      : Number.MAX_SAFE_INTEGER;
+
+    return leftTime - rightTime;
+  });
+}
+
 export function CampaignSessionsPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
   const location = useLocation();
@@ -60,7 +93,11 @@ export function CampaignSessionsPage() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [highlightedSessionId, setHighlightedSessionId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<SessionFilterValue>("ALL");
-  const sessionDetailsQuery = useSessionDetailsQuery(campaignId, selectedSessionId ?? editingSessionId);
+  const [sortValue, setSortValue] = useState<SessionSortValue>("UPCOMING");
+  const sessionDetailsQuery = useSessionDetailsQuery(
+    campaignId,
+    selectedSessionId ?? editingSessionId,
+  );
 
   const pageError = useMemo(() => {
     if (campaignDetailsQuery.isError) {
@@ -72,7 +109,12 @@ export function CampaignSessionsPage() {
     }
 
     return null;
-  }, [campaignDetailsQuery.error, campaignDetailsQuery.isError, sessionsQuery.error, sessionsQuery.isError]);
+  }, [
+    campaignDetailsQuery.error,
+    campaignDetailsQuery.isError,
+    sessionsQuery.error,
+    sessionsQuery.isError,
+  ]);
   const canManage = canManageSessions(campaignDetailsQuery.data?.role);
   const actionMutationError =
     cancelSessionMutation.error?.message ??
@@ -80,9 +122,6 @@ export function CampaignSessionsPage() {
     confirmSessionAttendanceMutation.error?.message ??
     declineSessionAttendanceMutation.error?.message ??
     null;
-  const filteredSessions = (sessionsQuery.data ?? []).filter((session) =>
-    isSessionFilterMatch(session.status, statusFilter),
-  );
   const routedHighlightedSessionId =
     typeof location.state === "object" &&
     location.state !== null &&
@@ -90,6 +129,25 @@ export function CampaignSessionsPage() {
     typeof (location.state as { highlightedSessionId?: unknown }).highlightedSessionId === "string"
       ? ((location.state as { highlightedSessionId: string }).highlightedSessionId ?? null)
       : null;
+
+  const activeHighlightedSessionId = routedHighlightedSessionId ?? highlightedSessionId;
+  const allSessions = useMemo(() => sessionsQuery.data ?? [], [sessionsQuery.data]);
+  const filteredSessions = allSessions.filter((session) =>
+    isSessionFilterMatch(session.status, statusFilter),
+  );
+  const sortedSessions = useMemo(
+    () => sortSessions(filteredSessions, sortValue),
+    [filteredSessions, sortValue],
+  );
+  const featuredSession = useMemo(() => {
+    const eligible = allSessions.filter(
+      (session) => session.status !== "COMPLETED" && session.status !== "CANCELLED",
+    );
+
+    return (
+      sortSessions(eligible, "UPCOMING")[0] ?? sortSessions(allSessions, "UPCOMING")[0] ?? null
+    );
+  }, [allSessions]);
 
   const isMutating =
     createSessionMutation.isPending ||
@@ -113,17 +171,17 @@ export function CampaignSessionsPage() {
 
   useEffect(() => {
     if (!routedHighlightedSessionId) {
-      return;
+      return undefined;
     }
 
-    setHighlightedSessionId(routedHighlightedSessionId);
-
-    window.setTimeout(() => {
+    const scrollTimeoutId = window.setTimeout(() => {
       const element = document.getElementById(`session-card-${routedHighlightedSessionId}`);
       element?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setHighlightedSessionId(routedHighlightedSessionId);
+      navigate(location.pathname, { replace: true, state: null });
     }, 10);
 
-    navigate(location.pathname, { replace: true, state: null });
+    return () => window.clearTimeout(scrollTimeoutId);
   }, [location.pathname, navigate, routedHighlightedSessionId]);
 
   if (campaignDetailsQuery.isLoading || sessionsQuery.isLoading) {
@@ -146,35 +204,111 @@ export function CampaignSessionsPage() {
   return (
     <>
       <Stack spacing={3.5}>
-        <PageHeader
-          action={
-            canManage ? (
-              <Button onClick={() => setIsCreateDialogOpen(true)} variant="contained">
-                Create session
-              </Button>
-            ) : undefined
-          }
-          description="Plan upcoming games, track attendance, and keep public or private recaps attached to each session."
-          title="Sessions"
-        />
+        <Stack
+          direction={{ xs: "column", xl: "row" }}
+          spacing={2.5}
+          sx={{
+            alignItems: { xl: "flex-end" },
+            borderBottom: "1px solid rgba(188, 128, 52, 0.16)",
+            justifyContent: "space-between",
+            pb: 3,
+          }}
+        >
+          <Stack spacing={1}>
+            <Typography
+              sx={{
+                color: "#f3e5cc",
+                fontFamily: '"Georgia", "Times New Roman", serif',
+                fontSize: { xs: "2.45rem", md: "3.4rem" },
+                lineHeight: 0.98,
+              }}
+            >
+              Campaign sessions
+            </Typography>
+            <Typography color="text.secondary" sx={{ maxWidth: 780 }} variant="body1">
+              Plan upcoming gatherings, track attendance, and keep public or private recaps attached
+              to each session.
+            </Typography>
+          </Stack>
+
+          {canManage ? (
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              startIcon={<Icon icon="mingcute:calendar-add-fill" />}
+              variant="contained"
+            >
+              Schedule session
+            </Button>
+          ) : null}
+        </Stack>
 
         {actionMutationError ? <Alert severity="error">{actionMutationError}</Alert> : null}
 
-        <SectionCard>
-          <Stack spacing={2.5}>
-            <SessionStatusFilterBar onChange={setStatusFilter} value={statusFilter} />
-            <CampaignSessionsList
-              canManageSessions={canManage}
-              highlightedSessionId={highlightedSessionId}
-              isSubmitting={isMutating}
-              onCancelSession={(sessionId) => cancelSessionMutation.mutate(sessionId)}
-              onCompleteSession={(sessionId) => completeSessionMutation.mutate(sessionId)}
-              onEditSession={(sessionId) => setEditingSessionId(sessionId)}
-              onOpenDetails={(sessionId) => setSelectedSessionId(sessionId)}
-              sessions={filteredSessions}
-            />
+        <Stack
+          direction={{ xs: "column", xl: "row" }}
+          spacing={2}
+          sx={{ alignItems: { xl: "center" }, justifyContent: "space-between" }}
+        >
+          <SessionStatusFilterBar onChange={setStatusFilter} value={statusFilter} />
+
+          <Stack
+            direction="row"
+            spacing={1.25}
+            sx={{ alignItems: "center", justifyContent: "flex-end" }}
+          >
+            <Typography color="text.secondary" variant="body2">
+              Sort by:
+            </Typography>
+            <TextField
+              select
+              size="small"
+              sx={{ minWidth: 190 }}
+              value={sortValue}
+              onChange={(event) => setSortValue(event.target.value as SessionSortValue)}
+            >
+              <MenuItem value="UPCOMING">{formatSessionSortLabel("UPCOMING")}</MenuItem>
+              <MenuItem value="RECENT">{formatSessionSortLabel("RECENT")}</MenuItem>
+              <MenuItem value="TITLE">{formatSessionSortLabel("TITLE")}</MenuItem>
+            </TextField>
           </Stack>
-        </SectionCard>
+        </Stack>
+
+        {featuredSession ? (
+          <CampaignSessionsFeaturedCard
+            canManageSessions={canManage}
+            isSubmitting={isMutating}
+            onCompleteSession={(sessionId) => completeSessionMutation.mutate(sessionId)}
+            onEditSession={(sessionId) => setEditingSessionId(sessionId)}
+            onOpenDetails={(sessionId) => setSelectedSessionId(sessionId)}
+            session={featuredSession}
+          />
+        ) : null}
+
+        <Stack spacing={1.5}>
+          <Box>
+            <Typography
+              sx={{
+                color: "#f1dfbd",
+                fontFamily: '"Georgia", "Times New Roman", serif',
+                fontSize: { xs: "2rem", md: "2.4rem" },
+                lineHeight: 1.02,
+              }}
+            >
+              All sessions
+            </Typography>
+          </Box>
+
+          <CampaignSessionsList
+            canManageSessions={canManage}
+            highlightedSessionId={activeHighlightedSessionId}
+            isSubmitting={isMutating}
+            onCancelSession={(sessionId) => cancelSessionMutation.mutate(sessionId)}
+            onCompleteSession={(sessionId) => completeSessionMutation.mutate(sessionId)}
+            onEditSession={(sessionId) => setEditingSessionId(sessionId)}
+            onOpenDetails={(sessionId) => setSelectedSessionId(sessionId)}
+            sessions={sortedSessions}
+          />
+        </Stack>
       </Stack>
 
       <SessionFormDialog
@@ -211,7 +345,7 @@ export function CampaignSessionsPage() {
               ? "Cancelled sessions are read-only in the current backend. Restoring them requires backend support."
               : null
         }
-        initialSession={editingSessionId ? sessionDetailsQuery.data ?? null : null}
+        initialSession={editingSessionId ? (sessionDetailsQuery.data ?? null) : null}
         isSubmitting={updateSessionMutation.isPending || sessionDetailsQuery.isLoading}
         onClose={() => {
           updateSessionMutation.reset();
@@ -247,7 +381,9 @@ export function CampaignSessionsPage() {
       <SessionDetailsDialog
         campaignId={campaignId}
         canManageSessions={canManage}
-        isSubmitting={confirmSessionAttendanceMutation.isPending || declineSessionAttendanceMutation.isPending}
+        isSubmitting={
+          confirmSessionAttendanceMutation.isPending || declineSessionAttendanceMutation.isPending
+        }
         onClose={() => setSelectedSessionId(null)}
         onConfirmAttendance={() => {
           if (selectedSessionId) {
@@ -260,7 +396,7 @@ export function CampaignSessionsPage() {
           }
         }}
         open={Boolean(selectedSessionId)}
-        session={selectedSessionId ? sessionDetailsQuery.data ?? null : null}
+        session={selectedSessionId ? (sessionDetailsQuery.data ?? null) : null}
       />
     </>
   );

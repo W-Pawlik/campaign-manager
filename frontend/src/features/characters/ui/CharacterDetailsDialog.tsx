@@ -1,109 +1,42 @@
-import {
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Button,
-  Divider,
-  Grid,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Dialog, DialogContent } from "@mui/material";
 
 import type { CampaignCharacterDetails } from "@/features/characters/model/character.types";
+import { CharacterRecordSheet } from "@/features/characters/ui/CharacterRecordSheet";
 
 type CharacterDetailsDialogProps = {
   character: CampaignCharacterDetails | null;
   onClose: () => void;
+  onEdit?: (() => void) | undefined;
   open: boolean;
 };
 
 export function CharacterDetailsDialog({
   character,
   onClose,
+  onEdit,
   open,
 }: CharacterDetailsDialogProps) {
   return (
-    <Dialog fullWidth maxWidth="md" onClose={onClose} open={open}>
-      <DialogTitle>{character?.name ?? "Character details"}</DialogTitle>
-      <DialogContent dividers>
+    <Dialog
+      fullWidth
+      maxWidth="xl"
+      onClose={onClose}
+      open={open}
+      slotProps={{
+        paper: {
+          sx: {
+            background: "rgba(7, 9, 12, 0.94)",
+            borderRadius: 3,
+            overflow: "hidden",
+          },
+        },
+      }}
+    >
+      <DialogContent sx={{ p: { xs: 1.25, md: 1.75 } }}>
         {character ? (
-          <Stack spacing={2.5}>
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-              <Chip label={character.type.replace("_", " ")} size="small" variant="outlined" />
-              <Chip label={character.status.replace("_", " ")} size="small" />
-            </Stack>
-
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Typography color="text.secondary">Owner</Typography>
-                <Typography>{character.ownerUserId ?? "Unassigned"}</Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Typography color="text.secondary">Class</Typography>
-                <Typography>
-                  {character.characterClass ?? "No class"}
-                  {character.subclass ? ` · ${character.subclass}` : ""}
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Typography color="text.secondary">Race</Typography>
-                <Typography>{character.race ?? "Unknown race"}</Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <Typography color="text.secondary">Background</Typography>
-                <Typography>{character.background ?? "Not set"}</Typography>
-              </Grid>
-            </Grid>
-
-            <Divider />
-
-            <Stack spacing={1}>
-              <Typography variant="subtitle1">Core stats</Typography>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 4, md: 2 }}>
-                  <Typography color="text.secondary">STR</Typography>
-                  <Typography>{character.strength ?? "-"}</Typography>
-                </Grid>
-                <Grid size={{ xs: 4, md: 2 }}>
-                  <Typography color="text.secondary">DEX</Typography>
-                  <Typography>{character.dexterity ?? "-"}</Typography>
-                </Grid>
-                <Grid size={{ xs: 4, md: 2 }}>
-                  <Typography color="text.secondary">CON</Typography>
-                  <Typography>{character.constitution ?? "-"}</Typography>
-                </Grid>
-                <Grid size={{ xs: 4, md: 2 }}>
-                  <Typography color="text.secondary">INT</Typography>
-                  <Typography>{character.intelligence ?? "-"}</Typography>
-                </Grid>
-                <Grid size={{ xs: 4, md: 2 }}>
-                  <Typography color="text.secondary">WIS</Typography>
-                  <Typography>{character.wisdom ?? "-"}</Typography>
-                </Grid>
-                <Grid size={{ xs: 4, md: 2 }}>
-                  <Typography color="text.secondary">CHA</Typography>
-                  <Typography>{character.charisma ?? "-"}</Typography>
-                </Grid>
-              </Grid>
-            </Stack>
-
-            {character.backstory ? (
-              <>
-                <Divider />
-                <Stack spacing={0.75}>
-                  <Typography variant="subtitle1">Backstory</Typography>
-                  <Typography color="text.secondary">{character.backstory}</Typography>
-                </Stack>
-              </>
-            ) : null}
-          </Stack>
+          <CharacterRecordSheet character={character} onClose={onClose} onEdit={onEdit} />
         ) : null}
       </DialogContent>
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose}>Close</Button>
-      </DialogActions>
     </Dialog>
   );
 }
