@@ -1,4 +1,5 @@
 import {
+  Box,
   Divider,
   List,
   ListItemButton,
@@ -10,6 +11,10 @@ import {
 import { Link as RouterLink, useLocation } from "react-router-dom";
 
 import { appPaths } from "@/app/router/paths";
+import {
+  CampaignWorkspaceIcon,
+  type CampaignWorkspaceIconKey,
+} from "@/features/campaigns/ui/CampaignWorkspaceIcon";
 
 type CampaignSidebarNavProps = {
   collapsed?: boolean;
@@ -18,83 +23,83 @@ type CampaignSidebarNavProps = {
 
 const campaignNavItems = [
   {
-    icon: "OV",
+    icon: "overview",
     label: "Overview",
     path: (campaignId: string) => appPaths.campaign(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "SE",
+    icon: "sessions",
     label: "Sessions",
     path: (campaignId: string) => appPaths.campaignSessions(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "CH",
+    icon: "characters",
     label: "Characters",
     path: (campaignId: string) => appPaths.campaignCharacters(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "QU",
+    icon: "quests",
     label: "Quests",
     path: (campaignId: string) => appPaths.campaignQuests(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "CR",
+    icon: "chronicle",
     label: "Chronicle",
     path: (campaignId: string) => appPaths.campaignChronicle(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "NO",
+    icon: "notes",
     label: "Notes",
     path: (campaignId: string) => appPaths.campaignNotes(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "NP",
+    icon: "npcs",
     label: "NPCs",
     path: (campaignId: string) => appPaths.campaignNpcs(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "LO",
+    icon: "locations",
     label: "Locations",
     path: (campaignId: string) => appPaths.campaignLocations(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "MO",
+    icon: "monsters",
     label: "Monsters",
     path: (campaignId: string) => appPaths.campaignMonsters(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "IN",
+    icon: "items",
     label: "Items",
     path: (campaignId: string) => appPaths.campaignInventory(campaignId),
     section: "workspace",
     implemented: true,
   },
   {
-    icon: "ME",
+    icon: "members",
     label: "Members",
     path: (campaignId: string) => appPaths.campaignMembers(campaignId),
     section: "management",
     implemented: true,
   },
-  { icon: "ST", label: "Settings", section: "management", implemented: false },
+  { icon: "settings", label: "Settings", section: "management", implemented: false },
 ] as const;
 
 function hasPath(
@@ -110,7 +115,7 @@ function SidebarItemContent({
   secondary,
 }: {
   collapsed: boolean;
-  icon: string;
+  icon: CampaignWorkspaceIconKey;
   label: string;
   secondary?: string;
 }) {
@@ -125,15 +130,49 @@ function SidebarItemContent({
             width: "100%",
           }}
         >
-          <Typography sx={{ fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.08em" }}>
-            {icon}
-          </Typography>
+          <CampaignWorkspaceIcon icon={icon} size={20} />
         </Stack>
       </Tooltip>
     );
   }
 
-  return <ListItemText primary={label} secondary={secondary} />;
+  return (
+    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", minWidth: 0 }}>
+      <Box
+        sx={{
+          alignItems: "center",
+          color: "primary.light",
+          display: "inline-flex",
+          justifyContent: "center",
+          minWidth: 22,
+        }}
+      >
+        <CampaignWorkspaceIcon icon={icon} size={20} />
+      </Box>
+      <ListItemText primary={label} secondary={secondary} />
+    </Stack>
+  );
+}
+
+function itemSx(collapsed: boolean) {
+  return {
+    alignItems: "center",
+    border: "1px solid transparent",
+    borderRadius: 2,
+    mb: 0.5,
+    justifyContent: collapsed ? "center" : "flex-start",
+    minHeight: 48,
+    px: collapsed ? 1 : 2,
+    "&.Mui-selected": {
+      background:
+        "linear-gradient(90deg, rgba(230, 22, 26, 0.24) 0%, rgba(230, 22, 26, 0.08) 100%)",
+      borderColor: "rgba(230, 22, 26, 0.32)",
+    },
+    "&.Mui-selected:hover": {
+      background:
+        "linear-gradient(90deg, rgba(230, 22, 26, 0.28) 0%, rgba(230, 22, 26, 0.12) 100%)",
+    },
+  };
 }
 
 export function CampaignSidebarNav({ campaignId, collapsed = false }: CampaignSidebarNavProps) {
@@ -167,15 +206,8 @@ export function CampaignSidebarNav({ campaignId, collapsed = false }: CampaignSi
               component={href && item.implemented ? RouterLink : "button"}
               disabled={!item.implemented}
               selected={selected}
+              sx={itemSx(collapsed)}
               to={href}
-              sx={{
-                alignItems: "center",
-                borderRadius: 1.5,
-                mb: 0.5,
-                justifyContent: collapsed ? "center" : "flex-start",
-                minHeight: 48,
-                px: collapsed ? 1 : 2,
-              }}
             >
               <SidebarItemContent
                 collapsed={collapsed}
@@ -207,15 +239,8 @@ export function CampaignSidebarNav({ campaignId, collapsed = false }: CampaignSi
               component={href && item.implemented ? RouterLink : "button"}
               disabled={!item.implemented}
               selected={selected}
+              sx={itemSx(collapsed)}
               to={href}
-              sx={{
-                alignItems: "center",
-                borderRadius: 1.5,
-                mb: 0.5,
-                justifyContent: collapsed ? "center" : "flex-start",
-                minHeight: 48,
-                px: collapsed ? 1 : 2,
-              }}
             >
               <SidebarItemContent
                 collapsed={collapsed}

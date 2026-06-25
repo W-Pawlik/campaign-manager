@@ -52,63 +52,63 @@ export const router = createBrowserRouter([
             element: <AppLayout />,
             children: [
               {
-                path: appPaths.home,
+                index: true,
                 element: <HomePage />,
               },
               {
-                path: appPaths.items,
+                path: "items",
                 element: <ItemsCatalogPage />,
               },
               {
-                path: appPaths.monsters,
+                path: "monsters",
                 element: <MonstersCatalogPage />,
               },
               {
-                path: appPaths.campaignOverview,
+                path: "campaigns/:campaignId",
                 element: <CampaignOverviewPage />,
               },
               {
-                path: appPaths.campaignInventoryRoute,
+                path: "campaigns/:campaignId/inventory",
                 element: <CampaignInventoryPage />,
               },
               {
-                path: appPaths.campaignMembersRoute,
+                path: "campaigns/:campaignId/members",
                 element: <CampaignMembersPage />,
               },
               {
-                path: appPaths.campaignMonstersRoute,
+                path: "campaigns/:campaignId/monsters",
                 element: <CampaignMonstersPage />,
               },
               {
-                path: appPaths.campaignSessionsRoute,
+                path: "campaigns/:campaignId/sessions",
                 element: <CampaignSessionsPage />,
               },
               {
-                path: appPaths.campaignCharactersRoute,
+                path: "campaigns/:campaignId/characters",
                 element: <CampaignCharactersPage />,
               },
               {
-                path: appPaths.campaignQuestsRoute,
+                path: "campaigns/:campaignId/quests",
                 element: <CampaignQuestsPage />,
               },
               {
-                path: appPaths.campaignChronicleRoute,
+                path: "campaigns/:campaignId/chronicle",
                 element: <CampaignChroniclePage />,
               },
               {
-                path: appPaths.campaignNotesRoute,
+                path: "campaigns/:campaignId/notes",
                 element: <CampaignNotesPage />,
               },
               {
-                path: appPaths.campaignNpcsRoute,
+                path: "campaigns/:campaignId/npcs",
                 element: <CampaignNpcsPage />,
               },
               {
-                path: appPaths.campaignLocationsRoute,
+                path: "campaigns/:campaignId/locations",
                 element: <CampaignLocationsPage />,
               },
               {
-                path: appPaths.settings,
+                path: "settings",
                 element: <SettingsPage />,
               },
             ],
