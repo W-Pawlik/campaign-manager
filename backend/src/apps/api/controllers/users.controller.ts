@@ -5,6 +5,7 @@ import { UnauthorizedError } from "@core/application/errors/AppError";
 import { ChangeCurrentUserPasswordCommand } from "@modules/users/application/commands/ChangeCurrentUserPasswordCommand";
 import { DeleteCurrentUserAccountCommand } from "@modules/users/application/commands/DeleteCurrentUserAccountCommand";
 import { UpdateCurrentUserProfileCommand } from "@modules/users/application/commands/UpdateCurrentUserProfileCommand";
+import { ListCurrentUserCampaignInvitationsQuery } from "@modules/campaigns/application/queries/ListCurrentUserCampaignInvitationsQuery";
 import { GetCurrentUserProfileQuery } from "@modules/users/application/queries/GetCurrentUserProfileQuery";
 import { SearchUsersQuery } from "@modules/users/application/queries/SearchUsersQuery";
 
@@ -26,6 +27,17 @@ export class UsersController {
       new SearchUsersQuery({
         limit: typeof req.query.limit === "number" ? req.query.limit : 8,
         query: String(req.query.query),
+      }),
+    );
+
+    res.status(200).json(result);
+  }
+
+  public async listCurrentUserCampaignInvitations(_req: Request, res: Response): Promise<void> {
+    const userId = this.getAuthUserId(res);
+    const result = await this.queryBus.execute(
+      new ListCurrentUserCampaignInvitationsQuery({
+        userId,
       }),
     );
 

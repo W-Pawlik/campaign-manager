@@ -17,6 +17,7 @@ import { appConstants } from "@/app/config/constants";
 import { appPaths } from "@/app/router/paths";
 import { useAppDispatch, useAppSelector } from "@/app/store/hooks";
 import { logout } from "@/features/auth";
+import { InvitationNotificationsMenu } from "@/features/members/ui/InvitationNotificationsMenu";
 
 function topbarNavButtonSx(active: boolean) {
   return {
@@ -74,17 +75,14 @@ export function AppTopbar() {
   const isItemsSelected = location.pathname === appPaths.items;
   const isMonstersSelected = location.pathname === appPaths.monsters;
   const avatarLabel = useMemo(() => {
-    const source =
-      currentUser?.username?.trim() ||
-      currentUser?.displayName?.trim() ||
-      currentUser?.email?.trim();
+    const source = currentUser?.username?.trim() || currentUser?.email?.trim();
 
     if (!source) {
       return "U";
     }
 
     return source.charAt(0).toUpperCase();
-  }, [currentUser?.displayName, currentUser?.email, currentUser?.username]);
+  }, [currentUser?.email, currentUser?.username]);
 
   const isUserMenuOpen = menuAnchorEl !== null;
 
@@ -210,17 +208,11 @@ export function AppTopbar() {
                 }}
               >
                 {currentUser?.username ? (
-                  <Stack spacing={0.05} sx={{ alignItems: "flex-end", lineHeight: 1 }}>
-                    <Typography color="#f1dfba" variant="body2">
-                      {currentUser.username}
-                    </Typography>
-                    {currentUser.displayName && currentUser.displayName !== currentUser.username ? (
-                      <Typography color="text.secondary" variant="caption">
-                        {currentUser.displayName}
-                      </Typography>
-                    ) : null}
-                  </Stack>
+                  <Typography color="#f1dfba" variant="body2">
+                    {currentUser.username}
+                  </Typography>
                 ) : null}
+                <InvitationNotificationsMenu />
                 <IconButton color="inherit" onClick={handleOpenUserMenu}>
                   <Avatar
                     src={currentUser?.avatarUrl ?? undefined}

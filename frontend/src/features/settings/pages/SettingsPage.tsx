@@ -21,7 +21,6 @@ import {
 
 type ProfileFormValues = {
   username: string;
-  displayName: string;
   avatarUrl?: string;
   bio?: string;
   timezone?: string;
@@ -94,7 +93,6 @@ export function SettingsPage() {
     await updateCurrentUserProfileMutation.mutateAsync({
       avatarUrl: normalizeOptionalText(values.avatarUrl),
       bio: normalizeOptionalText(values.bio),
-      displayName: values.displayName.trim(),
       locale: normalizeOptionalText(values.locale),
       profile: {
         defaultTimezone: normalizeOptionalText(values.defaultTimezone),

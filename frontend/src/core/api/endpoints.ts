@@ -10,6 +10,7 @@ export const apiEndpoints = {
     base: "/campaigns",
   },
   users: {
+    campaignInvitations: "/users/me/campaign-invitations",
     current: "/users/me",
     password: "/users/me/password",
     search: "/users/search",

@@ -13,6 +13,7 @@ import { GetCampaignDetailsHandler } from "@modules/campaigns/application/handle
 import { InviteCampaignMemberHandler } from "@modules/campaigns/application/handlers/InviteCampaignMemberHandler";
 import { LeaveCampaignHandler } from "@modules/campaigns/application/handlers/LeaveCampaignHandler";
 import { ListCampaignInvitationsHandler } from "@modules/campaigns/application/handlers/ListCampaignInvitationsHandler";
+import { ListCurrentUserCampaignInvitationsHandler } from "@modules/campaigns/application/handlers/ListCurrentUserCampaignInvitationsHandler";
 import { ListCampaignMembersHandler } from "@modules/campaigns/application/handlers/ListCampaignMembersHandler";
 import { ListUserCampaignsHandler } from "@modules/campaigns/application/handlers/ListUserCampaignsHandler";
 import { RemoveCampaignMemberHandler } from "@modules/campaigns/application/handlers/RemoveCampaignMemberHandler";
@@ -341,6 +342,19 @@ export function loadCampaignsContainerModule(container: Container): void {
         accessService,
         campaignReadRepository,
       );
+    })
+    .inTransientScope();
+
+  container
+    .bind<ListCurrentUserCampaignInvitationsHandler>(
+      CAMPAIGNS_TYPES.ListCurrentUserCampaignInvitationsHandler,
+    )
+    .toDynamicValue((context) => {
+      const campaignReadRepository = context.get<CampaignReadRepository>(
+        CAMPAIGNS_TYPES.CampaignReadRepository,
+      );
+
+      return new ListCurrentUserCampaignInvitationsHandler(campaignReadRepository);
     })
     .inTransientScope();
 }

@@ -139,7 +139,6 @@ describe("Auth API flow", () => {
     expect(meResponse.status).toBe(200);
     expect(meResponse.body.email).toBe("test@example.com");
     expect(meResponse.body.username).toBeTruthy();
-    expect(meResponse.body.displayName).toBeTruthy();
     expect(meResponse.body.avatarUrl).toBeNull();
 
     const loginResponse = await agent.post("/api/v1/auth/login").send({

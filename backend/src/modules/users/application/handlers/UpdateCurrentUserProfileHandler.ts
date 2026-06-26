@@ -7,7 +7,6 @@ import type { UserRepository } from "@modules/users/application/ports/UserReposi
 import type { UpdateCurrentUserProfileCommand } from "@modules/users/application/commands/UpdateCurrentUserProfileCommand";
 import { mapCurrentUserProfileDTO } from "@modules/users/application/services/CurrentUserProfileDtoMapper";
 import { UserProfile } from "@modules/users/domain/entities/UserProfile";
-import { DisplayName } from "@modules/users/domain/value-objects/DisplayName";
 import { Username } from "@modules/users/domain/value-objects/Username";
 
 export class UpdateCurrentUserProfileHandler
@@ -38,13 +37,8 @@ export class UpdateCurrentUserProfileHandler
       }
     }
 
-    const displayName =
-      command.input.displayName === undefined
-        ? undefined
-        : DisplayName.create(command.input.displayName);
     const updatedUser = user.withUpdatedDetails({
       ...(username === undefined ? {} : { username }),
-      ...(displayName === undefined ? {} : { displayName }),
       ...(command.input.avatarUrl === undefined ? {} : { avatarUrl: command.input.avatarUrl }),
       ...(command.input.bio === undefined ? {} : { bio: command.input.bio }),
       ...(command.input.timezone === undefined ? {} : { timezone: command.input.timezone }),

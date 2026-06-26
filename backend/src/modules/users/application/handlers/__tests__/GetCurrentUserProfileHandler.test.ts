@@ -5,7 +5,6 @@ import type { UserProfileRepository } from "@modules/users/application/ports/Use
 import type { UserRepository } from "@modules/users/application/ports/UserRepository";
 import { User } from "@modules/users/domain/entities/User";
 import { UserProfile } from "@modules/users/domain/entities/UserProfile";
-import { DisplayName } from "@modules/users/domain/value-objects/DisplayName";
 import { Username } from "@modules/users/domain/value-objects/Username";
 
 describe("GetCurrentUserProfileHandler", () => {
@@ -14,7 +13,6 @@ describe("GetCurrentUserProfileHandler", () => {
       id: "user-1",
       email: "user@example.com",
       username: Username.create("user_one"),
-      displayName: DisplayName.create("User One"),
       passwordHash: "hash",
       avatarUrl: null,
       bio: "bio",

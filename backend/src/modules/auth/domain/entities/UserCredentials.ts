@@ -6,7 +6,6 @@ export interface UserCredentialsProps {
   email: Email;
   passwordHash: PasswordHash;
   username?: string;
-  displayName?: string;
   avatarUrl?: string | null;
   createdAt: Date;
 }
@@ -16,7 +15,6 @@ export class UserCredentials {
   public readonly email: Email;
   public readonly passwordHash: PasswordHash;
   public readonly username: string | undefined;
-  public readonly displayName: string | undefined;
   public readonly avatarUrl: string | null | undefined;
   public readonly createdAt: Date;
 
@@ -25,7 +23,6 @@ export class UserCredentials {
     this.email = props.email;
     this.passwordHash = props.passwordHash;
     this.username = props.username;
-    this.displayName = props.displayName;
     this.avatarUrl = props.avatarUrl;
     this.createdAt = props.createdAt;
   }

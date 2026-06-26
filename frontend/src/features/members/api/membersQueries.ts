@@ -9,6 +9,7 @@ import type {
 
 export const membersQueryKeys = {
   all: ["campaign-members"] as const,
+  currentUserInvitations: () => [...membersQueryKeys.all, "current-user", "invitations"] as const,
   invitations: (campaignId: string) => [...membersQueryKeys.all, campaignId, "invitations"] as const,
   members: (campaignId: string) => [...membersQueryKeys.all, campaignId, "members"] as const,
 };
@@ -16,6 +17,7 @@ export const membersQueryKeys = {
 function invalidateCampaignMembershipQueries(queryClient: ReturnType<typeof useQueryClient>, campaignId: string) {
   queryClient.invalidateQueries({ queryKey: membersQueryKeys.members(campaignId) });
   queryClient.invalidateQueries({ queryKey: membersQueryKeys.invitations(campaignId) });
+  queryClient.invalidateQueries({ queryKey: membersQueryKeys.currentUserInvitations() });
   queryClient.invalidateQueries({ queryKey: campaignsQueryKeys.members(campaignId) });
   queryClient.invalidateQueries({ queryKey: campaignsQueryKeys.invitations(campaignId) });
   queryClient.invalidateQueries({ queryKey: campaignsQueryKeys.details(campaignId) });
@@ -35,6 +37,13 @@ export function useCampaignInvitationsQuery(campaignId: string | undefined) {
     enabled: Boolean(campaignId),
     queryFn: () => membersApi.listCampaignInvitations(campaignId!),
     queryKey: membersQueryKeys.invitations(campaignId ?? "missing"),
+  });
+}
+
+export function useCurrentUserCampaignInvitationsQuery() {
+  return useQuery({
+    queryFn: () => membersApi.listCurrentUserCampaignInvitations(),
+    queryKey: membersQueryKeys.currentUserInvitations(),
   });
 }
 
@@ -91,6 +100,18 @@ export function useAcceptCampaignInvitationMutation(campaignId: string | undefin
   });
 }
 
+export function useAcceptUserCampaignInvitationMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { campaignId: string; invitationId: string }) =>
+      membersApi.acceptUserCampaignInvitation(input),
+    onSuccess: (_data, variables) => {
+      invalidateCampaignMembershipQueries(queryClient, variables.campaignId);
+    },
+  });
+}
+
 export function useDeclineCampaignInvitationMutation(campaignId: string | undefined) {
   const queryClient = useQueryClient();
 
@@ -100,6 +121,18 @@ export function useDeclineCampaignInvitationMutation(campaignId: string | undefi
       if (campaignId) {
         invalidateCampaignMembershipQueries(queryClient, campaignId);
       }
+    },
+  });
+}
+
+export function useDeclineUserCampaignInvitationMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: { campaignId: string; invitationId: string }) =>
+      membersApi.declineUserCampaignInvitation(input),
+    onSuccess: (_data, variables) => {
+      invalidateCampaignMembershipQueries(queryClient, variables.campaignId);
     },
   });
 }

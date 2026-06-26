@@ -24,6 +24,9 @@ export function createUsersRouter(
       await controller.searchUsers(req, res);
     },
   );
+  router.get("/me/campaign-invitations", authMiddleware, async (req, res) => {
+    await controller.listCurrentUserCampaignInvitations(req, res);
+  });
   router.get("/me", authMiddleware, async (req, res) => {
     await controller.getCurrentUserProfile(req, res);
   });

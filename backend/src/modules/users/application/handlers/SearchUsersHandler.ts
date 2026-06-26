@@ -14,7 +14,6 @@ export class SearchUsersHandler implements QueryHandler<SearchUsersQuery, UserLo
     return users.map((user) => ({
       id: user.id,
       username: user.username.value,
-      displayName: user.displayName.value,
       avatarUrl: user.avatarUrl,
     }));
   }

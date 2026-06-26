@@ -17,7 +17,6 @@ interface GameSessionDetailsPersistenceRecord extends GameSessionPersistenceReco
     SessionParticipantPersistenceRecord & {
       user: {
         avatarUrl: string | null;
-        displayName: string;
         username: string;
       };
     }
@@ -70,7 +69,6 @@ export class PrismaGameSessionReadRepository implements GameSessionReadRepositor
             user: {
               select: {
                 avatarUrl: true,
-                displayName: true,
                 username: true,
               },
             },
@@ -92,7 +90,6 @@ export class PrismaGameSessionReadRepository implements GameSessionReadRepositor
       sessionId: participant.sessionId,
       userId: participant.userId,
       username: participant.user.username,
-      displayName: participant.user.displayName,
       avatarUrl: participant.user.avatarUrl,
       characterId: participant.characterId,
       attendanceStatus: participant.attendanceStatus,

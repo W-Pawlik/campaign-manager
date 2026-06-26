@@ -40,7 +40,6 @@ export class PrismaUserRepository implements UserRepository {
         deletedAt: null,
         OR: [
           { username: { contains: query, mode: "insensitive" } },
-          { displayName: { contains: query, mode: "insensitive" } },
           { email: { contains: query, mode: "insensitive" } },
         ],
       },

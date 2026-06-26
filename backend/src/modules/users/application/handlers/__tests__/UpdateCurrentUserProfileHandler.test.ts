@@ -5,7 +5,6 @@ import { UpdateCurrentUserProfileHandler } from "@modules/users/application/hand
 import type { UserProfileRepository } from "@modules/users/application/ports/UserProfileRepository";
 import type { UserRepository } from "@modules/users/application/ports/UserRepository";
 import { User, type UserProps } from "@modules/users/domain/entities/User";
-import { DisplayName } from "@modules/users/domain/value-objects/DisplayName";
 import { Username } from "@modules/users/domain/value-objects/Username";
 
 function createUser(overrides?: Partial<UserProps>): User {
@@ -13,7 +12,6 @@ function createUser(overrides?: Partial<UserProps>): User {
     id: "user-1",
     email: "user@example.com",
     username: Username.create("user_one"),
-    displayName: DisplayName.create("User One"),
     passwordHash: "hash",
     avatarUrl: null,
     bio: null,
@@ -46,7 +44,6 @@ describe("UpdateCurrentUserProfileHandler", () => {
       new UpdateCurrentUserProfileCommand({
         userId: "user-1",
         username: "updated_user",
-        displayName: "Updated Name",
         bio: "Updated bio",
         profile: {
           preferredSystem: "DND5E",
@@ -55,7 +52,6 @@ describe("UpdateCurrentUserProfileHandler", () => {
     );
 
     expect(result.username).toBe("updated_user");
-    expect(result.displayName).toBe("Updated Name");
     expect(result.profile?.preferredSystem).toBe("DND5E");
     expect(userRepository.save).toHaveBeenCalledTimes(1);
     expect(userProfileRepository.save).toHaveBeenCalledTimes(1);

@@ -15,7 +15,9 @@ export function createValidateQueryMiddleware<TSchema extends z.ZodTypeAny>(
   schema: TSchema,
 ): RequestHandler {
   return (req, _res, next) => {
-    req.query = schema.parse(req.query) as typeof req.query;
+    const parsedQuery = schema.parse(req.query) as typeof req.query;
+
+    Object.assign(req.query, parsedQuery);
     next();
   };
 }

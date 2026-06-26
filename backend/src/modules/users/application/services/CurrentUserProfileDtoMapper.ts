@@ -21,7 +21,6 @@ export function mapCurrentUserProfileDTO(
     id: user.id,
     email: user.email,
     username: user.username.value,
-    displayName: user.displayName.value,
     avatarUrl: user.avatarUrl,
     bio: user.bio,
     timezone: user.timezone,

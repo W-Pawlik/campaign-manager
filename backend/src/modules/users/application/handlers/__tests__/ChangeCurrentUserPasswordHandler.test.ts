@@ -5,7 +5,6 @@ import { ChangeCurrentUserPasswordHandler } from "@modules/users/application/han
 import type { PasswordHasher } from "@modules/users/application/ports/PasswordHasher";
 import type { UserRepository } from "@modules/users/application/ports/UserRepository";
 import { User } from "@modules/users/domain/entities/User";
-import { DisplayName } from "@modules/users/domain/value-objects/DisplayName";
 import { Username } from "@modules/users/domain/value-objects/Username";
 
 function createUser(): User {
@@ -13,7 +12,6 @@ function createUser(): User {
     id: "user-1",
     email: "user@example.com",
     username: Username.create("user_one"),
-    displayName: DisplayName.create("User One"),
     passwordHash: "old-hash",
     avatarUrl: null,
     bio: null,

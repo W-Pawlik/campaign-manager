@@ -4,7 +4,6 @@ export interface CurrentUserProfileDTO {
   id: string;
   email: string;
   username: string;
-  displayName: string;
   avatarUrl?: string | null;
   bio?: string | null;
   timezone?: string | null;

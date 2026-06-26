@@ -107,7 +107,6 @@ export function CharacterRecordSheet({ character, onClose, onEdit }: CharacterRe
               label="Player name"
               value={getCharacterOwnerLabel(
                 character.ownerUsername,
-                character.ownerDisplayName,
                 character.ownerUserId,
               )}
             />
@@ -276,7 +275,6 @@ export function CharacterRecordSheet({ character, onClose, onEdit }: CharacterRe
                   label="Owner"
                   value={getCharacterOwnerLabel(
                     character.ownerUsername,
-                    character.ownerDisplayName,
                     character.ownerUserId,
                   )}
                 />

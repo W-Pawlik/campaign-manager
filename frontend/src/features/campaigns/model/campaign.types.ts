@@ -38,15 +38,14 @@ export type CampaignDetails = {
 export type CampaignInvitation = {
   id: string;
   campaignId: string;
+  campaignName: string | null;
   userId: string;
   username: string | null;
-  displayName: string | null;
   avatarUrl: string | null;
   role: string;
   status: string;
   invitedById: string;
   invitedByUsername: string | null;
-  invitedByDisplayName: string | null;
   respondedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -57,7 +56,6 @@ export type CampaignMember = {
   campaignId: string;
   userId: string;
   username: string | null;
-  displayName: string | null;
   avatarUrl: string | null;
   role: string;
   status: string;
@@ -66,7 +64,6 @@ export type CampaignMember = {
   invitedAt: string | null;
   invitedById: string | null;
   invitedByUsername: string | null;
-  invitedByDisplayName: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -76,7 +73,6 @@ export type CampaignCharacterListItem = {
   campaignId: string;
   ownerUserId: string | null;
   ownerUsername: string | null;
-  ownerDisplayName: string | null;
   name: string;
   avatarUrl: string | null;
   type: string;

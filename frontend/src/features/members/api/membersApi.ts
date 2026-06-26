@@ -12,8 +12,20 @@ import type {
 const campaignsBasePath = apiEndpoints.campaigns.base;
 
 export const membersApi = {
+  async acceptUserCampaignInvitation(input: { campaignId: string; invitationId: string }): Promise<void> {
+    await httpClient.post(
+      `${campaignsBasePath}/${input.campaignId}/invitations/${input.invitationId}/accept`,
+    );
+  },
+
   async acceptCampaignInvitation(campaignId: string, invitationId: string): Promise<void> {
     await httpClient.post(`${campaignsBasePath}/${campaignId}/invitations/${invitationId}/accept`);
+  },
+
+  async declineUserCampaignInvitation(input: { campaignId: string; invitationId: string }): Promise<void> {
+    await httpClient.post(
+      `${campaignsBasePath}/${input.campaignId}/invitations/${input.invitationId}/decline`,
+    );
   },
 
   async declineCampaignInvitation(campaignId: string, invitationId: string): Promise<void> {
@@ -42,6 +54,12 @@ export const membersApi = {
 
   async listCampaignMembers(campaignId: string): Promise<CampaignMember[]> {
     const response = await httpClient.get<CampaignMember[]>(`${campaignsBasePath}/${campaignId}/members`);
+
+    return response.data;
+  },
+
+  async listCurrentUserCampaignInvitations(): Promise<CampaignInvitation[]> {
+    const response = await httpClient.get<CampaignInvitation[]>(apiEndpoints.users.campaignInvitations);
 
     return response.data;
   },

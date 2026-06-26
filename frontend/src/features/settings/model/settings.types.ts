@@ -13,7 +13,6 @@ export type CurrentUserProfile = {
   id: string;
   email: string;
   username: string;
-  displayName: string;
   avatarUrl?: string | null;
   bio?: string | null;
   timezone?: string | null;
@@ -25,7 +24,6 @@ export type CurrentUserProfile = {
 
 export type UpdateCurrentUserProfilePayload = {
   username?: string;
-  displayName?: string;
   avatarUrl?: string | null;
   bio?: string | null;
   timezone?: string | null;

@@ -94,14 +94,12 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
       include: {
         invitedBy: {
           select: {
-            displayName: true,
             username: true,
           },
         },
         user: {
           select: {
             avatarUrl: true,
-            displayName: true,
             username: true,
           },
         },
@@ -116,7 +114,6 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
       campaignId: member.campaignId,
       userId: member.userId,
       username: member.user.username,
-      displayName: member.user.displayName,
       avatarUrl: member.user.avatarUrl,
       role: member.role,
       status: member.status,
@@ -125,7 +122,6 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
       invitedAt: member.invitedAt?.toISOString() ?? null,
       invitedById: member.invitedById,
       invitedByUsername: member.invitedBy?.username ?? null,
-      invitedByDisplayName: member.invitedBy?.displayName ?? null,
       createdAt: member.createdAt.toISOString(),
       updatedAt: member.updatedAt.toISOString(),
     }));
@@ -137,16 +133,19 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
         campaignId,
       },
       include: {
+        campaign: {
+          select: {
+            name: true,
+          },
+        },
         invitedBy: {
           select: {
-            displayName: true,
             username: true,
           },
         },
         user: {
           select: {
             avatarUrl: true,
-            displayName: true,
             username: true,
           },
         },
@@ -159,15 +158,55 @@ export class PrismaCampaignReadRepository implements CampaignReadRepository {
     return invitations.map((invitation) => ({
       id: invitation.id,
       campaignId: invitation.campaignId,
+      campaignName: invitation.campaign.name,
       userId: invitation.userId,
       username: invitation.user.username,
-      displayName: invitation.user.displayName,
       avatarUrl: invitation.user.avatarUrl,
       role: invitation.role,
       status: invitation.status,
       invitedById: invitation.invitedById,
       invitedByUsername: invitation.invitedBy.username,
-      invitedByDisplayName: invitation.invitedBy.displayName,
+      respondedAt: invitation.respondedAt?.toISOString() ?? null,
+      createdAt: invitation.createdAt.toISOString(),
+      updatedAt: invitation.updatedAt.toISOString(),
+    }));
+  }
+
+  public async listInvitationsForUser(userId: string): Promise<CampaignInvitationDTO[]> {
+    const invitations = await this.prismaClient.campaignInvitation.findMany({
+      where: {
+        userId,
+        status: "INVITED",
+        campaign: {
+          deletedAt: null,
+        },
+      },
+      include: {
+        campaign: {
+          select: {
+            name: true,
+          },
+        },
+        invitedBy: {
+          select: {
+            username: true,
+          },
+        },
+      },
+      orderBy: [{ createdAt: "desc" }, { campaignId: "asc" }],
+    });
+
+    return invitations.map((invitation) => ({
+      id: invitation.id,
+      campaignId: invitation.campaignId,
+      campaignName: invitation.campaign.name,
+      userId: invitation.userId,
+      username: null,
+      avatarUrl: null,
+      role: invitation.role,
+      status: invitation.status,
+      invitedById: invitation.invitedById,
+      invitedByUsername: invitation.invitedBy.username,
       respondedAt: invitation.respondedAt?.toISOString() ?? null,
       createdAt: invitation.createdAt.toISOString(),
       updatedAt: invitation.updatedAt.toISOString(),

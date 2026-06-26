@@ -144,6 +144,10 @@ class InMemoryCampaignReadRepository implements CampaignReadRepository {
   public async listInvitations(): Promise<never[]> {
     return [];
   }
+
+  public async listInvitationsForUser(): Promise<never[]> {
+    return [];
+  }
 }
 
 class InMemoryCampaignMembershipRepository implements CampaignMembershipRepository {

@@ -12,10 +12,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { invitedMemberRoleOptions } from "@/features/members/model/member.types";
+import { UserLookupAutocomplete } from "@/features/users";
+import type { UserLookupItem } from "@/features/users";
 
 const inviteMemberSchema = z.object({
   role: z.enum(["GM", "CO_GM", "PLAYER", "OBSERVER"]),
@@ -39,11 +42,13 @@ export function InviteMemberDialog({
   open,
   submitError,
 }: InviteMemberDialogProps) {
+  const [selectedUser, setSelectedUser] = useState<UserLookupItem | null>(null);
   const {
     formState: { errors },
     handleSubmit,
     register,
     reset,
+    setValue,
   } = useForm<InviteMemberFormValues>({
     defaultValues: {
       role: "PLAYER",
@@ -53,12 +58,14 @@ export function InviteMemberDialog({
   });
 
   const handleDialogClose = () => {
+    setSelectedUser(null);
     reset();
     onClose();
   };
 
   const handleValidSubmit = handleSubmit(async (values) => {
     await onSubmit(values);
+    setSelectedUser(null);
     reset();
   });
 
@@ -68,17 +75,23 @@ export function InviteMemberDialog({
 
       <DialogContent dividers>
         <Stack component="form" noValidate onSubmit={handleValidSubmit} spacing={2.5}>
-          <Typography color="text.secondary">Enter the target user ID manually.</Typography>
+          <Typography color="text.secondary">
+            Search for the target user by unique username and send the invitation directly.
+          </Typography>
 
           {submitError ? <Alert severity="error">{submitError}</Alert> : null}
 
-          <TextField
-            autoFocus
+          <input type="hidden" {...register("userId")} />
+          <UserLookupAutocomplete
             error={Boolean(errors.userId)}
-            fullWidth
             helperText={errors.userId?.message}
-            label="User ID"
-            {...register("userId")}
+            label="User"
+            onChange={(value) => {
+              setSelectedUser(value);
+              setValue("userId", value?.id ?? "", { shouldValidate: true });
+            }}
+            placeholder="Start typing a username"
+            value={selectedUser}
           />
 
           <TextField

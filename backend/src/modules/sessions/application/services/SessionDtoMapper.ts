@@ -24,7 +24,6 @@ export function mapSessionParticipantDtoFromDomain(
     sessionId: participant.sessionId,
     userId: participant.userId,
     username: hasUserSummary(participant) ? participant.username : null,
-    displayName: hasUserSummary(participant) ? participant.displayName : null,
     avatarUrl: hasUserSummary(participant) ? participant.avatarUrl : null,
     characterId: participant.characterId,
     attendanceStatus:

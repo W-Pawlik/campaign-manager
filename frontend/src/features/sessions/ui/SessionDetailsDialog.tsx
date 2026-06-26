@@ -73,10 +73,8 @@ export function SessionDetailsDialog({
               ) : (
                 session.participants.map((participant) => (
                   <Stack key={participant.id} spacing={0.35}>
-                    <Typography>
-                      {participant.displayName ?? participant.username ?? participant.userId}
-                    </Typography>
-                    <Typography color="text.secondary" variant="body2">
+                    <Typography>{participant.username ?? participant.userId}</Typography>
+                  <Typography color="text.secondary" variant="body2">
                       {participant.attendanceStatus.replace("_", " ")}
                       {participant.characterId ? ` · Character ${participant.characterId}` : ""}
                     </Typography>

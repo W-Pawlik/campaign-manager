@@ -122,7 +122,6 @@ export function CampaignCharactersList({
                     <Typography color="inherit" variant="body2">
                       {getCharacterOwnerLabel(
                         character.ownerUsername,
-                        character.ownerDisplayName,
                         character.ownerUserId,
                       )}
                     </Typography>

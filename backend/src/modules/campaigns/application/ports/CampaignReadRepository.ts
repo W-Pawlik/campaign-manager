@@ -8,4 +8,5 @@ export interface CampaignReadRepository {
   getDetailsForUser(campaignId: string, userId: string): Promise<CampaignDetailsDTO | null>;
   listMembers(campaignId: string): Promise<CampaignMemberDTO[]>;
   listInvitations(campaignId: string): Promise<CampaignInvitationDTO[]>;
+  listInvitationsForUser(userId: string): Promise<CampaignInvitationDTO[]>;
 }

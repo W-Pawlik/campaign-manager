@@ -229,6 +229,10 @@ class InMemoryCampaignReadRepository implements CampaignReadRepository {
     void campaignId;
     return [];
   }
+
+  public async listInvitationsForUser(): Promise<CampaignInvitationDTO[]> {
+    return [];
+  }
 }
 
 class InMemoryCampaignMembershipRepository implements CampaignMembershipRepository {

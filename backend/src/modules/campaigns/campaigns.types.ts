@@ -26,4 +26,7 @@ export const CAMPAIGNS_TYPES = {
   GetCampaignDetailsHandler: Symbol.for("campaigns.GetCampaignDetailsHandler"),
   ListCampaignMembersHandler: Symbol.for("campaigns.ListCampaignMembersHandler"),
   ListCampaignInvitationsHandler: Symbol.for("campaigns.ListCampaignInvitationsHandler"),
+  ListCurrentUserCampaignInvitationsHandler: Symbol.for(
+    "campaigns.ListCurrentUserCampaignInvitationsHandler",
+  ),
 } as const;

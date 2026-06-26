@@ -169,11 +169,7 @@ export function CharacterSheetPanel({
               <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                 <Icon icon="tdesign:member-filled" style={{ fontSize: 18, color: "#5f4a2f" }} />
                 <Typography variant="body1">
-                  {getCharacterOwnerLabel(
-                    character.ownerUsername,
-                    character.ownerDisplayName,
-                    character.ownerUserId,
-                  )}
+                  {getCharacterOwnerLabel(character.ownerUsername, character.ownerUserId)}
                 </Typography>
               </Stack>
             </Stack>

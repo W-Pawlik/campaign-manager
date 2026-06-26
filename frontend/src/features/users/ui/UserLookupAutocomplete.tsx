@@ -16,7 +16,7 @@ type UserLookupAutocompleteProps = {
 };
 
 function getAvatarFallback(option: UserLookupItem): string {
-  const source = option.username.trim() || option.displayName.trim();
+  const source = option.username.trim();
 
   return source.charAt(0).toUpperCase() || "U";
 }
@@ -31,24 +31,33 @@ export function UserLookupAutocomplete({
   value,
 }: UserLookupAutocompleteProps) {
   const [searchValue, setSearchValue] = useState("");
+  const inputValue = value?.username ?? searchValue;
   const searchQuery = useUserSearchQuery(searchValue);
   const options = searchQuery.data ?? [];
+  const noOptionsText = searchQuery.isError
+    ? searchQuery.error.message
+    : inputValue.trim().length < 2
+      ? "Type at least 2 characters"
+      : "No users found";
 
   return (
     <Autocomplete
       disabled={disabled}
       filterOptions={(items) => items}
-      getOptionLabel={(option) =>
-        option.displayName && option.displayName !== option.username
-          ? `${option.username} (${option.displayName})`
-          : option.username
-      }
+      getOptionLabel={(option) => option.username}
+      inputValue={inputValue}
       isOptionEqualToValue={(option, selectedValue) => option.id === selectedValue.id}
       loading={searchQuery.isLoading}
-      noOptionsText={searchValue.trim().length < 2 ? "Type at least 2 characters" : "No users found"}
-      onChange={(_event, nextValue) => onChange(nextValue)}
+      noOptionsText={noOptionsText}
+      onChange={(_event, nextValue) => {
+        onChange(nextValue);
+        setSearchValue(nextValue?.username ?? "");
+      }}
       onInputChange={(_event, nextValue, reason) => {
-        if (reason === "input") {
+        if (reason === "input" || reason === "clear") {
+          if (value !== null) {
+            onChange(null);
+          }
           setSearchValue(nextValue);
         }
       }}
@@ -71,9 +80,9 @@ export function UserLookupAutocomplete({
             <Stack spacing={0.15} sx={{ minWidth: 0 }}>
               <Typography variant="body2">{option.username}</Typography>
               <Stack direction="row" spacing={0.6} sx={{ alignItems: "center", minWidth: 0 }}>
-                <Icon icon="solar:user-linear" style={{ fontSize: 13, opacity: 0.7 }} />
+                <Icon icon="solar:hashtag-square-linear" style={{ fontSize: 13, opacity: 0.7 }} />
                 <Typography color="text.secondary" noWrap variant="caption">
-                  {option.displayName}
+                  Select by username
                 </Typography>
               </Stack>
             </Stack>

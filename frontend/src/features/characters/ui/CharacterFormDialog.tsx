@@ -121,14 +121,10 @@ export function CharacterFormDialog({
 
   useEffect(() => {
     const nextOwnerOption =
-      initialCharacter?.ownerUserId && (initialCharacter.ownerUsername || initialCharacter.ownerDisplayName)
+      initialCharacter?.ownerUserId && initialCharacter.ownerUsername
         ? {
             id: initialCharacter.ownerUserId,
-            username: initialCharacter.ownerUsername ?? initialCharacter.ownerUserId,
-            displayName:
-              initialCharacter.ownerDisplayName ??
-              initialCharacter.ownerUsername ??
-              initialCharacter.ownerUserId,
+            username: initialCharacter.ownerUsername,
             avatarUrl: null,
           }
         : null;

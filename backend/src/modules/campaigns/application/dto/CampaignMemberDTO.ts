@@ -3,7 +3,6 @@ export interface CampaignMemberDTO {
   campaignId: string;
   userId: string;
   username?: string | null;
-  displayName?: string | null;
   avatarUrl?: string | null;
   role: string;
   status: string;
@@ -12,7 +11,6 @@ export interface CampaignMemberDTO {
   invitedAt: string | null;
   invitedById: string | null;
   invitedByUsername?: string | null;
-  invitedByDisplayName?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -3,7 +3,6 @@ import type { CurrentUserProfileDTO } from "@modules/users/application/dto/Curre
 
 export interface UpdateCurrentUserProfileInput {
   userId: string;
-  displayName?: string;
   username?: string;
   avatarUrl?: string | null;
   bio?: string | null;

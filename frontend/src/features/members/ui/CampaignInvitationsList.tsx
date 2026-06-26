@@ -20,7 +20,7 @@ function formatDate(value: string): string {
 }
 
 function getInvitationPrimaryLabel(invitation: CampaignInvitation): string {
-  return invitation.displayName ?? invitation.username ?? invitation.userId;
+  return invitation.username ?? invitation.userId;
 }
 
 export function CampaignInvitationsList({
@@ -44,7 +44,7 @@ export function CampaignInvitationsList({
     <Stack spacing={1.5}>
       {invitations.map((invitation) => {
         const isOwnInvitation = invitation.userId === currentUserId;
-        const canRespond = canRespondToInvitations && invitation.status === "PENDING" && isOwnInvitation;
+        const canRespond = canRespondToInvitations && invitation.status === "INVITED" && isOwnInvitation;
 
         return (
           <Paper key={invitation.id} sx={{ p: 2.25 }} variant="outlined">
@@ -57,7 +57,7 @@ export function CampaignInvitationsList({
                 <Stack spacing={0.5}>
                   <Typography variant="h6">{getInvitationPrimaryLabel(invitation)}</Typography>
                   <Typography color="text.secondary" variant="body2">
-                    Invited by: {invitation.invitedByDisplayName ?? invitation.invitedByUsername ?? invitation.invitedById}
+                    Invited by: {invitation.invitedByUsername ?? invitation.invitedById}
                   </Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>

@@ -17,6 +17,7 @@ import { TransferCampaignOwnershipCommand } from "@modules/campaigns/application
 import { UpdateCampaignCommand } from "@modules/campaigns/application/commands/UpdateCampaignCommand";
 import { GetCampaignDetailsQuery } from "@modules/campaigns/application/queries/GetCampaignDetailsQuery";
 import { ListCampaignInvitationsQuery } from "@modules/campaigns/application/queries/ListCampaignInvitationsQuery";
+import { ListCurrentUserCampaignInvitationsQuery } from "@modules/campaigns/application/queries/ListCurrentUserCampaignInvitationsQuery";
 import { ListCampaignMembersQuery } from "@modules/campaigns/application/queries/ListCampaignMembersQuery";
 import { ListUserCampaignsQuery } from "@modules/campaigns/application/queries/ListUserCampaignsQuery";
 import { CAMPAIGNS_TYPES } from "@modules/campaigns/campaigns.types";
@@ -60,5 +61,9 @@ export function registerCampaignsHandlers(container: Container): void {
   queryBus.register(
     ListCampaignInvitationsQuery.name,
     CAMPAIGNS_TYPES.ListCampaignInvitationsHandler,
+  );
+  queryBus.register(
+    ListCurrentUserCampaignInvitationsQuery.name,
+    CAMPAIGNS_TYPES.ListCurrentUserCampaignInvitationsHandler,
   );
 }

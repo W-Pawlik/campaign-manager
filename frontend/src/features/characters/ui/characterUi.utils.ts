@@ -60,13 +60,8 @@ export function getCharacterSubtitle(
 
 export function getCharacterOwnerLabel(
   ownerUsername: string | null | undefined,
-  ownerDisplayName: string | null | undefined,
   ownerUserId: string | null,
 ): string {
-  if (ownerDisplayName?.trim()) {
-    return ownerUsername?.trim() ? `${ownerDisplayName} (@${ownerUsername})` : ownerDisplayName;
-  }
-
   if (ownerUsername?.trim()) {
     return `@${ownerUsername}`;
   }
@@ -101,7 +96,6 @@ export function getCharacterSearchText(character: CampaignCharacterListItem): st
     character.type,
     character.status,
     character.ownerUsername,
-    character.ownerDisplayName,
   ]
     .filter((value): value is string => Boolean(value))
     .join(" ")

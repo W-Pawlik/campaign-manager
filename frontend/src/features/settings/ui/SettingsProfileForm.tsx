@@ -18,7 +18,6 @@ const settingsProfileSchema = z.object({
   avatarUrl: z.string().trim().url("Enter a valid URL.").or(z.literal("")).optional(),
   bio: z.string().max(1000, "Bio can contain up to 1000 characters.").optional(),
   defaultTimezone: z.string().trim().max(120).optional(),
-  displayName: z.string().trim().min(2, "Display name must contain at least 2 characters.").max(80),
   locale: z.string().trim().max(32).optional(),
   preferredSystem: z.string().trim().max(120).optional(),
   timezone: z.string().trim().max(120).optional(),
@@ -61,7 +60,6 @@ export function SettingsProfileForm({
       avatarUrl: toOptionalValue(profile.avatarUrl),
       bio: toOptionalValue(profile.bio),
       defaultTimezone: toOptionalValue(profile.profile?.defaultTimezone),
-      displayName: profile.displayName,
       locale: toOptionalValue(profile.locale),
       preferredSystem: toOptionalValue(profile.profile?.preferredSystem),
       timezone: toOptionalValue(profile.timezone),
@@ -75,7 +73,6 @@ export function SettingsProfileForm({
       avatarUrl: toOptionalValue(profile.avatarUrl),
       bio: toOptionalValue(profile.bio),
       defaultTimezone: toOptionalValue(profile.profile?.defaultTimezone),
-      displayName: profile.displayName,
       locale: toOptionalValue(profile.locale),
       preferredSystem: toOptionalValue(profile.profile?.preferredSystem),
       timezone: toOptionalValue(profile.timezone),
@@ -103,15 +100,6 @@ export function SettingsProfileForm({
             helperText={errors.username?.message}
             label="Username"
             {...register("username")}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <TextField
-            error={Boolean(errors.displayName)}
-            fullWidth
-            helperText={errors.displayName?.message}
-            label="Display name"
-            {...register("displayName")}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>

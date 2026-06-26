@@ -29,7 +29,7 @@ function formatDate(value: string | null): string {
 }
 
 function getMemberPrimaryLabel(member: CampaignMember): string {
-  return member.nickname ?? member.displayName ?? member.username ?? member.userId;
+  return member.nickname ?? member.username ?? member.userId;
 }
 
 function getMemberSecondaryLabel(member: CampaignMember): string {

@@ -3,7 +3,6 @@ export interface SessionParticipantDTO {
   sessionId: string;
   userId: string;
   username?: string | null;
-  displayName?: string | null;
   avatarUrl?: string | null;
   characterId: string | null;
   attendanceStatus: string;

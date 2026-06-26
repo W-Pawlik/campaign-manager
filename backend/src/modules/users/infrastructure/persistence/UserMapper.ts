@@ -1,7 +1,6 @@
 import type { User as PrismaUser } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { User } from "@modules/users/domain/entities/User";
-import { DisplayName } from "@modules/users/domain/value-objects/DisplayName";
 import { Username } from "@modules/users/domain/value-objects/Username";
 
 export class UserMapper {
@@ -10,7 +9,6 @@ export class UserMapper {
       id: prismaUser.id,
       email: prismaUser.email,
       username: Username.create(prismaUser.username),
-      displayName: DisplayName.create(prismaUser.displayName),
       passwordHash: prismaUser.passwordHash,
       avatarUrl: prismaUser.avatarUrl,
       bio: prismaUser.bio,
@@ -28,7 +26,6 @@ export class UserMapper {
     return {
       email: user.email,
       username: user.username.value,
-      displayName: user.displayName.value,
       passwordHash: user.passwordHash,
       avatarUrl: user.avatarUrl,
       bio: user.bio,
