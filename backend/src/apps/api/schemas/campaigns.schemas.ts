@@ -80,6 +80,7 @@ const relatedEntityTypeSchema = z.enum([
   "ITEM",
   "CHRONICLE_ENTRY",
 ]);
+const fightEncounterOutcomeSchema = z.enum(["VICTORY", "DEFEAT", "RETREAT", "ESCAPE", "OTHER"]);
 
 const nullableTrimmedStringSchema = z
   .string()
@@ -567,3 +568,49 @@ export const updateNoteSchema = z
 
 export type CreateNoteRequestBody = z.infer<typeof createNoteSchema>;
 export type UpdateNoteRequestBody = z.infer<typeof updateNoteSchema>;
+
+export const createFightEncounterSchema = z
+  .object({
+    name: z.string().trim().min(1).max(160),
+    environmentName: z.string().trim().min(1).max(160),
+    environmentDetails: z.string().trim().min(1).max(5000),
+    combatantCount: z.number().int().min(0).max(500).optional(),
+    conditionCount: z.number().int().min(0).max(500).optional(),
+    preparationData: z.unknown().nullable().optional(),
+  })
+  .strict();
+
+export const finishFightEncounterRunSchema = z
+  .object({
+    roundsCompleted: z.number().int().min(0).max(10000),
+    durationSeconds: z.number().int().min(0).max(31_536_000).nullable(),
+    outcomeLabel: z.string().trim().min(1).max(160).nullable().optional(),
+    outcomeType: fightEncounterOutcomeSchema.optional(),
+    summaryData: z.unknown().nullable().optional(),
+  })
+  .strict();
+
+export type CreateFightEncounterRequestBody = z.infer<typeof createFightEncounterSchema>;
+export type FinishFightEncounterRunRequestBody = z.infer<typeof finishFightEncounterRunSchema>;
+
+export const updateFightEncounterSchema = z
+  .object({
+    name: z.string().trim().min(1).max(160),
+    environmentName: z.string().trim().min(1).max(160),
+    environmentDetails: z.string().trim().min(1).max(5000),
+    combatantCount: z.number().int().min(0).max(500),
+    conditionCount: z.number().int().min(0).max(500),
+    preparationData: z.unknown().nullable().optional(),
+  })
+  .strict();
+
+export const updateFightEncounterRunStateSchema = z
+  .object({
+    roundsCompleted: z.number().int().min(0).max(10000),
+    durationSeconds: z.number().int().min(0).max(31_536_000).nullable(),
+    stateData: z.unknown().nullable().optional(),
+  })
+  .strict();
+
+export type UpdateFightEncounterRequestBody = z.infer<typeof updateFightEncounterSchema>;
+export type UpdateFightEncounterRunStateRequestBody = z.infer<typeof updateFightEncounterRunStateSchema>;

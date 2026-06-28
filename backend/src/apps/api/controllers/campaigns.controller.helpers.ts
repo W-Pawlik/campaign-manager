@@ -63,6 +63,14 @@ export function getSessionId(req: Request): string {
   return getRequiredRouteParam(req, "sessionId", "Session id is required");
 }
 
+export function getFightEncounterId(req: Request): string {
+  return getRequiredRouteParam(req, "encounterId", "Fight encounter id is required");
+}
+
+export function getFightEncounterRunId(req: Request): string {
+  return getRequiredRouteParam(req, "runId", "Fight encounter run id is required");
+}
+
 export function getChronicleEntryId(req: Request): string {
   return getRequiredRouteParam(req, "entryId", "Chronicle entry id is required");
 }

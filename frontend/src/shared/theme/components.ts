@@ -3,6 +3,44 @@ import type { ThemeOptions } from "@mui/material";
 import { fantasyTokens } from "@/shared/theme/tokens";
 
 export const components: ThemeOptions["components"] = {
+  MuiCssBaseline: {
+    styleOverrides: (theme) => ({
+      "*": {
+        scrollbarColor: `rgba(173, 138, 86, 0.46) rgba(255, 255, 255, 0.06)`,
+        scrollbarWidth: "thin",
+      },
+      "*::-webkit-scrollbar": {
+        height: 10,
+        width: 10,
+      },
+      "*::-webkit-scrollbar-track": {
+        background:
+          theme.palette.mode === "dark"
+            ? "linear-gradient(180deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0.015) 100%)"
+            : "rgba(17, 18, 22, 0.06)",
+        borderRadius: fantasyTokens.radius.lg,
+      },
+      "*::-webkit-scrollbar-thumb": {
+        background:
+          theme.palette.mode === "dark"
+            ? "linear-gradient(180deg, rgba(166, 129, 78, 0.48) 0%, rgba(97, 67, 36, 0.72) 100%)"
+            : "linear-gradient(180deg, rgba(166, 129, 78, 0.5) 0%, rgba(110, 78, 43, 0.72) 100%)",
+        backgroundClip: "padding-box",
+        border: "2px solid transparent",
+        borderRadius: fantasyTokens.radius.lg,
+        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
+      },
+      "*::-webkit-scrollbar-thumb:hover": {
+        background:
+          theme.palette.mode === "dark"
+            ? "linear-gradient(180deg, rgba(199, 160, 101, 0.62) 0%, rgba(120, 84, 48, 0.84) 100%)"
+            : "linear-gradient(180deg, rgba(194, 156, 101, 0.66) 0%, rgba(128, 90, 51, 0.84) 100%)",
+      },
+      "*::-webkit-scrollbar-corner": {
+        background: "transparent",
+      },
+    }),
+  },
   MuiAppBar: {
     styleOverrides: {
       root: ({ theme }) => ({

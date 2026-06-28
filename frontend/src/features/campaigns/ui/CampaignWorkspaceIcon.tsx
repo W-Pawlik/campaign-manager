@@ -11,6 +11,7 @@ export type CampaignWorkspaceIconKey =
   | "locations"
   | "monsters"
   | "items"
+  | "fightTracker"
   | "members"
   | "settings";
 
@@ -25,6 +26,7 @@ const iconByKey: Record<CampaignWorkspaceIconKey, string> = {
   locations: "mdi:location",
   monsters: "game-icons:dragon-head",
   items: "mdi:treasure-chest",
+  fightTracker: "game-icons:crossed-swords",
   members: "tdesign:member-filled",
   settings: "material-symbols:settings-rounded",
 };

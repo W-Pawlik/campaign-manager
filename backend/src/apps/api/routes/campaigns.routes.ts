@@ -1,6 +1,7 @@
 import { Router, type RequestHandler } from "express";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
 import type { CampaignChronicleController } from "@api/controllers/CampaignChronicleController";
+import type { CampaignFightTrackerController } from "@api/controllers/CampaignFightTrackerController";
 import type { CampaignInventoryController } from "@api/controllers/CampaignInventoryController";
 import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
@@ -16,6 +17,7 @@ import {
   createCampaignSchema,
   createCharacterSchema,
   createChronicleEntrySchema,
+  createFightEncounterSchema,
   createInventoryItemSchema,
   createLocationSchema,
   createMonsterSchema,
@@ -24,6 +26,7 @@ import {
   createNoteSchema,
   createNpcSchema,
   createSessionSchema,
+  finishFightEncounterRunSchema,
   importOpen5eMonsterSchema,
   inviteCampaignMemberSchema,
   updateCharacterSchema,
@@ -36,6 +39,8 @@ import {
   updateQuestObjectiveSchema,
   updateQuestSchema,
   updateChronicleEntrySchema,
+  updateFightEncounterRunStateSchema,
+  updateFightEncounterSchema,
   updateNoteSchema,
   updateNpcSchema,
   updateSessionSchema,
@@ -45,6 +50,7 @@ export function createCampaignsRouter(
   campaignsController: CampaignsController,
   campaignMembersController: CampaignMembersController,
   campaignCharactersController: CampaignCharactersController,
+  campaignFightTrackerController: CampaignFightTrackerController,
   campaignChronicleController: CampaignChronicleController,
   campaignInventoryController: CampaignInventoryController,
   campaignMonstersController: CampaignMonstersController,
@@ -85,6 +91,50 @@ export function createCampaignsRouter(
   router.get("/:campaignId/characters", authMiddleware, async (req, res) => {
     await campaignCharactersController.listCampaignCharacters(req, res);
   });
+  router.get("/:campaignId/fight-tracker", authMiddleware, async (req, res) => {
+    await campaignFightTrackerController.getOverview(req, res);
+  });
+  router.post(
+    "/:campaignId/fight-tracker/encounters",
+    authMiddleware,
+    createValidateBodyMiddleware(createFightEncounterSchema),
+    async (req, res) => {
+      await campaignFightTrackerController.createEncounter(req, res);
+    },
+  );
+  router.get("/:campaignId/fight-tracker/encounters/:encounterId", authMiddleware, async (req, res) => {
+    await campaignFightTrackerController.getEncounterDetails(req, res);
+  });
+  router.patch(
+    "/:campaignId/fight-tracker/encounters/:encounterId",
+    authMiddleware,
+    createValidateBodyMiddleware(updateFightEncounterSchema),
+    async (req, res) => {
+      await campaignFightTrackerController.updateEncounter(req, res);
+    },
+  );
+  router.delete("/:campaignId/fight-tracker/encounters/:encounterId", authMiddleware, async (req, res) => {
+    await campaignFightTrackerController.deleteEncounter(req, res);
+  });
+  router.post("/:campaignId/fight-tracker/encounters/:encounterId/start", authMiddleware, async (req, res) => {
+    await campaignFightTrackerController.startEncounterRun(req, res);
+  });
+  router.patch(
+    "/:campaignId/fight-tracker/runs/:runId/state",
+    authMiddleware,
+    createValidateBodyMiddleware(updateFightEncounterRunStateSchema),
+    async (req, res) => {
+      await campaignFightTrackerController.updateEncounterRunState(req, res);
+    },
+  );
+  router.post(
+    "/:campaignId/fight-tracker/runs/:runId/finish",
+    authMiddleware,
+    createValidateBodyMiddleware(finishFightEncounterRunSchema),
+    async (req, res) => {
+      await campaignFightTrackerController.finishEncounterRun(req, res);
+    },
+  );
   router.post(
     "/:campaignId/characters",
     authMiddleware,

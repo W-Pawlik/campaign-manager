@@ -47,6 +47,9 @@ model User {
   sentCampaignInvites CampaignMember[] @relation("CampaignMemberInvitedBy")
   campaignInvitations CampaignInvitation[] @relation("CampaignInvitationUser")
   sentInvitations     CampaignInvitation[] @relation("CampaignInvitationInvitedBy")
+  createdFightEncounters FightEncounter[] @relation("FightEncounterCreator")
+  startedFightEncounterRuns FightEncounterRun[] @relation("FightEncounterRunStarter")
+  finishedFightEncounterRuns FightEncounterRun[] @relation("FightEncounterRunFinisher")
 
   @@map("users")
 }
@@ -111,6 +114,8 @@ model Campaign {
   quests             Quest[]
   inventoryItems     InventoryItem[]
   monsters           Monster[]
+  fightEncounters    FightEncounter[]
+  fightEncounterRuns FightEncounterRun[]
 
   @@index([ownerId])
   @@index([status])
@@ -608,4 +613,56 @@ model InventoryItem {
   @@index([visibility])
   @@index([deletedAt])
   @@map("inventory_items")
+}
+
+model FightEncounter {
+  id                 String             @id
+  campaignId         String
+  name               String
+  environmentName    String
+  environmentDetails String
+  combatantCount     Int                @default(0)
+  conditionCount     Int                @default(0)
+  preparationData    Json?
+  createdById        String
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  archivedAt         DateTime?
+  campaign           Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  createdBy          User               @relation("FightEncounterCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  runs               FightEncounterRun[]
+
+  @@index([campaignId])
+  @@index([createdById])
+  @@index([archivedAt])
+  @@map("fight_encounters")
+}
+
+model FightEncounterRun {
+  id               String        @id
+  campaignId       String
+  encounterId      String
+  status           String
+  startedById      String
+  finishedById     String?
+  roundsCompleted  Int           @default(0)
+  durationSeconds  Int?
+  outcomeLabel     String?
+  summaryData      Json?
+  startedAt        DateTime
+  finishedAt       DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  campaign         Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  encounter        FightEncounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  startedBy        User          @relation("FightEncounterRunStarter", fields: [startedById], references: [id], onDelete: Restrict)
+  finishedBy       User?         @relation("FightEncounterRunFinisher", fields: [finishedById], references: [id], onDelete: SetNull)
+
+  @@index([campaignId])
+  @@index([encounterId])
+  @@index([startedById])
+  @@index([finishedById])
+  @@index([status])
+  @@index([startedAt])
+  @@map("fight_encounter_runs")
 }

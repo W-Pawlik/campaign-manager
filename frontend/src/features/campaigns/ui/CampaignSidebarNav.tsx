@@ -93,6 +93,13 @@ const campaignNavItems = [
     implemented: true,
   },
   {
+    icon: "fightTracker",
+    label: "Fight tracker",
+    path: (campaignId: string) => appPaths.campaignFightTracker(campaignId),
+    section: "workspace",
+    implemented: true,
+  },
+  {
     icon: "members",
     label: "Members",
     path: (campaignId: string) => appPaths.campaignMembers(campaignId),

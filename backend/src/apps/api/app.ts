@@ -12,6 +12,7 @@ import type { AuthController } from "@api/controllers/AuthController";
 import type { UsersController } from "@api/controllers/users.controller";
 import type { CampaignCharactersController } from "@api/controllers/CampaignCharactersController";
 import type { CampaignChronicleController } from "@api/controllers/CampaignChronicleController";
+import type { CampaignFightTrackerController } from "@api/controllers/CampaignFightTrackerController";
 import type { CampaignInventoryController } from "@api/controllers/CampaignInventoryController";
 import type { CampaignLocationsController } from "@api/controllers/CampaignLocationsController";
 import type { CampaignMembersController } from "@api/controllers/CampaignMembersController";
@@ -47,6 +48,9 @@ export function createApiApp(options: CreateApiAppOptions): Express {
   );
   const campaignCharactersController = options.container.get<CampaignCharactersController>(
     API_TYPES.CampaignCharactersController,
+  );
+  const campaignFightTrackerController = options.container.get<CampaignFightTrackerController>(
+    API_TYPES.CampaignFightTrackerController,
   );
   const campaignChronicleController = options.container.get<CampaignChronicleController>(
     API_TYPES.CampaignChronicleController,
@@ -112,6 +116,7 @@ export function createApiApp(options: CreateApiAppOptions): Express {
       campaignsController,
       campaignMembersController,
       campaignCharactersController,
+      campaignFightTrackerController,
       campaignChronicleController,
       campaignInventoryController,
       campaignMonstersController,
